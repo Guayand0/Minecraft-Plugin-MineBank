@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="MineBank:jar">
+    <output-path>E:/Versiones spigot minecraft/todos los servers 1.7- 1.21/server 1.13.2/plugins</output-path>
+    <root id="archive" name="MineBank.jar">
+      <element id="module-output" name="MineBank" />
+    </root>
+  </artifact>
+</component>

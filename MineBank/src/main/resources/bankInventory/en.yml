@@ -1,0 +1,126 @@
+bank-inventory:
+  main:
+    name: '&4&l[&6&lMineBank&4&l]'
+    size: 6 # 9*6=54 Create an inventario of 54 slots (6 rows)
+    position-slot:
+      # Default is all slots empty
+      default:
+        item: WHITE_STAINED_GLASS_PANE
+        amount: 1
+        name: ' '
+      # Inventory slots: https://wiki.vg/images/b/bb/DoubleChest-slots.png
+      11:
+        item: EMERALD
+        amount: 1
+        name: '&aAdd 500'
+        lore:
+          - '&fClick to &edeposit 500 &fin the bank'
+        command: 'bank add 500'
+      12:
+        item: EMERALD
+        amount: 2
+        name: '&aAdd half'
+        lore:
+          - '&fClick to &edeposit half &fof'
+          - '&fmax storage balance'
+        command: 'bank add mid'
+      20:
+        item: EMERALD
+        amount: 3
+        name: '&aAdd max'
+        lore:
+          - '&fClick to &edeposit max &fof'
+          - '&fstorage balance'
+        command: 'bank add max'
+      21:
+        item: EMERALD
+        amount: 4
+        name: '&aAdd custom'
+        lore:
+          - '&fClick to &edeposit custom &famount'
+          - '&fof money to your bank'
+        command: 'bank add <amount>'
+
+      14:
+        item: REDSTONE
+        amount: 1
+        name: '&cTake 500'
+        lore:
+          - '&fClick to &ewithdraw 500 &ffrom the bank'
+        command: 'bank take 500'
+      15:
+        item: REDSTONE
+        amount: 2
+        name: '&cTake half'
+        lore:
+          - '&fClick to &ewithdraw half &fof'
+          - '&fstorage balance'
+        command: 'bank take mid'
+      23:
+        item: REDSTONE
+        amount: 3
+        name: '&cTake max'
+        lore:
+          - '&fClick to &ewithdraw max &fof'
+          - '&fstorage balance'
+        command: 'bank take max'
+      24:
+        item: REDSTONE
+        amount: 4
+        name: '&cTake custom'
+        lore:
+          - '&fClick to &ewithdraw custom&f amount'
+          - '&fof money to your bank'
+        command: 'bank take <amount>'
+
+      38:
+        item: PLAYER_HEAD
+        # https://minecraft-heads.com/custom-heads/head/50151-dollar
+        # Use this for versions between 1.8 and 1.20.2 inclusive (in section "For Developers: Value")
+        # texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjg4OWNmY2JhY2JlNTk4ZThhMWNkODYxMGI0OWZjYjYyNjQ0ZThjYmE5ZDQ5MTFkMTIxMTM0NTA2ZDhlYTFiNyJ9fX0='
+        # Use this for versions between 1.20.4 and upper inclusive (in section "For Developers: Minecraft URL")
+        texture: 'http://textures.minecraft.net/texture/b889cfcbacbe598e8a1cd8610b49fcb62644e8cba9d4911d121134506d8ea1b7'
+        amount: 1
+        name: '&eYour Account'
+        lore:
+          - '&aBalance: &f%playerBalance%'
+          - ''
+          - '&aBank balance: &f%bankBalance%/%maxStorage%'
+          - '&aBank level: &f%level%/%maxLevel%'
+      40:
+        item: PLAYER_HEAD
+        # https://minecraft-heads.com/custom-heads/head/70110-level-up
+        # Use this for versions between 1.8 and 1.20.2 inclusive (in section "For Developers: Value")
+        # texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjQxNWEzNTQ2NmM3NTk5MDNhNDIzNjgyMjZmOGI0ODVhNDdiYjE2N2YwYTFlOTc4YjU1Mzg4ODEyNGE4OTA5ZCJ9fX0='
+        # Use this for versions between 1.20.4 and upper inclusive (in section "For Developers: Minecraft URL")
+        texture: 'http://textures.minecraft.net/texture/6415a35466c759903a42368226f8b485a47bb167f0a1e978b553888124a8909d'
+        amount: 1
+        name: '&eLevel Up'
+        lore:
+          - '&aNext level: &f%bankBalance%/%nextLevelBalance%'
+          - '&aBank level: &f%level%/%maxLevel%'
+          - ''
+          - '&fClick to &elevel up &fyour bank'
+          - '&fif you have enought money'
+        command: 'bank levelup'
+      42:
+        item: PLAYER_HEAD
+        # https://minecraft-heads.com/custom-heads/head/74737-gilded-blackstone-1
+        # Use this for versions between 1.8 and 1.20.2 inclusive (in section "For Developers: Value")
+        # texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODZiYzE4NzcyYWNkMzQzZTZhYjIwMTAzYzRhOWU0MjExNWYyMjQ4NDI3ZWNiZDIwNjcxZDZjZDI0ZWU3ZWY4YyJ9fX0='
+        # Use this for versions between 1.20.4 and upper inclusive (in section "For Developers: Minecraft URL")
+        texture: 'http://textures.minecraft.net/texture/86bc18772acd343e6ab20103c4a9e42115f2248427ecbd20671d6cd24ee7ef8c'
+        amount: 1
+        name: '&eBank Top'
+        lore:
+          # You can add up to 10 players
+          - '&aTop 1: &f%playerName<1>% - %bankBalance<1>%'
+          - '&aTop 2: &f%playerName<2>% - %bankBalance<2>%'
+          - '&aTop 3: &f%playerName<3>% - %bankBalance<3>%'
+          - ''
+          - '&6Your position:'
+          - '&aTop %playerTop%: &b%playerName% - %bankBalance%'
+          - ''
+          - '&fClick to see the &etop 10 players'
+          - '&fwith the most bank balance'
+        command: 'bank baltop'

@@ -1,0 +1,188 @@
+# ############################################################################################################# #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# |                                                                                                           | #
+# |                      ███╗   ███╗██╗███╗  ██╗███████╗██████╗  █████╗ ███╗  ██╗██╗  ██╗                     | #
+# |                      ████╗ ████║██║████╗ ██║██╔════╝██╔══██╗██╔══██╗████╗ ██║██║ ██╔╝                     | #
+# |                      ██╔████╔██║██║██╔██╗██║█████╗  ██████╦╝███████║██╔██╗██║█████═╝                      | #
+# |                      ██║╚██╔╝██║██║██║╚████║██╔══╝  ██╔══██╗██╔══██║██║╚████║██╔═██╗                      | #
+# |                      ██║ ╚═╝ ██║██║██║ ╚███║███████╗██████╦╝██║  ██║██║ ╚███║██║ ╚██╗                     | #
+# |                      ╚═╝     ╚═╝╚═╝╚═╝  ╚══╝╚══════╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚══╝╚═╝  ╚═╝                     | #
+# |                                                                                                           | #
+# |                    Youtube:    www.youtube.com/@davigamer1614                                             | #
+# |                    Github:     https://github.com/Guayand0/Minecraft-Plugin-MineBank                      | #
+# |                                                                                                           | #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# ############################################################################################################# #
+
+# ############################################################################################################# #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# |                                                                                                           | #
+# |                    ███╗   ███╗███████╗ ██████╗ ██████╗ █████╗  ██████╗ ███████╗ ██████╗                   | #
+# |                    ████╗ ████║██╔════╝██╔════╝██╔════╝██╔══██╗██╔════╝ ██╔════╝██╔════╝                   | #
+# |                    ██╔████╔██║█████╗  ╚█████╗ ╚█████╗ ███████║██║  ██╗ █████╗  ╚█████╗                    | #
+# |                    ██║╚██╔╝██║██╔══╝   ╚═══██╗ ╚═══██╗██╔══██║██║  ╚██╗██╔══╝   ╚═══██╗                   | #
+# |                    ██║ ╚═╝ ██║███████╗██████╔╝██████╔╝██║  ██║╚██████╔╝███████╗██████╔╝                   | #
+# |                    ╚═╝     ╚═╝╚══════╝╚═════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═════╝                    | #
+# |                                                                                                           | #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# ############################################################################################################# #
+
+messages:
+
+  # Variabili: NA
+  help:
+    - '&b<-----------------&aMINEBANK COMANDI&b----------------->'
+    - '&e/minebank help &7- Mostra questo messaggio'
+    - '&e/minebank reload &7- Ricarica la configurazione del plugin'
+    - '&e/minebank version &7- Mostra la versione del plugin'
+    - '&e/minebank author &7- Mostra l`autore del plugin'
+    - '&e/minebank permissions &7- Mostra l`elenco delle autorizzazioni del plugin'
+    - '&e/minebank plugin &7- Mostra il link per scaricare il plugin'
+    - '&e/bank help &7- Mostra l`elenco dei comandi della banca'
+    - '&7Alias: &eminebank&7, &emb'
+
+  # Variabili: NA
+  help-bank:
+    - '&b<-----------------&aMINEBANK COMANDI&b----------------->'
+    - '&e/bank help &7- Mostra questo messaggio'
+    - '&e/bank add <importo> &7- Deposita un importo'
+    - '&e/bank add <mi> &7- Deposita metà del massimo saldo del tuo livello bancario'
+    - '&e/bank add <max> &7- Deposita il massimo saldo del tuo livello bancario'
+    - '&e/bank take <importo> &7- Preleva un importo'
+    - '&e/bank take <mi> &7- Preleva metà del massimo saldo del tuo livello bancario'
+    - '&e/bank take <max> &7- Preleva il massimo saldo del tuo livello bancario'
+    - '&e/bank set <giocatore> bal <importo> &7- Imposta il saldo del giocatore'
+    - '&e/bank set <giocatore> bal <mi> &7- Imposta il saldo del giocatore a metà del massimo saldo del suo livello bancario'
+    - '&e/bank set <giocatore> bal <max> &7- Imposta il saldo del giocatore al massimo saldo del suo livello bancario'
+    - '&e/bank set <giocatore> level <livello> &7- Imposta il livello bancario del giocatore'
+    - '&e/bank set <giocatore> level <mi> &7- Imposta il livello bancario del giocatore a metà del massimo livello'
+    - '&e/bank set <giocatore> level <max> &7- Imposta il livello bancario del giocatore al massimo livello'
+    - '&e/bank set <giocatore> level <livello> true &7- Imposta il livello bancario del giocatore e il saldo al massimo del livello'
+    - '&e/bank set <giocatore> level <livello> false &7- Imposta il livello bancario del giocatore e modifica il saldo se supera il massimo del livello'
+    - '&e/bank top &7- Mostra i 10 migliori giocatori con più soldi in banca'
+    - '&e/bank bal &7- Controlla il tuo saldo'
+    - '&e/bank bal <giocatore> &7- Controlla il saldo di un altro giocatore'
+    - '&e/bank max bal &7- Controlla la capacità massima del tuo livello'
+    - '&e/bank max level &7- Controlla il livello massimo'
+    - '&e/bank level &7- Controlla il tuo livello bancario'
+    - '&e/bank level <giocatore> &7- Controlla il livello bancario di un giocatore'
+    - '&e/bank levelup &7- Migliora il tuo conto bancario'
+
+  # Variabili: %plugin%
+  reload: '%plugin% &aIl plugin è stato ricaricato.'
+
+  # Variabili: %plugin%, %version%, %latestversion%
+  version: '%plugin% &aVersione del plugin: &b%version%'
+
+  # Variabili: %plugin%, %author%
+  author: '%plugin% &aAutore del plugin: &b%author%'
+
+  # Variabili: NA
+  permissions:
+    - '&b<-----------------&aAUTORIZZAZIONI MINEBANK&b----------------->'
+    - '&eminebank.admin &7- Tutte le autorizzazioni'
+    - '&eminebank.updatechecker &7- Permette di ricevere un messaggio quando è disponibile un aggiornamento'
+    - '&eminebank.use &7- Permette di utilizzare la banca'
+
+  # Variabili: %plugin%
+  command-no-argument: '%plugin% &7Usa &e/minebank help &7per vedere l`elenco dei comandi.'
+  no-perm: '%plugin% &cNon hai il permesso di usare questo comando.'
+  console-error: '%plugin% &cNon puoi usare questo comando nella console.'
+
+config:
+  # Variabili: %plugin%
+  bank-disabled: '%plugin% &cLa funzione banca è attualmente disabilitata.'
+  # Variabili: %plugin%, %version%, %latestversion%, %link%
+  update-checker: '%plugin% &bNuova versione disponibile &e(&f%latestversion%&e)&b. Scaricala qui: &7%link%'
+
+# ############################################################################################################# #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# |                                                                                                           | #
+# |  ██████╗  █████╗ ███╗  ██╗██╗  ██╗  ███╗   ███╗███████╗ ██████╗ ██████╗ █████╗  ██████╗ ███████╗ ██████╗  | #
+# |  ██╔══██╗██╔══██╗████╗ ██║██║ ██╔╝  ████╗ ████║██╔════╝██╔════╝██╔════╝██╔══██╗██╔════╝ ██╔════╝██╔════╝  | #
+# |  ██████╦╝███████║██╔██╗██║█████═╝   ██╔████╔██║█████╗  ╚█████╗ ╚█████╗ ███████║██║  ██╗ █████╗  ╚█████╗   | #
+# |  ██╔══██╗██╔══██║██║╚████║██╔═██╗   ██║╚██╔╝██║██╔══╝   ╚═══██╗ ╚═══██╗██╔══██║██║  ╚██╗██╔══╝   ╚═══██╗  | #
+# |  ██████╦╝██║  ██║██║ ╚███║██║ ╚██╗  ██║ ╚═╝ ██║███████╗██████╔╝██████╔╝██║  ██║╚██████╔╝███████╗██████╔╝  | #
+# |  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚══╝╚═╝  ╚═╝  ╚═╝     ╚═╝╚══════╝╚═════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═════╝   | #
+# |                                                                                                           | #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# ############################################################################################################# #
+
+bank:
+  usage:
+    # Variabili: %plugin%
+    bank: '%plugin% &eUso: /bank <top/bal/max/level/levelup/add/take/set>'
+    add: '%plugin% &eUso: /bank add <importo>'
+    take: '%plugin% &eUso: /bank take <importo>'
+    set: '%plugin% &eUso: /bank set <giocatore> <bal/level> <importo> [true/false]'
+    top: '%plugin% &eUso: /bank top'
+    bal: '%plugin% &eUso: /bank bal [giocatore]'
+    max: '%plugin% &eUso: /bank max <bal/level>'
+    level: '%plugin% &eUso: /bank level [giocatore]'
+    levelup: '%plugin% &eUso: /bank levelup'
+  bal:
+    # Variabili: %plugin%, %balance%
+    yourBalance: '%plugin% &eIl tuo saldo bancario attuale è: &a$%balance%'
+    # Variabili: %plugin%, %player%, %balance%
+    playerBalance: '%plugin% &eIl saldo di %player% è: &a$%balance%'
+  take:
+    # Variabili: %plugin%, %amount%, %percentage%, %totalDeducted%
+    withdrawSuccess: '%plugin% &aHai prelevato $%amount% dalla tua banca. Spese bancarie: $%totalDeducted%'
+    # Variabili: %plugin%
+    withdrawFailure: '%plugin% &cL`importo deve essere positivo e un numero intero.'
+    withdrawExceeds: '%plugin% &cNon hai abbastanza soldi in banca per prelevare questo importo.'
+    interestsWithdrawExceeds: '%plugin% &cGli interessi superano l`importo sulla tua banca.'
+  add:
+    # Variabili: %plugin%, %amount%
+    depositSuccess: '%plugin% &aHai depositato $%amount% nella tua banca.'
+    # Variabili: %plugin%, %maxStorage%
+    balanceExceeds: '%plugin% &cNon puoi salvare più di $%maxStorage% al tuo livello bancario attuale.'
+    # Variabili: %plugin%
+    depositFailure: '%plugin% &cL`importo deve essere positivo e un numero intero.'
+    notEnoughMoney: '%plugin% &cNon hai abbastanza soldi per depositare questo importo.'
+  set:
+    # Variabili: %plugin%, %maxStorage%
+    maxBalance: '%plugin% &cL`importo non può superare $%maxStorage%.'
+    # Variabili: %plugin%, %maxLevel%
+    maxLevel: '%plugin% &cIl livello non può superare %maxLevel%.'
+    # Variabili: %plugin%, %player%, $%amount%
+    setBalanceSuccess: '%plugin% &aIl saldo bancario di %player% è stato impostato a $%amount%.'
+    # Variabili: %plugin%, %player%, $%level%
+    setLevelSuccess: '%plugin% &aIl livello bancario di %player% è stato impostato a %level%.'
+    # Variabili: %plugin%
+    depositFailure: '%plugin% &cL`importo deve essere positivo e un numero intero.'
+  top:
+    # Variabili: %plugin%
+    title: '%plugin% &eTop 10 giocatori con più soldi in banca:'
+    # Variabili: %plugin%, %position%, %player%, %balance%
+    entry: '&e%position%. %player% : &a$%balance%'
+  level:
+    # Variabili: %plugin%, %level%
+    yourLevel: '%plugin% &eIl tuo livello bancario è: &a%level%'
+    # Variabili: %plugin%, %player%, %level%
+    playerLevel: '%plugin% &eIl livello bancario di %player% è: &a%level%'
+  levelup:
+    # Variabili: %plugin%, %unlockPrice%
+    notEnoughMoney: '%plugin% &cNon hai abbastanza soldi in banca per migliorare. Ti servono $%unlockPrice%'
+    # Variabili: %plugin%, %unlockLevel%
+    unlockPriceError: '%plugin% &cPrezzo di sblocco non valido nella configurazione per il Livello %unlockLevel%'
+    # Variabili: %plugin%, %newLevel%
+    success: '%plugin% &aHai raggiunto con successo il Livello %newLevel%.'
+    # Variabili: %plugin%
+    alreadyMax: '%plugin% &cSei già al livello massimo.'
+  max:
+    # Variabili: %plugin%, %maxStorage%
+    maxStorage: '%plugin% &eL`importo massimo che puoi salvare al tuo livello attuale è: &a$%maxStorage%'
+    # Variabili: %plugin%, %maxLevel%
+    maxLevel: '%plugin% &aIl livello massimo bancario è &e%maxLevel%.'
+  profit:
+    # Variabili: %plugin%, $%profit%, %percentage%
+    received: '%plugin% &aHai ricevuto $%profit% come profitto per aver lasciato i tuoi soldi in banca!'
+    # Variabili: %plugin%, %amount%
+    min-storage: '%plugin% &cDevi avere almeno $%amount% in banca per guadagnare interessi.'
+    # Variabili: %plugin%
+    max-storage: '%plugin% &cDevi prelevare soldi dalla banca per continuare a guadagnare interessi.'
+  # Variabili: %plugin%
+  notPlayer: '%plugin% &cSolo i giocatori possono usare questo comando.'
+  # Variabili: %plugin%, %player%
+  notFoundPlayer: '%plugin% &cGiocatore %player% non trovato.'
