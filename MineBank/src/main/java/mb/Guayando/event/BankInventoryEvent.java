@@ -4,13 +4,16 @@ package mb.Guayando.event;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import mb.Guayando.MineBank;
+import mb.Guayando.commands.ComandoBank;
 import mb.Guayando.config.BankInventoryManager;
 import mb.Guayando.config.BankManager;
+import mb.Guayando.config.LanguageManager;
 import mb.Guayando.utils.MessageUtils;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.conversations.*;
@@ -35,6 +38,7 @@ public class BankInventoryEvent implements Listener {
 
     private final MineBank plugin;
     private final Economy economy;
+    private final LanguageManager languageManager;
     private final BankManager bankManager;
     private final BankInventoryManager bankInventoryManager;
     //private final ProtocolManager protocolManager;
@@ -47,6 +51,7 @@ public class BankInventoryEvent implements Listener {
     public BankInventoryEvent(MineBank plugin) {
         this.plugin = plugin;
         this.economy = plugin.getEconomy();
+        this.languageManager = plugin.getLanguageManager();
         this.bankManager = plugin.getBankManager();
         this.bankInventoryManager = plugin.getBankInventoryManager();
         //this.protocolManager = ProtocolLibrary.getProtocolManager();
@@ -199,6 +204,14 @@ public class BankInventoryEvent implements Listener {
     }
     private void handleItemCommand(Player player, ConfigurationSection itemData) {
         String command = itemData.getString("command", "");
+        String permission = itemData.getString("permission", ""); // Obtener el permiso de la configuración
+
+        // Verificar si el jugador tiene el permiso
+        if (permission != null && !permission.isEmpty() && !player.hasPermission(permission)) {
+            noPerm(player);
+            return; // Salir del método si no tiene permiso
+        }
+
         if (command != null && !command.isEmpty()) {
             if (command.contains("<amount>")) {
                 boolean isWithdraw = command.contains("bank take");
@@ -558,5 +571,13 @@ public class BankInventoryEvent implements Listener {
             }
         }
         return -1; // Si no está en el top
+    }
+
+    private void noPerm(CommandSender sender){
+        String mensaje = languageManager.getMessage("messages.no-perm");
+        if (mensaje != null) {
+            mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix);
+            sender.sendMessage(MessageUtils.getColoredMessage(mensaje));
+        }
     }
 }

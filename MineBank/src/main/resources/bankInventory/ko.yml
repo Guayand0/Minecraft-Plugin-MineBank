@@ -16,6 +16,7 @@ bank-inventory:
         lore:
           - '&f클릭하여 &e500 &f을 은행에 입금'
         command: 'bank add 500'
+        permission: 'minebank.use'
       12:
         item: EMERALD
         amount: 2

@@ -7,6 +7,7 @@ import mb.Guayando.config.LanguageManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -19,6 +20,7 @@ public class SubComandoMax implements CommandExecutor {
     private final BankManager bankManager;
     private int maxStorage;
     private int maxLevel;
+    private String targetPlayerName;
 
     public SubComandoMax(MineBank plugin) {
         this.plugin = plugin;
@@ -39,14 +41,34 @@ public class SubComandoMax implements CommandExecutor {
         }
 
         String type = args[1];
-
-        String playerPath = "bank." + player.getUniqueId() + "." + player.getName();
+        String playerPath;
         FileConfiguration bankConfig = bankManager.getBank(); // Obtener la configuración del banco
 
         if (type.equalsIgnoreCase("bal") || type.equalsIgnoreCase("balance")) {
-            int level = bankConfig.getInt(playerPath + ".level", 1);
-            maxStorage = getMaxStorageAmount(level);
-            maxStorage(player);
+            // /bank  max     bal     <player>
+            // /bank  arg[0]  arg[1]  arg[2]
+            if (args.length >= 3) {
+                targetPlayerName = args[2];
+            } else {
+                targetPlayerName = null;
+            }
+            // Lógica para obtener el balance
+            if (targetPlayerName == null) {
+                playerPath = "bank." + player.getUniqueId() + "." + player.getName();
+                int level = bankConfig.getInt(playerPath + ".level", 1);
+                maxStorage = getMaxStorageAmount(level);
+                yourMaxStorage(player);
+            } else {
+                String uuid = getPlayerUUIDByName(targetPlayerName);
+                if (uuid != null) {
+                    playerPath = "bank." + uuid + "." + targetPlayerName;
+                    int level = bankConfig.getInt(playerPath + ".level", 1);
+                    maxStorage = getMaxStorageAmount(level);
+                    playerMaxStorage(targetPlayerName, player);
+                } else {
+                    notFoundPlayer(player);
+                }
+            }
         } else if (type.equalsIgnoreCase("level")) {
             maxLevel = getMaxBankLevel();
             maxLevelBank(player);
@@ -65,10 +87,18 @@ public class SubComandoMax implements CommandExecutor {
         }
     }
 
-    private void maxStorage(Player player) {
-        String message = languageManager.getMessage("bank.max.maxStorage");
+    private void yourMaxStorage(Player player) {
+        String message = languageManager.getMessage("bank.max.yourMaxStorage");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%maxStorage%", String.valueOf(maxStorage));
+            player.sendMessage(MessageUtils.getColoredMessage(message));
+        }
+    }
+
+    private void playerMaxStorage(String targetPlayerName, Player player) {
+        String message = languageManager.getMessage("bank.max.playerMaxStorage");
+        if (message != null) {
+            message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%player%", targetPlayerName).replaceAll("%maxStorage%", String.valueOf(maxStorage));
             player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }
@@ -111,5 +141,28 @@ public class SubComandoMax implements CommandExecutor {
             }
         }
         return maxLevel;
+    }
+
+
+    private void notFoundPlayer(Player player) {
+        String notFoundMessage = languageManager.getMessage("bank.notFoundPlayer");
+        if (notFoundMessage != null) {
+            notFoundMessage = notFoundMessage.replaceAll("%plugin%", MineBank.prefix).replaceAll("%player%", targetPlayerName);
+            player.sendMessage(MessageUtils.getColoredMessage(notFoundMessage));
+        }
+    }
+
+    private String getPlayerUUIDByName(String playerName) {
+        FileConfiguration bankConfig = bankManager.getBank(); // Obtener la configuración actualizada
+        // Recorre todas las entradas en bank.yml para encontrar el UUID correspondiente al nombre del jugador
+        for (String uuid : bankConfig.getConfigurationSection("bank").getKeys(false)) {
+            ConfigurationSection playerSection = bankConfig.getConfigurationSection("bank." + uuid);
+            for (String name : playerSection.getKeys(false)) {
+                if (name.equalsIgnoreCase(playerName)) {
+                    return uuid;
+                }
+            }
+        }
+        return null; // Retorna null si no se encuentra el jugador
     }
 }

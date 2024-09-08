@@ -16,6 +16,7 @@ bank-inventory:
         lore:
           - '&f点击以 &e存入 500 &f到银行'
         command: 'bank add 500'
+        permission: 'minebank.use'
       12:
         item: EMERALD
         amount: 2

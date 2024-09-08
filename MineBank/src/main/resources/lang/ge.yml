@@ -44,6 +44,7 @@ messages:
   # Variablen: NA
   help-bank:
     - '&b<-----------------&aBESCHICKEN MINEBANK&b----------------->'
+    - '&e/bank &7- Offenes Inventar (1.13+)'
     - '&e/bank help &7- Diese Nachricht anzeigen'
     - '&e/bank add <betrag> &7- Betrag einzahlen'
     - '&e/bank add <mi> &7- Die Hälfte des maximalen Guthabens deines Bankniveaus einzahlen'
@@ -171,7 +172,9 @@ bank:
     alreadyMax: '%plugin% &cDu bist bereits auf dem maximalen Level.'
   max:
     # Variablen: %plugin%, %maxStorage%
-    maxStorage: '%plugin% &eDer maximale Betrag, den du auf deinem aktuellen Level speichern kannst, beträgt: &a$%maxStorage%'
+    yourMaxStorage: '%plugin% &eDer maximale Betrag, den du auf deinem aktuellen Level speichern kannst, beträgt: &a$%maxStorage%'
+    # Variablen: %plugin%, %player%, %maxStorage%
+    playerMaxStorage: '%plugin% &eDie maximale Menge, die %player% auf seinem aktuellen Level speichern kann, ist: &a$%maxStorage%'
     # Variablen: %plugin%, %maxLevel%
     maxLevel: '%plugin% &aDas maximale Banklevel ist &e%maxLevel%.'
   profit:

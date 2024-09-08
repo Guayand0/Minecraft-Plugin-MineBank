@@ -44,6 +44,7 @@ messages:
   # 変数: NA
   help-bank:
     - '&b<-----------------&aMINEBANK コマンド&a----------------->'
+    - '&e/bank &7- 在庫を開く (1.13+)'
     - '&e/bank help &7- このメッセージを表示'
     - '&e/bank add <金額> &7- 金額を預ける'
     - '&e/bank add <半分> &7- 現在の銀行レベルの最大額の半分を預ける'
@@ -171,7 +172,9 @@ bank:
     alreadyMax: '%plugin% &cすでに最大レベルに達しています。'
   max:
     # 変数: %plugin%, %maxStorage%
-    maxStorage: '%plugin% &e現在のレベルで保存できる最大額は: &a$%maxStorage%'
+    yourMaxStorage: '%plugin% &e現在のレベルで保存できる最大額は: &a$%maxStorage%'
+    # 変数: %plugin%、%player%、%maxStorage%
+    playerMaxStorage: '%plugin% &e%player% が現在のレベルで保存できる最大量は: &a$%maxStorage%'
     # 変数: %plugin%, %maxLevel%
     maxLevel: '%plugin% &a銀行の最大レベルは &e%maxLevel%。'
   profit:

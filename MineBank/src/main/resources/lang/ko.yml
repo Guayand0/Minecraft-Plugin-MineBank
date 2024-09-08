@@ -44,6 +44,7 @@ messages:
   # 변수: NA
   help-bank:
     - '&b<-----------------&aMINEBANK 명령어&a----------------->'
+    - '&e/bank &7- 오픈 인벤토리 (1.13+)'
     - '&e/bank help &7- 이 메시지를 표시합니다.'
     - '&e/bank add <금액> &7- 금액을 입금합니다.'
     - '&e/bank add <반쪽> &7- 현재 은행 레벨의 최대 금액의 반을 입금합니다.'
@@ -171,7 +172,9 @@ bank:
     alreadyMax: '%plugin% &c이미 최대 레벨에 도달했습니다.'
   max:
     # 변수: %plugin%, %maxStorage%
-    maxStorage: '%plugin% &e현재 레벨에서 저장할 수 있는 최대 금액: &a$%maxStorage%'
+    yourMaxStorage: '%plugin% &e현재 레벨에서 저장할 수 있는 최대 금액: &a$%maxStorage%'
+    # 변수: %plugin%, %player%, %maxStorage%
+    playerMaxStorage: '%plugin% &e%player%가 현재 레벨에서 저장할 수 있는 최대 양은 &a$%maxStorage%입니다'
     # 변수: %plugin%, %maxLevel%
     maxLevel: '%plugin% &a은행의 최대 레벨은 &e%maxLevel% 입니다.'
   profit:

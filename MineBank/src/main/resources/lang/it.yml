@@ -44,6 +44,7 @@ messages:
   # Variabili: NA
   help-bank:
     - '&b<-----------------&aMINEBANK COMANDI&b----------------->'
+    - '&e/bank &7- Inventario aperto (1.13+)'
     - '&e/bank help &7- Mostra questo messaggio'
     - '&e/bank add <importo> &7- Deposita un importo'
     - '&e/bank add <mi> &7- Deposita metà del massimo saldo del tuo livello bancario'
@@ -171,7 +172,9 @@ bank:
     alreadyMax: '%plugin% &cSei già al livello massimo.'
   max:
     # Variabili: %plugin%, %maxStorage%
-    maxStorage: '%plugin% &eL`importo massimo che puoi salvare al tuo livello attuale è: &a$%maxStorage%'
+    yourMaxStorage: '%plugin% &eL`importo massimo che puoi salvare al tuo livello attuale è: &a$%maxStorage%'
+    # Variabili: %plugin%, %player%, %maxStorage%
+    playerMaxStorage: '%plugin% &eLa quantità massima che %player% può memorizzare al suo livello attuale è: &a$%maxStorage%'
     # Variabili: %plugin%, %maxLevel%
     maxLevel: '%plugin% &aIl livello massimo bancario è &e%maxLevel%.'
   profit:

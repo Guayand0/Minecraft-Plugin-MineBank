@@ -44,6 +44,7 @@ messages:
   # переменные: NA
   help-bank:
     - '&b<-----------------&aКоманды MINEBANK&a----------------->'
+    - '&e/bank &7- Открытый инвентарь (1.13+)'
     - '&e/bank help &7- Показать это сообщение'
     - '&e/bank add <сумма> &7- Пополнить счет'
     - '&e/bank add <half> &7- Пополнить счет на половину от максимальной суммы для текущего уровня'
@@ -167,11 +168,13 @@ bank:
     unlockPriceError: '%plugin% &cНеверная цена для повышения уровня до %unlockLevel%.'
     # переменные: %plugin%, %newLevel%
     success: '%plugin% &aВаш уровень банка успешно повышен до %newLevel%!'
-    # переменные: %plugin%, %maxLevel%
-    alreadyMaxLevel: '%plugin% &cВы уже достигли максимального уровня (%maxLevel%).'
+    # переменные: %plugin%
+    alreadyMax: '%plugin% &cВы уже достигли максимального уровня.'
   max:
     # переменные: %plugin%, %maxBalance%
-    balance: '%plugin% &eМаксимальный возможный баланс: &a$%maxBalance%'
+    yourMaxStorage: '%plugin% &eМаксимальный возможный баланс: &a$%maxBalance%'
+    # Переменные: %plugin%, %player%, %maxStorage%
+    playerMaxStorage: '%plugin% &eМаксимальное количество, которое %player% может хранить на текущем уровне: &a$%maxStorage%'
     # переменные: %plugin%, %maxLevel%
     level: '%plugin% &eМаксимальный уровень: &a%maxLevel%'
   profit:

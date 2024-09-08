@@ -44,6 +44,7 @@ messages:
   # 可用内建变量: 无
   help-bank:
     - '&b<-----------------&aMINEBANK 命令&b----------------->'
+    - '&e/bank &7- 打开库存 (1.13+)'
     - '&e/bank help &7- 显示此消息'
     - '&e/bank add <金额> &7- 存入指定金额'
     - '&e/bank add <mid> &7- 存入银行等级的最大余额的一半'
@@ -171,7 +172,9 @@ bank:
     alreadyMax: '%plugin% &c你已到达最大等级.'
   max:
     # 可用内建变量: %plugin%, %maxStorage%
-    maxStorage: '%plugin% &e当前等级可最多在银行存储: &a$%maxStorage%'
+    yourMaxStorage: '%plugin% &e当前等级可最多在银行存储: &a$%maxStorage%'
+    # 变量：%plugin%、%player%、%maxStorage%
+    playerMaxStorage: '%plugin% &e%player% 当前级别可以存储的最大量为：&a$%maxStorage%'
     # 可用内建变量: %plugin%, %maxLevel%
     maxLevel: '%plugin% &a银行最大等级为 &e%maxLevel%.'
   profit:

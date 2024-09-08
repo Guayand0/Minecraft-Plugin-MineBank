@@ -93,7 +93,7 @@ public class ComandoPrincipal implements CommandExecutor {
             } else if (args[0].equalsIgnoreCase("permissions")) {
                 // minebank permissions
                 subCommandPermissions(sender);
-            }else {
+            } else {
                 noArg(sender); // minebank qwewe
             }
         } else {

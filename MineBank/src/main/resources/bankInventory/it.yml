@@ -16,6 +16,7 @@ bank-inventory:
         lore:
           - '&fClicca per &edepositare 500 &fin banca'
         command: 'bank add 500'
+        permission: 'minebank.use'
       12:
         item: EMERALD
         amount: 2
