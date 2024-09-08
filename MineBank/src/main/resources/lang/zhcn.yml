@@ -131,7 +131,6 @@ bank:
     # 可用内建变量: %plugin%
     withdrawFailure: '%plugin% &c输入数量不应小于零且应为整数.'
     withdrawExceeds: '%plugin% &c银行中没有足够的钱可以取出.'
-    interestsWithdrawExceeds: '%plugin% &c利息已存满你的银行.'
   add:
     # 可用内建变量: %plugin%, %amount%
     depositSuccess: '%plugin% &a你向银行中存入了 $%amount%.'

@@ -131,7 +131,6 @@ bank:
     # Variables: %plugin%
     withdrawFailure: '%plugin% &cLe montant doit être positif et un nombre entier.'
     withdrawExceeds: '%plugin% &cVous n`avez pas assez d`argent dans votre banque pour retirer ce montant.'
-    interestsWithdrawExceeds: '%plugin% &cLes intérêts dépassent le montant dans votre banque.'
   add:
     # Variables: %plugin%, %amount%
     depositSuccess: '%plugin% &aVous avez déposé $%amount% dans votre banque.'

@@ -100,7 +100,7 @@ public class ComandoBank implements CommandExecutor {
 
         String action = args[0].toLowerCase();
 
-        if (action.equals("balance") || action.equals("bal")) {
+        if (action.equals("bal") || action.equals("balance")) {
             // Delegar al subcomando
             return subComandoBalance.onCommand(sender, command, label, args);
         } else if (action.equals("add") || action.equals("deposit")) {
@@ -111,7 +111,7 @@ public class ComandoBank implements CommandExecutor {
             return subComandoMax.onCommand(sender, command, label, args);
         } else if (action.equals("top") || action.equals("baltop") || action.equals("balancetop")) {
             return subComandoBalTop.onCommand(sender, command, label, args);
-        } else if (action.equals("level") || action.equals("lvl")) {
+        } else if (action.equals("level")) {
             return subComandoLevel.onCommand(sender, command, label, args);
         } else if (action.equals("levelup")) {
             return subComandoLevelUp.onCommand(sender, command, label, args);

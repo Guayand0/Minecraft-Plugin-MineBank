@@ -50,7 +50,7 @@ public class SubComandoBalance implements CommandExecutor {
         return true;
     }
 
-    private void yourBalance(Player player) {
+    public void yourBalance(Player player) {
         FileConfiguration bankConfig = bankManager.getBank(); // Obtener la configuración actualizada
         String playerPath = "bank." + player.getUniqueId() + "." + player.getName();
         int balance = bankConfig.getInt(playerPath + ".balance", 0);

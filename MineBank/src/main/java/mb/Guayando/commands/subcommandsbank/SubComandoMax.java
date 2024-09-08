@@ -47,7 +47,7 @@ public class SubComandoMax implements CommandExecutor {
             int level = bankConfig.getInt(playerPath + ".level", 1);
             maxStorage = getMaxStorageAmount(level);
             maxStorage(player);
-        } else if (type.equalsIgnoreCase("level") || type.equalsIgnoreCase("lvl")) {
+        } else if (type.equalsIgnoreCase("level")) {
             maxLevel = getMaxBankLevel();
             maxLevelBank(player);
         } else {

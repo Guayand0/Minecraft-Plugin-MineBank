@@ -131,7 +131,6 @@ bank:
     # переменные: %plugin%
     withdrawFailure: '%plugin% &cСумма должна быть положительным целым числом.'
     withdrawExceeds: '%plugin% &cНа банковском счете недостаточно средств для снятия этой суммы.'
-    interestsWithdrawExceeds: '%plugin% &cПроценты не могут превышать баланс на банковском счете.'
   add:
     # переменные: %plugin%, %amount%
     depositSuccess: '%plugin% &aВы внесли $%amount% на банковский счет.'

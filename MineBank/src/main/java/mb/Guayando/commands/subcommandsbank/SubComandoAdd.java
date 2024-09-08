@@ -43,46 +43,40 @@ public class SubComandoAdd implements CommandExecutor {
             String playerPath = "bank." + player.getUniqueId() + "." + player.getName();
             FileConfiguration bankConfig = bankManager.getBank(); // Obtener la configuración del banco
 
+            int playerBalance = (int) economy.getBalance(player);
             int bankBalance = bankConfig.getInt(playerPath + ".balance", 0);
             int level = bankConfig.getInt(playerPath + ".level", 1);
             maxStorage = getMaxStorageAmount(level);
 
-            if (amountString.equalsIgnoreCase("max")) {
-                amount = maxStorage - bankBalance; // Asignar el total restante
-                if (amount <= 0) { // Si ya está en el máximo, no hace nada
-                    balanceExceeds(player);
-                    return true;
+            if (amountString.equalsIgnoreCase("mid") || amountString.equalsIgnoreCase("midmax") || amountString.equalsIgnoreCase("max")) {
+                // Asignar la cantidad basada en el tipo de comando
+                if (amountString.equalsIgnoreCase("mid")) {
+                    amount = bankBalance / 2; // Mitad del balance actual
+                } else if (amountString.equalsIgnoreCase("max")) {
+                    amount = maxStorage - bankBalance; // Espacio restante en el banco
+                } else if (amountString.equalsIgnoreCase("midmax")) {
+                    amount = maxStorage / 2; // Mitad del almacenamiento máximo
                 }
                 // Verificar si el jugador tiene suficiente dinero
-                if (economy.getBalance(player) < amount) {
-                    amount = (int) economy.getBalance(player); // Si no tiene suficiente, usar todo su dinero
-                }
-            } else if (amountString.equalsIgnoreCase("mid")) {
-                amount = maxStorage/2; // Asignar la mitad de la capacidad máxima
-
-                if (amount <= 0) {
-                    balanceExceeds(player);
-                    return true;
-                }
-
-                // Verificar si el jugador tiene suficiente dinero
-                if (economy.getBalance(player) < amount) {
-                    amount = (int) economy.getBalance(player); // Si no tiene suficiente, usar todo su dinero
+                if (playerBalance < amount) {
+                    amount = playerBalance; // Si no tiene suficiente, usar todo su dinero
                 }
             } else {
                 amount = Integer.parseInt(amountString); // Convertir el string a entero
+                // Verificar que la cantidad calculada sea válida
                 if (amount <= 0) {
                     depositFailure(player);
                     return true;
                 }
                 // Verificar si el jugador tiene suficiente dinero
-                if (economy.getBalance(player) < amount) {
+                if (playerBalance < amount) {
                     notEnoughMoneyAdd(player);
                     return true;
                 }
             }
 
-            if ((bankBalance + amount) > maxStorage) {
+            // Verificar si el balance actual más la cantidad a depositar excede el almacenamiento máximo
+            if ((bankBalance + amount) > maxStorage || amount <= 0) {
                 balanceExceeds(player);
                 return true;
             }

@@ -57,69 +57,82 @@ public class BankInventoryEvent implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
 
         // Tarea periódica para actualizar inventarios
-        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            checkConfigChange();
-            for (Player player : updatingPlayers) {
-                if (player.isOnline()) {
-                    updateBankInventory(player);
-                }
-            }
-        }, 0L, 40L); // Cada 2 segundos (40 ticks)
+        Bukkit.getScheduler().runTaskTimer(plugin, this::updateInventories, 0L, 40L); // Cada 2 segundos (40 ticks)
     }
+
+    // Tarea periódica para actualizar inventarios
+    private void updateInventories() {
+        checkConfigChange();
+        for (Player player : updatingPlayers) {
+            if (player.isOnline()) {
+                updateBankInventory(player);
+            }
+        }
+    }
+
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
     // Creacion del inventario
     public void openBankInventory(Player player) {
         bankInventoryManager.reloadInventory();
-
-        // Obtener el nombre del archivo de inventario desde config.yml
-        String inventoryFile = bankInventoryManager.getBankInventoryFile();
-        // Cargar los datos desde el archivo especificado
-        FileConfiguration enConfig = bankInventoryManager.getCustomConfig("bankInventory/" + inventoryFile);
-
+        FileConfiguration enConfig = bankInventoryManager.getCustomConfig("bankInventory/" + bankInventoryManager.getBankInventoryFile());
+        bankInventory = createInventory(enConfig);
+        loadItemsIntoInventory(enConfig, player);
+        fillEmptySlots(enConfig);
+        player.openInventory(bankInventory);
+        playerInventories.put(player, bankInventory);
+        playerInventoryNames.put(player, enConfig.getString("bank-inventory.main.name"));
+        updatingPlayers.add(player);
+    }
+    private Inventory createInventory(FileConfiguration enConfig) {
         int size = enConfig.getInt("bank-inventory.main.size", 6);
         String inventoryName = enConfig.getString("bank-inventory.main.name");
-        bankInventory = Bukkit.createInventory(null, size * 9, MessageUtils.getColoredMessage(inventoryName));
-
-        // Cargar los ítems desde la configuración
+        return Bukkit.createInventory(null, size * 9, MessageUtils.getColoredMessage(inventoryName));
+    }
+    private void loadItemsIntoInventory(FileConfiguration enConfig, Player player) {
         ConfigurationSection positionSlots = enConfig.getConfigurationSection("bank-inventory.main.position-slot");
-
         if (positionSlots != null) {
             for (String slotKey : positionSlots.getKeys(false)) {
-                if (slotKey.equalsIgnoreCase("default")) continue;
-
-                int slot = Integer.parseInt(slotKey);
-                ConfigurationSection itemData = positionSlots.getConfigurationSection(slotKey);
-
-                if (itemData != null) {
-                    String materialName = itemData.getString("item");
-                    Material material = Material.getMaterial(materialName.toUpperCase());
-
-                    int amount = itemData.getInt("amount");
-                    String name = MessageUtils.getColoredMessage(itemData.getString("name"));
-
-                    ItemStack item = new ItemStack(material, amount);
-                    ItemMeta meta = item.getItemMeta();
-                    if (meta != null) {
-                        meta.setDisplayName(name);
-
-                        List<String> lore = itemData.getStringList("lore");
-                        if (!lore.isEmpty()) {
-                            // Reemplazar los placeholders en el lore
-                            List<String> translatedLore = replacePlaceholders(lore, player);
-                            meta.setLore(translatedLore);
-                        }
-                        item.setItemMeta(meta);
+                if (!"default".equalsIgnoreCase(slotKey)) {
+                    int slot = Integer.parseInt(slotKey);
+                    ConfigurationSection itemData = positionSlots.getConfigurationSection(slotKey);
+                    if (itemData != null) {
+                        ItemStack item = createItem(itemData, player);
+                        bankInventory.setItem(slot, item);
                     }
-
-                    addHeadTexture(material, itemData, item);
-
-                    bankInventory.setItem(slot, item);
                 }
             }
         }
-
-        // Cargar el ítem default desde la configuración
+    }
+    private void fillEmptySlots(FileConfiguration enConfig) {
         Map<String, Object> defaultItemConfig = enConfig.getConfigurationSection("bank-inventory.main.position-slot.default").getValues(false);
+        ItemStack defaultItem = createDefaultItem(defaultItemConfig);
+        for (int i = 0; i < bankInventory.getSize(); i++) {
+            if (bankInventory.getItem(i) == null) {
+                bankInventory.setItem(i, defaultItem);
+            }
+        }
+    }
+    private ItemStack createItem(ConfigurationSection itemData, Player player) {
+        String materialName = itemData.getString("item");
+        Material material = Material.getMaterial(materialName.toUpperCase());
+        int amount = itemData.getInt("amount");
+        String name = MessageUtils.getColoredMessage(itemData.getString("name"));
 
+        ItemStack item = new ItemStack(material, amount);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(name);
+            List<String> lore = itemData.getStringList("lore");
+            if (!lore.isEmpty()) {
+                meta.setLore(replacePlaceholders(lore, player));
+            }
+            item.setItemMeta(meta);
+        }
+        addHeadTexture(material, itemData, item);
+        return item;
+    }
+    private ItemStack createDefaultItem(Map<String, Object> defaultItemConfig) {
         String defaultMaterialName = (String) defaultItemConfig.get("item");
         Material defaultMaterial = Material.getMaterial(defaultMaterialName.toUpperCase());
         int defaultAmount = (int) defaultItemConfig.get("amount");
@@ -131,19 +144,12 @@ public class BankInventoryEvent implements Listener {
             defaultMeta.setDisplayName(defaultName);
             defaultItem.setItemMeta(defaultMeta);
         }
-
-        for (int i = 0; i < size * 9; i++) {
-            if (bankInventory.getItem(i) == null) {
-                bankInventory.setItem(i, defaultItem);
-            }
-        }
-
-        player.openInventory(bankInventory);
-        playerInventories.put(player, bankInventory); // Guardar el inventario del jugador
-        playerInventoryNames.put(player, inventoryName); // Guardar el nombre del inventario del jugador
-        updatingPlayers.add(player); // Añadir al conjunto de actualización
+        return defaultItem;
     }
-    // Al cerrarel inventario
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+
+    // Cerrarel inventario
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         Player player = (Player) event.getPlayer();
@@ -156,146 +162,78 @@ public class BankInventoryEvent implements Listener {
             playerInventoryNames.remove(player); // Remover el nombre del inventario del jugador
         }
     }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+
     // Al clicar en el inventario
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
         Inventory clickedInventory = event.getClickedInventory();
-
-        // Verificar si el inventario pertenece al jugador y si el jugador tiene el inventario abierto
         if (clickedInventory != null && playerInventories.containsKey(player) && clickedInventory.equals(playerInventories.get(player))) {
-            checkConfigChange();
-            // Obtener el nombre del archivo de inventario desde config.yml
-            String inventoryFile = bankInventoryManager.getBankInventoryFile();
-            // Cargar los datos desde el archivo especificado
-            FileConfiguration enConfig = bankInventoryManager.getCustomConfig("bankInventory/" + inventoryFile);
-            String expectedInventoryName = enConfig.getString("bank-inventory.main.name");
+            handleInventoryClick(player, event);
+        }
+    }
+    private void handleInventoryClick(Player player, InventoryClickEvent event) {
+        checkConfigChange();
+        FileConfiguration enConfig = bankInventoryManager.getCustomConfig("bankInventory/" + bankInventoryManager.getBankInventoryFile());
+        String expectedInventoryName = enConfig.getString("bank-inventory.main.name");
+        if (!event.getView().getTitle().equals(MessageUtils.getColoredMessage(expectedInventoryName))) {
+            event.setCancelled(true);
+            return;
+        }
 
-            // Verificar si el nombre del inventario es el esperado
-            if (!event.getView().getTitle().equals(MessageUtils.getColoredMessage(expectedInventoryName))) {
-                event.setCancelled(true); // Cancelar la acción si el nombre no es el esperado
-                return;
-            }
-
-            event.setCancelled(true); // Cancelar la acción por defecto
-
-            if (!player.hasMetadata("bank_click_cooldown")) {
-                player.setMetadata("bank_click_cooldown", new FixedMetadataValue(plugin, true));
-
-                int slot = event.getSlot();
-                ConfigurationSection positionSlots = enConfig.getConfigurationSection("bank-inventory.main.position-slot");
-
-                if (positionSlots != null && positionSlots.contains(String.valueOf(slot))) {
-                    ConfigurationSection itemData = positionSlots.getConfigurationSection(String.valueOf(slot));
-                    if (itemData != null) {
-                        String command = itemData.getString("command", "");
-                        // Solo iniciar conversación si el comando contiene <amount>
-                        if (command != null && !command.isEmpty()) {
-                            if (command.contains("<amount>")) {
-                                boolean isWithdraw = command.contains("bank take");
-                                startConversation(player, isWithdraw);
-
-                                if (command.contains("bank add")) {
-                                    startConversation(player, false); // false indica que es una operación de depósito
-                                } else if (command.contains("bank take")) {
-                                    startConversation(player, true); // true indica que es una operación de retiro
-                                } else {
-                                    player.sendMessage(ChatColor.RED + "Ese comando es incorrecto.");
-                                }
-                            } else {
-                                // Ejecutar el comando desde la clase ComandoBank
-                                Bukkit.dispatchCommand(player, command);
-                            }
-                        }
-                    }
+        event.setCancelled(true);
+        if (!player.hasMetadata("bank_click_cooldown")) {
+            player.setMetadata("bank_click_cooldown", new FixedMetadataValue(plugin, true));
+            int slot = event.getSlot();
+            ConfigurationSection positionSlots = enConfig.getConfigurationSection("bank-inventory.main.position-slot");
+            if (positionSlots != null && positionSlots.contains(String.valueOf(slot))) {
+                ConfigurationSection itemData = positionSlots.getConfigurationSection(String.valueOf(slot));
+                if (itemData != null) {
+                    handleItemCommand(player, itemData);
                 }
-
-                // Remover el cooldown después de 5 ticks
-                Bukkit.getScheduler().runTaskLater(plugin, () -> player.removeMetadata("bank_click_cooldown", plugin), 5L);
+            }
+            Bukkit.getScheduler().runTaskLater(plugin, () -> player.removeMetadata("bank_click_cooldown", plugin), 5L);
+        }
+    }
+    private void handleItemCommand(Player player, ConfigurationSection itemData) {
+        String command = itemData.getString("command", "");
+        if (command != null && !command.isEmpty()) {
+            if (command.contains("<amount>")) {
+                boolean isWithdraw = command.contains("bank take");
+                startConversation(player, isWithdraw);
+            } else {
+                Bukkit.dispatchCommand(player, command);
             }
         }
     }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
     // Para actualizar el inventario en directo (variables, texturas)
     private void updateBankInventory(Player player) {
         if (!playerInventories.containsKey(player)) {
             return;
         }
-
         Inventory inventory = playerInventories.get(player);
         if (inventory == null) {
             return;
         }
-
         FileConfiguration enConfig = bankInventoryManager.getCustomConfig("bankInventory/" + bankInventoryManager.getBankInventoryFile());
         String newInventoryName = enConfig.getString("bank-inventory.main.name");
-
-        // Verificar si el nombre del inventario ha cambiado
         if (!newInventoryName.equals(playerInventoryNames.get(player))) {
-            player.closeInventory(); // Cerrar el inventario actual
-            openBankInventory(player); // Reabrir con el nuevo nombre
-            return; // Salir de la función porque el inventario se ha actualizado y reabierto
+            player.closeInventory();
+            openBankInventory(player);
+            return;
         }
-
-        // Resto del código para actualizar el inventario
-        ConfigurationSection positionSlots = enConfig.getConfigurationSection("bank-inventory.main.position-slot");
-
-        if (positionSlots != null) {
-            for (String slotKey : positionSlots.getKeys(false)) {
-                if (slotKey.equalsIgnoreCase("default")) continue;
-
-                int slot = Integer.parseInt(slotKey);
-                ConfigurationSection itemData = positionSlots.getConfigurationSection(slotKey);
-
-                if (itemData != null) {
-                    String materialName = itemData.getString("item");
-                    Material material = Material.getMaterial(materialName.toUpperCase());
-                    int amount = itemData.getInt("amount");
-                    String name = MessageUtils.getColoredMessage(itemData.getString("name"));
-
-                    ItemStack item = new ItemStack(material, amount);
-                    ItemMeta meta = item.getItemMeta();
-                    if (meta != null) {
-                        meta.setDisplayName(name);
-
-                        List<String> lore = itemData.getStringList("lore");
-                        if (!lore.isEmpty()) {
-                            List<String> translatedLore = replacePlaceholders(lore, player);
-                            meta.setLore(translatedLore);
-                        }
-                        item.setItemMeta(meta);
-                    }
-
-                    addHeadTexture(material, itemData, item);
-
-                    inventory.setItem(slot, item);
-                }
-            }
-        }
-
-        // Actualizar ítems default
-        Map<String, Object> defaultItemConfig = enConfig.getConfigurationSection("bank-inventory.main.position-slot.default").getValues(false);
-
-        String defaultMaterialName = (String) defaultItemConfig.get("item");
-        Material defaultMaterial = Material.getMaterial(defaultMaterialName.toUpperCase());
-        int defaultAmount = (int) defaultItemConfig.get("amount");
-        String defaultName = MessageUtils.getColoredMessage((String) defaultItemConfig.get("name"));
-
-        ItemStack defaultItem = new ItemStack(defaultMaterial, defaultAmount);
-        ItemMeta defaultMeta = defaultItem.getItemMeta();
-        if (defaultMeta != null) {
-            defaultMeta.setDisplayName(defaultName);
-            defaultItem.setItemMeta(defaultMeta);
-        }
-
-        for (int i = 0; i < inventory.getSize(); i++) {
-            if (inventory.getItem(i) == null) {
-                inventory.setItem(i, defaultItem);
-            }
-        }
-
+        loadItemsIntoInventory(enConfig, player);
+        fillEmptySlots(enConfig);
         player.updateInventory();
     }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+
     // Comprobar si se cambia el lenguaje del inventario
     private void checkConfigChange() {
         // Recargar el archivo de configuración
@@ -499,7 +437,7 @@ public class BankInventoryEvent implements Listener {
         }
         return updatedLore;
     }
-    // Para reemplazar variables %x<1>%
+    // Para reemplazar variables %xx<1>%
     private String replaceTopPlaceholders(String line) {
         FileConfiguration bankConfig = bankManager.getBank();
         Map<String, Integer> topBalances = new HashMap<>();

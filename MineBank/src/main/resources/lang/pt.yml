@@ -131,7 +131,6 @@ bank:
     # Variáveis: %plugin%
     withdrawFailure: '%plugin% &cA quantia deve ser positiva e um número inteiro.'
     withdrawExceeds: '%plugin% &cVocê não tem dinheiro suficiente no banco para retirar esse valor.'
-    interestsWithdrawExceeds: '%plugin% &cOs juros excedem o valor no seu banco.'
   add:
     # Variáveis: %plugin%, %amount%
     depositSuccess: '%plugin% &aVocê depositou $%amount% no seu banco.'

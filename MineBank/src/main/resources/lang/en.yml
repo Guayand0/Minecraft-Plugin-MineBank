@@ -131,7 +131,6 @@ bank:
     # Variables: %plugin%
     withdrawFailure: '%plugin% &cThe amount must be positive and integer number.'
     withdrawExceeds: '%plugin% &cYou do not have enough money in your bank to withdraw that amount.'
-    interestsWithdrawExceeds: '%plugin% &cThe interest exceed the amount in your bank.'
   add:
     # Variables: %plugin%, %amount%
     depositSuccess: '%plugin% &aYou have deposited $%amount% into your bank.'

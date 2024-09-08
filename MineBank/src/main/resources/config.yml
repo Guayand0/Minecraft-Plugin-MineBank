@@ -34,10 +34,10 @@ config:
   # the .yml file with the translations and the language via github
   # https://github.com/Guayand0/Minecraft-Plugin-MineBank/issues
 
-  # Available default languages: en, es, fr, pt, it, ge, zhcn, ja, ko, ru
-  # English - en.yml    # Português - pt.yml   # 简体中文 - zhcn.yml   # Русский - ru.yml
-  # Español - es.yml    # Italiano - it.yml    # 日本語 - ja.yml
-  # Français - fr.yml   # Deutsch - ge.yml     # 한국인 - ko.yml
+  # Available default languages: en, es, fr, pt, it, ge, ru, ja, ko, zhcn
+  # English - en.yml    # Portuguese - pt.yml   # Russian - ru.yml    # Simplified Chinese - zhcn.yml
+  # Spanish - es.yml    # Italian - it.yml      # Japanese - ja.yml
+  # French - fr.yml     # German - ge.yml       # Korean - ko.yml
   message-language: en
   inventory-language: en
 

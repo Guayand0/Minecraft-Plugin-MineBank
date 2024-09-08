@@ -131,7 +131,6 @@ bank:
     # 変数: %plugin%
     withdrawFailure: '%plugin% &c金額は正の整数でなければなりません。'
     withdrawExceeds: '%plugin% &c銀行にその金額を引き出すだけの十分な残高がありません。'
-    interestsWithdrawExceeds: '%plugin% &c利息が銀行の残高を超えています。'
   add:
     # 変数: %plugin%, %amount%
     depositSuccess: '%plugin% &a$%amount% を銀行に預けました。'

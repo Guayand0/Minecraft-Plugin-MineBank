@@ -58,8 +58,8 @@ public class SubComandoSet implements CommandExecutor {
 
                 if (amountString.equalsIgnoreCase("max")) {
                     amount = maxStorage;
-                } else if(amountString.equalsIgnoreCase("mid")){
-                    amount = maxStorage/2;
+                } else if(amountString.equalsIgnoreCase("midmax")){
+                    amount = maxStorage / 2;
                 } else {
                     amount = Integer.parseInt(amountString);
                 }
@@ -76,14 +76,14 @@ public class SubComandoSet implements CommandExecutor {
             } catch (NumberFormatException e) {
                 depositFailure(player);
             }
-        } else if (type.equalsIgnoreCase("level") || type.equalsIgnoreCase("lvl")) {
+        } else if (type.equalsIgnoreCase("level")) {
             try {
                 maxLevel = getMaxBankLevel();
 
                 if (amountString.equalsIgnoreCase("max")) {
                     level = maxLevel;
-                } else if(amountString.equalsIgnoreCase("mid")){
-                    level = maxLevel/2;
+                } else if(amountString.equalsIgnoreCase("midmax")){
+                    level = maxLevel / 2;
                 } else {
                     level = Integer.parseInt(amountString);
                 }

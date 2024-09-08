@@ -74,9 +74,7 @@ public class MineBank extends JavaPlugin implements Listener {
                 comprobarActualizaciones();
             }
         }.runTask(this); // Ejecuta la tarea en el siguiente tick
-        // Bstats
-        int pluginId = 23185; // <-- Replace with the id of your plugin!
-        Metrics metrics = new Metrics(this, pluginId);
+        Metrics metrics = new Metrics(this, 23185); // Bstats
     }
     @Override
     public void onDisable() {
@@ -88,7 +86,6 @@ public class MineBank extends JavaPlugin implements Listener {
     public void registrarComandos() {
         this.getCommand("minebank").setExecutor(new ComandoPrincipal(this));
         this.getCommand("bank").setExecutor(new ComandoBank(this));
-
         // TabComplete
         this.getCommand("minebank").setTabCompleter(new TabComplete());
         this.getCommand("bank").setTabCompleter(new TabComplete());
@@ -114,11 +111,11 @@ public class MineBank extends JavaPlugin implements Listener {
     public void comprobarActualizaciones() {
         try {
             HttpURLConnection con = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=119147").openConnection();
-            int timed_out = 1250;
+            int timed_out = 1500;
             con.setConnectTimeout(timed_out);
             con.setReadTimeout(timed_out);
             latestversion = new BufferedReader(new InputStreamReader(con.getInputStream())).readLine();
-            if (latestversion.length() <= 10) {
+            if (latestversion.length() <= 8) {
                 if (!version.equals(latestversion)) {
                     Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&bThere is a new version available. &e(&7" + latestversion + "&e)"));
                     Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&bYou can download it at:&f https://www.spigotmc.org/resources/119147/"));

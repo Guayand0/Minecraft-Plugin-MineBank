@@ -23,15 +23,18 @@ public class TabComplete implements TabCompleter {
             }
         } else if (command.getName().equalsIgnoreCase("bank")) {
             if (args.length == 1) {
-                completions.addAll(Arrays.asList("help", "add", "take", "set", "top", "bal", "max", "level", "levelup"));
+                completions.addAll(Arrays.asList("help", "add", "deposit", "take", "withdraw", "set", "top", "baltop", "balancetop", "bal", "balance", "max", "level", "levelup"));
             } else if (args.length == 2) {
                 switch (args[0].toLowerCase()) {
                     case "add":
+                    case "deposit":
                     case "take":
-                        completions.addAll(Arrays.asList("500", "mid", "max"));
+                    case "withdraw":
+                        completions.addAll(Arrays.asList("500", "mid", "max", "midmax"));
                         break;
                     case "set":
                     case "bal":
+                    case "balance":
                     case "level":
                         // Añadir lista de jugadores conectados
                         completions.addAll(Bukkit.getOnlinePlayers().stream()
@@ -39,21 +42,21 @@ public class TabComplete implements TabCompleter {
                                 .collect(Collectors.toList()));
                         break;
                     case "max":
-                        completions.addAll(Arrays.asList("bal", "level"));
+                        completions.addAll(Arrays.asList("balance", "level"));
                         break;
                 }
             } else if (args.length == 3) {
                 if (args[0].equalsIgnoreCase("set")) {
-                    completions.addAll(Arrays.asList("bal", "level"));
+                    completions.addAll(Arrays.asList("balance", "level"));
                 }
             } else if (args.length == 4) {
                 if (args[0].equalsIgnoreCase("set")) {
                     switch (args[2].toLowerCase()) {
-                        case "bal":
-                            completions.addAll(Arrays.asList("500", "mid", "max"));
+                        case "balance":
+                            completions.addAll(Arrays.asList("500", "midmax", "max"));
                             break;
                         case "level":
-                            completions.addAll(Arrays.asList("1", "mid", "max"));
+                            completions.addAll(Arrays.asList("1", "midmax", "max"));
                             break;
                     }
                 }
