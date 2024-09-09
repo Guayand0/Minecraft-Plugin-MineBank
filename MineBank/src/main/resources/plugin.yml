@@ -1,6 +1,6 @@
 main: mb.Guayando.MineBank
 name: MineBank
-version: 3.2.2
+version: 3.2.3
 author: Guayando
 api-version: 1.13
 depend: [Vault]

@@ -115,21 +115,37 @@ public class MineBank extends JavaPlugin implements Listener {
             con.setConnectTimeout(timed_out);
             con.setReadTimeout(timed_out);
             latestversion = new BufferedReader(new InputStreamReader(con.getInputStream())).readLine();
-            if (latestversion.length() <= 8) {
-                if (!version.equals(latestversion)) {
-                    Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&bThere is a new version available. &e(&7" + latestversion + "&e)"));
-                    Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&bYou can download it at:&f https://www.spigotmc.org/resources/119147/"));
-                    updateCheckerWork = true;
-                }
-                else{
-                    Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&aYou are using the last version. &e(&7" + latestversion + "&e)"));
-                }
+
+            if (compareVersions(version, latestversion) < 0) {
+                Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&bThere is a new version available. &e(&7" + latestversion + "&e)"));
+                Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&bYou can download it at:&f https://www.spigotmc.org/resources/119147/"));
+                updateCheckerWork = true;
+            } else {
+                Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&aYou are using the last version. &e(&b" + version + "&e)"));
             }
         } catch (Exception ex) {
             updateCheckerWork = false;
             Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&cError while checking update."));
         }
     }
+
+    // Método para comparar versiones
+    private int compareVersions(String currentVersion, String latestVersion) {
+        String[] currentParts = currentVersion.split("\\.");
+        String[] latestParts = latestVersion.split("\\.");
+
+        for (int i = 0; i < Math.min(currentParts.length, latestParts.length); i++) {
+            int currentPart = Integer.parseInt(currentParts[i]);
+            int latestPart = Integer.parseInt(latestParts[i]);
+            if (latestPart > currentPart) {
+                return -1; // La versión más reciente es mayor
+            } else if (latestPart < currentPart) {
+                return 1; // La versión actual es mayor
+            }
+        }
+        return Integer.compare(latestParts.length, currentParts.length); // Comparar longitud si son iguales hasta el mínimo
+    }
+
     public boolean getUpdateCheckerWork(){
         return updateCheckerWork;
     }
