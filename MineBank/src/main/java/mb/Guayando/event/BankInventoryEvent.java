@@ -314,7 +314,10 @@ public class BankInventoryEvent implements Listener {
     }
     // Para establecer textura a una cabeza dependiendo de la version
     private void addHeadTexture (Material material, ConfigurationSection itemData, ItemStack item){
-        if (beforeVersion(20.2)){
+        // Detectar la versión de Minecraft
+        String version = Bukkit.getVersion();
+        boolean beforeVersion = version.contains("1.20.3") || version.contains("1.20.4") || version.contains("1.20.5") || version.contains("1.20.6") || version.contains("1.21");
+        if (!beforeVersion) {
             if (material == Material.PLAYER_HEAD) {
                 String texture = itemData.getString("texture");
                 if (texture != null && !texture.isEmpty()) {
@@ -329,13 +332,6 @@ public class BankInventoryEvent implements Listener {
                 }
             }
         }
-    }
-    // Comprobar si la version usada es 1.20.2 o anterior
-    private boolean beforeVersion(double version) {
-        String a = Bukkit.getServer().getClass().getPackage().getName();
-        String v = a.substring(a.lastIndexOf('v') + 1);
-        double vNum = Double.parseDouble(v.substring(2, v.lastIndexOf('_')) + "." + v.charAt(v.length() - 1));
-        return vNum <= version;
     }
 
     // Para reemplazar <amount> de un comando

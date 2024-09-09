@@ -83,14 +83,10 @@ public class ComandoBank implements CommandExecutor {
         }
         // Sin argumentos
         if (args.length == 0) {
-            // Si no se pasan argumentos, mostrar el mensaje de uso
-            //bankUsage(sender);
-
             // Detectar la versión de Minecraft
-            //String version = Bukkit.getVersion();
-            //boolean isRecentVersion = version.contains("1.13") || version.contains("1.14") || version.contains("1.15") || version.contains("1.16") || version.contains("1.17") || version.contains("1.18") || version.contains("1.19") || version.contains("1.20") || version.contains("1.21");
-            //if (isRecentVersion) {
-            if (isVersionAtLeast(13.0)) {
+            String version = Bukkit.getVersion();
+            boolean isRecentVersion = version.contains("1.13") || version.contains("1.14") || version.contains("1.15") || version.contains("1.16") || version.contains("1.17") || version.contains("1.18") || version.contains("1.19") || version.contains("1.20") || version.contains("1.21");
+            if (isRecentVersion) {
                 bankInventoryEvent.openBankInventory((Player) sender); // Abrir el inventario del banco si tiene version reciente
             } else {
                 bankUsage(sender);
@@ -128,13 +124,6 @@ public class ComandoBank implements CommandExecutor {
         }
         // Aquí puedes añadir más lógica si el comando es ejecutado por un jugador.
         return true;
-    }
-
-    private boolean isVersionAtLeast(double minVersion) {
-        String versionString = Bukkit.getServer().getClass().getPackage().getName();
-        String version = versionString.substring(versionString.lastIndexOf('v') + 1);
-        double serverVersion = Double.parseDouble(version.substring(2, version.lastIndexOf('_')) + "." + version.charAt(version.length() - 1));
-        return serverVersion >= minVersion;
     }
 
     private void bankDisabled(CommandSender sender){
