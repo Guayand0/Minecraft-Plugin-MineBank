@@ -4,9 +4,11 @@ import mb.Guayando.MineBank;
 import mb.Guayando.config.BankManager;
 import mb.Guayando.config.LanguageManager;
 import mb.Guayando.utils.MessageUtils;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.List;
 
@@ -27,11 +29,15 @@ public class SubComandoHelp implements CommandExecutor {
         languageManager.reloadLanguage();
         bankManager.reloadBank(); // Recargar la configuración del banco
 
+        Player player = (Player) sender;
         // Obtener y mostrar los mensajes de ayuda
         List<String> helpMessages = languageManager.getStringList("messages.help-bank");
 
-        for (String message : helpMessages) {
-            sender.sendMessage(MessageUtils.getColoredMessage(message));
+        if (helpMessages != null) {
+            for (String message : helpMessages) {
+                message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
+                player.sendMessage(MessageUtils.getColoredMessage(message));
+            }
         }
 
         return true;

@@ -4,6 +4,7 @@ import mb.Guayando.MineBank;
 import mb.Guayando.config.BankManager;
 import mb.Guayando.config.LanguageManager;
 import mb.Guayando.utils.MessageUtils;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -31,13 +32,14 @@ public class SubComandoSet implements CommandExecutor {
         languageManager.reloadLanguage();
         bankManager.reloadBank(); // Recargar la configuración del banco
         FileConfiguration bankConfig = bankManager.getBank(); // Obtener la configuración del banco
-        
+
+        Player player = (Player) sender;
+
         if (args.length < 4) {
-            bankSetUsage(sender);
+            bankSetUsage(player);
             return true;
         }
 
-        Player player = (Player) sender;
         targetPlayerName = args[1];
         String type = args[2];
         String amountString = args[3];
@@ -129,7 +131,7 @@ public class SubComandoSet implements CommandExecutor {
                 depositFailure(player);
             }
         } else {
-            bankSetUsage(sender);
+            bankSetUsage(player);
         }
         return true;
     }
@@ -138,6 +140,7 @@ public class SubComandoSet implements CommandExecutor {
         String message = languageManager.getMessage("bank.playerNotFound");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%player%", targetPlayerName);
+            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
             player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }
@@ -146,6 +149,7 @@ public class SubComandoSet implements CommandExecutor {
         String message = languageManager.getMessage("bank.set.depositFailure");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix);
+            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
             player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }
@@ -154,6 +158,7 @@ public class SubComandoSet implements CommandExecutor {
         String message = languageManager.getMessage("bank.set.maxBalance");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%maxStorage%", String.valueOf(maxStorage));
+            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
             player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }
@@ -162,6 +167,7 @@ public class SubComandoSet implements CommandExecutor {
         String message = languageManager.getMessage("bank.set.maxLevel");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%maxLevel%", String.valueOf(maxLevel));
+            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
             player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }
@@ -170,6 +176,7 @@ public class SubComandoSet implements CommandExecutor {
         String message = languageManager.getMessage("bank.set.setBalanceSuccess");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%player%", targetPlayerName).replace("%amount%", String.valueOf(amount));
+            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
             player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }
@@ -178,15 +185,17 @@ public class SubComandoSet implements CommandExecutor {
         String message = languageManager.getMessage("bank.set.setLevelSuccess");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%player%", targetPlayerName).replace("%level%", String.valueOf(level));
+            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
             player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }
 
-    private void bankSetUsage(CommandSender sender) {
+    private void bankSetUsage(Player player) {
         String message = languageManager.getMessage("bank.usage.set");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix);
-            sender.sendMessage(MessageUtils.getColoredMessage(message));
+            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
+            player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }
 

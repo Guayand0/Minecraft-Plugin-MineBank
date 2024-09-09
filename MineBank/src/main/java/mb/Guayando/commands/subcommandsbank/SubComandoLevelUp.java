@@ -4,6 +4,7 @@ import mb.Guayando.MineBank;
 import mb.Guayando.config.BankManager;
 import mb.Guayando.utils.MessageUtils;
 import mb.Guayando.config.LanguageManager;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -82,6 +83,7 @@ public class SubComandoLevelUp implements CommandExecutor {
         String message = languageManager.getMessage("bank.levelup.success");
         if (message != null) {
             message = message.replace("%plugin%", MineBank.prefix).replaceAll("%newLevel%", String.valueOf(level + 1));
+            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
             player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }
@@ -90,6 +92,7 @@ public class SubComandoLevelUp implements CommandExecutor {
         String message = languageManager.getMessage("bank.levelup.notEnoughMoney");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%unlockPrice%", String.valueOf(unlockPrice).replaceAll("%balance%", String.valueOf(bankBalance)));
+            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
             player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }
@@ -98,6 +101,7 @@ public class SubComandoLevelUp implements CommandExecutor {
         String message = languageManager.getMessage("bank.levelup.alreadyMax");
         if (message != null) {
             message = message.replace("%plugin%", MineBank.prefix);
+            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
             player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }
@@ -106,6 +110,7 @@ public class SubComandoLevelUp implements CommandExecutor {
         String message = languageManager.getMessage("bank.levelup.unlockPriceError");
         if (message != null) {
             message = message.replace("%plugin%", MineBank.prefix).replaceAll("%unlockLevel%", String.valueOf(level + 1));
+            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
             player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }

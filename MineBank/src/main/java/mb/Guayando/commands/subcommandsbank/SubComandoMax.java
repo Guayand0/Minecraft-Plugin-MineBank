@@ -4,6 +4,7 @@ import mb.Guayando.MineBank;
 import mb.Guayando.config.BankManager;
 import mb.Guayando.utils.MessageUtils;
 import mb.Guayando.config.LanguageManager;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -36,7 +37,7 @@ public class SubComandoMax implements CommandExecutor {
         Player player = (Player) sender;
 
         if (args.length < 2) {
-            maxUsage(sender);
+            maxUsage(player);
             return true;
         }
 
@@ -45,8 +46,6 @@ public class SubComandoMax implements CommandExecutor {
         FileConfiguration bankConfig = bankManager.getBank(); // Obtener la configuración del banco
 
         if (type.equalsIgnoreCase("bal") || type.equalsIgnoreCase("balance")) {
-            // /bank  max     bal     <player>
-            // /bank  arg[0]  arg[1]  arg[2]
             if (args.length >= 3) {
                 targetPlayerName = args[2];
             } else {
@@ -79,11 +78,12 @@ public class SubComandoMax implements CommandExecutor {
         return true;
     }
 
-    private void maxUsage(CommandSender sender) {
+    private void maxUsage(Player player) {
         String message = languageManager.getMessage("bank.usage.max");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix);
-            sender.sendMessage(MessageUtils.getColoredMessage(message));
+            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
+            player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }
 
@@ -91,6 +91,7 @@ public class SubComandoMax implements CommandExecutor {
         String message = languageManager.getMessage("bank.max.yourMaxStorage");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%maxStorage%", String.valueOf(maxStorage));
+            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
             player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }
@@ -99,6 +100,7 @@ public class SubComandoMax implements CommandExecutor {
         String message = languageManager.getMessage("bank.max.playerMaxStorage");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%player%", targetPlayerName).replaceAll("%maxStorage%", String.valueOf(maxStorage));
+            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
             player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }
@@ -107,6 +109,7 @@ public class SubComandoMax implements CommandExecutor {
         String message = languageManager.getMessage("bank.max.maxLevel");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%maxLevel%", String.valueOf(maxLevel));
+            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
             player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }
@@ -145,10 +148,11 @@ public class SubComandoMax implements CommandExecutor {
 
 
     private void notFoundPlayer(Player player) {
-        String notFoundMessage = languageManager.getMessage("bank.notFoundPlayer");
-        if (notFoundMessage != null) {
-            notFoundMessage = notFoundMessage.replaceAll("%plugin%", MineBank.prefix).replaceAll("%player%", targetPlayerName);
-            player.sendMessage(MessageUtils.getColoredMessage(notFoundMessage));
+        String message = languageManager.getMessage("bank.notFoundPlayer");
+        if (message != null) {
+            message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%player%", targetPlayerName);
+            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
+            player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }
 

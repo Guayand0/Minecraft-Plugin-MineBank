@@ -4,6 +4,7 @@ import mb.Guayando.MineBank;
 import mb.Guayando.config.BankManager;
 import mb.Guayando.utils.MessageUtils;
 import mb.Guayando.config.LanguageManager;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -54,10 +55,11 @@ public class SubComandoBalance implements CommandExecutor {
         FileConfiguration bankConfig = bankManager.getBank(); // Obtener la configuración actualizada
         String playerPath = "bank." + player.getUniqueId() + "." + player.getName();
         int balance = bankConfig.getInt(playerPath + ".balance", 0);
-        String balanceMessage = languageManager.getMessage("bank.bal.yourBalance");
-        if (balanceMessage != null) {
-            balanceMessage = balanceMessage.replaceAll("%plugin%", MineBank.prefix).replaceAll("%balance%", String.valueOf(balance));
-            player.sendMessage(MessageUtils.getColoredMessage(balanceMessage));
+        String message = languageManager.getMessage("bank.bal.yourBalance");
+        if (message != null) {
+            message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%balance%", String.valueOf(balance));
+            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
+            player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }
 
@@ -66,18 +68,20 @@ public class SubComandoBalance implements CommandExecutor {
         String playerPath = "bank." + uuid + "." + targetPlayerName + ".balance";
         int balance = bankConfig.getInt(playerPath, 0);
 
-        String balanceMessage = languageManager.getMessage("bank.bal.playerBalance");
-        if (balanceMessage != null) {
-            balanceMessage = balanceMessage.replaceAll("%plugin%", MineBank.prefix).replaceAll("%player%", targetPlayerName).replaceAll("%balance%", String.valueOf(balance));
-            player.sendMessage(MessageUtils.getColoredMessage(balanceMessage));
+        String message = languageManager.getMessage("bank.bal.playerBalance");
+        if (message != null) {
+            message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%player%", targetPlayerName).replaceAll("%balance%", String.valueOf(balance));
+            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
+            player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }
 
     private void notFoundPlayer(Player player) {
-        String notFoundMessage = languageManager.getMessage("bank.notFoundPlayer");
-        if (notFoundMessage != null) {
-            notFoundMessage = notFoundMessage.replaceAll("%plugin%", MineBank.prefix).replaceAll("%player%", targetPlayerName);
-            player.sendMessage(MessageUtils.getColoredMessage(notFoundMessage));
+        String message = languageManager.getMessage("bank.notFoundPlayer");
+        if (message != null) {
+            message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%player%", targetPlayerName);
+            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
+            player.sendMessage(MessageUtils.getColoredMessage(message));
         }
     }
 

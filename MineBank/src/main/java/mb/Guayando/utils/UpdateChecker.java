@@ -1,6 +1,7 @@
 package mb.Guayando.utils;
 
 import mb.Guayando.config.LanguageManager;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -32,6 +33,7 @@ public class UpdateChecker implements Listener{
                     String mensaje = languageManager.getMessage("config.update-checker");
                     if (mensaje != null) {
                         mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix).replaceAll("%version%", plugin.getVersion()).replaceAll("%latestversion%", plugin.getLatestVersion()).replaceAll("%link%", "https://www.spigotmc.org/resources/119147/");
+                        mensaje = PlaceholderAPI.setPlaceholders(jugador, mensaje); // Procesar placeholders de PlaceholderAPI
                         jugador.sendMessage(ChatColor.translateAlternateColorCodes('&', mensaje));
                     }
                 }

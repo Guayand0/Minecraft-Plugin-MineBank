@@ -9,6 +9,7 @@ import mb.Guayando.config.BankInventoryManager;
 import mb.Guayando.config.BankManager;
 import mb.Guayando.config.LanguageManager;
 import mb.Guayando.utils.MessageUtils;
+import me.clip.placeholderapi.PlaceholderAPI;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -81,17 +82,20 @@ public class BankInventoryEvent implements Listener {
     public void openBankInventory(Player player) {
         bankInventoryManager.reloadInventory();
         FileConfiguration enConfig = bankInventoryManager.getCustomConfig("bankInventory/" + bankInventoryManager.getBankInventoryFile());
-        bankInventory = createInventory(enConfig);
+        bankInventory = createInventory(enConfig, player);
         loadItemsIntoInventory(enConfig, player);
         fillEmptySlots(enConfig);
         player.openInventory(bankInventory);
         playerInventories.put(player, bankInventory);
-        playerInventoryNames.put(player, enConfig.getString("bank-inventory.main.name"));
+        String invName = enConfig.getString("bank-inventory.main.name");
+        invName = PlaceholderAPI.setPlaceholders(player, invName); // Procesar placeholders de PlaceholderAPI
+        playerInventoryNames.put(player, invName);
         updatingPlayers.add(player);
     }
-    private Inventory createInventory(FileConfiguration enConfig) {
+    private Inventory createInventory(FileConfiguration enConfig, Player player) {
         int size = enConfig.getInt("bank-inventory.main.size", 6);
         String inventoryName = enConfig.getString("bank-inventory.main.name");
+        inventoryName = PlaceholderAPI.setPlaceholders(player, inventoryName); // Procesar placeholders de PlaceholderAPI
         return Bukkit.createInventory(null, size * 9, MessageUtils.getColoredMessage(inventoryName));
     }
     private void loadItemsIntoInventory(FileConfiguration enConfig, Player player) {
@@ -123,7 +127,7 @@ public class BankInventoryEvent implements Listener {
         Material material = Material.getMaterial(materialName.toUpperCase());
         int amount = itemData.getInt("amount");
         String name = MessageUtils.getColoredMessage(itemData.getString("name"));
-
+        name = PlaceholderAPI.setPlaceholders(player, name); // Procesar placeholders de PlaceholderAPI
         ItemStack item = new ItemStack(material, amount);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
@@ -183,6 +187,7 @@ public class BankInventoryEvent implements Listener {
         checkConfigChange();
         FileConfiguration enConfig = bankInventoryManager.getCustomConfig("bankInventory/" + bankInventoryManager.getBankInventoryFile());
         String expectedInventoryName = enConfig.getString("bank-inventory.main.name");
+        expectedInventoryName = PlaceholderAPI.setPlaceholders(player, expectedInventoryName); // Procesar placeholders de PlaceholderAPI
         if (!event.getView().getTitle().equals(MessageUtils.getColoredMessage(expectedInventoryName))) {
             event.setCancelled(true);
             return;
@@ -235,6 +240,7 @@ public class BankInventoryEvent implements Listener {
         }
         FileConfiguration enConfig = bankInventoryManager.getCustomConfig("bankInventory/" + bankInventoryManager.getBankInventoryFile());
         String newInventoryName = enConfig.getString("bank-inventory.main.name");
+        newInventoryName = PlaceholderAPI.setPlaceholders(player, newInventoryName); // Procesar placeholders de PlaceholderAPI
         if (!newInventoryName.equals(playerInventoryNames.get(player))) {
             player.closeInventory();
             openBankInventory(player);
@@ -441,6 +447,7 @@ public class BankInventoryEvent implements Listener {
 
             // Reemplazar placeholders dinámicos como %playerName<1>%
             line = replaceTopPlaceholders(MessageUtils.getColoredMessage(line));
+            line = PlaceholderAPI.setPlaceholders(player, line); // Procesar placeholders de PlaceholderAPI
 
             updatedLore.add(MessageUtils.getColoredMessage(line));
         }
@@ -569,11 +576,12 @@ public class BankInventoryEvent implements Listener {
         return -1; // Si no está en el top
     }
 
-    private void noPerm(CommandSender sender){
+    private void noPerm(Player player){
         String mensaje = languageManager.getMessage("messages.no-perm");
         if (mensaje != null) {
             mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix);
-            sender.sendMessage(MessageUtils.getColoredMessage(mensaje));
+            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
+            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
         }
     }
 }

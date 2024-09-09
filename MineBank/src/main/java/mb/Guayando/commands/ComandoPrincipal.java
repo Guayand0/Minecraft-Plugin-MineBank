@@ -2,6 +2,7 @@ package mb.Guayando.commands;
 
 import mb.Guayando.config.BankManager;
 import mb.Guayando.config.LanguageManager;
+import me.clip.placeholderapi.PlaceholderAPI;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -48,7 +49,8 @@ public class ComandoPrincipal implements CommandExecutor {
         plugin.reloadConfig();
         updateConfig();
 
-        if (!(sender instanceof Player)) {
+        Player player = (Player) sender;
+        if (!(player instanceof Player)) {
             // Consola
             if (args.length >= 1) {
                 if (args[0].equalsIgnoreCase("reload")) {
@@ -63,53 +65,56 @@ public class ComandoPrincipal implements CommandExecutor {
                     return true;
                 }
 
-                consoleError(sender); // messages.console-error
+                consoleError(player); // messages.console-error
                 return true;
             }
-            consoleError(sender); // messages.console-error
+            consoleError(player); // messages.console-error
             return true;
         }
-        if (!sender.hasPermission("minebank.admin")) {
-            noPerm(sender);
+        if (!player.hasPermission("minebank.admin")) {
+            noPerm(player);
             return true;
         }
         // /minebank args[0] args[1] args[2]
         if (args.length >= 1) {
             if (args[0].equalsIgnoreCase("reload")) {
                 // minebank reload
-                subCommandReload(sender);
+                subCommandReload(player);
             } else if (args[0].equalsIgnoreCase("help")) {
                 // minebank help
-                help(sender);
+                help(player);
             } else if (args[0].equalsIgnoreCase("version")) {
                 // minebank version
-                subCommandVersion(sender);
+                subCommandVersion(player);
             } else if (args[0].equalsIgnoreCase("author")) {
                 // minebank author
-                subCommandAutor(sender);
+                subCommandAutor(player);
             }else if (args[0].equalsIgnoreCase("plugin")) {
                 // minebank plugin
-                subCommandPlugin(sender);
+                subCommandPlugin(player);
             } else if (args[0].equalsIgnoreCase("permissions")) {
                 // minebank permissions
-                subCommandPermissions(sender);
+                subCommandPermissions(player);
             } else {
-                noArg(sender); // minebank qwewe
+                noArg(player); // minebank qwewe
             }
         } else {
-            noArg(sender); // minebank
+            noArg(player); // minebank
         }
         return true;
     }
 
-    public void help(CommandSender sender) {
+    public void help(Player player) {
         List<String> helpMessages = languageManager.getStringList("messages.help");
-        for(String m : helpMessages){
-            sender.sendMessage(MessageUtils.getColoredMessage(m));
+        if (helpMessages != null) {
+            for(String m : helpMessages){
+                m = PlaceholderAPI.setPlaceholders(player, m); // Procesar placeholders de PlaceholderAPI
+                player.sendMessage(MessageUtils.getColoredMessage(m));
+            }
         }
     }
 
-    public void subCommandReload(CommandSender sender) {
+    public void subCommandReload(Player player) {
         languageManager.reloadLanguage();
         bankManager.reloadBank(); // Recargar la configuración del banco
         plugin.reloadConfig();
@@ -120,57 +125,67 @@ public class ComandoPrincipal implements CommandExecutor {
         String mensaje = languageManager.getMessage("messages.reload");
         if (mensaje != null) {
             mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix);
-            sender.sendMessage(MessageUtils.getColoredMessage(mensaje));
+            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
+            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
         }
     }
 
-    public void subCommandVersion(CommandSender sender) {
+    public void subCommandVersion(Player player) {
         String mensaje = languageManager.getMessage("messages.version");
         if (mensaje != null) {
             mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix).replaceAll("%version%", plugin.version).replaceAll("%latestversion%", plugin.getLatestVersion());
-            sender.sendMessage(MessageUtils.getColoredMessage(mensaje));
+            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
+            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
         }
     }
 
-    public void subCommandAutor(CommandSender sender) {
+    public void subCommandAutor(Player player) {
         String mensaje = languageManager.getMessage("messages.author");
         if (mensaje != null) {
             mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix).replaceAll("%author%", plugin.getDescription().getAuthors().toString());
-            sender.sendMessage(MessageUtils.getColoredMessage(mensaje));
+            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
+            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
         }
     }
 
-    public void subCommandPlugin(CommandSender sender){
+    public void subCommandPlugin(Player player){
         String mensaje = "%plugin% &7https://www.spigotmc.org/resources/119147/".replaceAll("%plugin%", MineBank.prefix);
-        sender.sendMessage(MessageUtils.getColoredMessage(mensaje));
+        mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
+        player.sendMessage(MessageUtils.getColoredMessage(mensaje));
     }
 
-    public void subCommandPermissions(CommandSender sender){
+    public void subCommandPermissions(Player player){
         List<String> permMessages = languageManager.getStringList("messages.permissions");
-        for(String m : permMessages){
-            sender.sendMessage(MessageUtils.getColoredMessage(m));
+        if (permMessages != null) {
+            for(String m : permMessages){
+                m = PlaceholderAPI.setPlaceholders(player, m); // Procesar placeholders de PlaceholderAPI
+                player.sendMessage(MessageUtils.getColoredMessage(m));
+            }
         }
     }
 
-    public void noPerm(CommandSender sender){
+    public void noPerm(Player player){
         String mensaje = languageManager.getMessage("messages.no-perm");
         if (mensaje != null) {
             mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix);
-            sender.sendMessage(MessageUtils.getColoredMessage(mensaje));
+            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
+            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
         }
     }
-    public void noArg(CommandSender sender){
+    public void noArg(Player player){
         String mensaje = languageManager.getMessage("messages.command-no-argument");
         if (mensaje != null) {
             mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix);
-            sender.sendMessage(MessageUtils.getColoredMessage(mensaje));
+            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
+            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
         }
     }
-    public void consoleError(CommandSender sender){
+    public void consoleError(Player player){
         String mensaje = languageManager.getMessage("messages.console-error");
         if (mensaje != null) {
             mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix);
-            sender.sendMessage(MessageUtils.getColoredMessage(mensaje));
+            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
+            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
         }
     }
 }

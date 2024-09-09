@@ -1,10 +1,10 @@
 main: mb.Guayando.MineBank
 name: MineBank
-version: 3.2.3
+version: 3.3.1
 author: Guayando
 api-version: 1.13
 depend: [Vault]
-# softdepend: [PlaceholderAPI]
+softdepend: [PlaceholderAPI]
 description: Un plugin que añade un banco de dinero.
 
 commands:

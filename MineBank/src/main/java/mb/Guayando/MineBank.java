@@ -51,11 +51,14 @@ public class MineBank extends JavaPlugin implements Listener {
         if (setupEconomy()) {
             Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&aVault found and linked successfully."));
         }
-        Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage("&9<------------------------------------>"));
         // Crear variables PlaceholderAPI
-        /*if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            new PlaceholderAPIBank(this).register();
-        }*/
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&bPlaceholderAPI activated."));
+            // Aquí puedes registrar tus placeholders
+            //new PlaceholderAPIBank(this).register();
+        }
+        Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage("&9<------------------------------------>"));
+
         saveDefaultConfig();
         this.configManager = new MainConfigManager(this);
         this.languageManager = new LanguageManager(this);
@@ -108,6 +111,7 @@ public class MineBank extends JavaPlugin implements Listener {
         return bankInventoryManager;
     }
 
+    // Método para comprobar ultima version
     public void comprobarActualizaciones() {
         try {
             HttpURLConnection con = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=119147").openConnection();
@@ -117,18 +121,17 @@ public class MineBank extends JavaPlugin implements Listener {
             latestversion = new BufferedReader(new InputStreamReader(con.getInputStream())).readLine();
 
             if (compareVersions(version, latestversion) < 0) {
-                Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&bThere is a new version available. &e(&7" + latestversion + "&e)"));
+                Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&bThere is a new version available. &f(&7" + latestversion + "&f)"));
                 Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&bYou can download it at:&f https://www.spigotmc.org/resources/119147/"));
                 updateCheckerWork = true;
             } else {
-                Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&aYou are using the last version. &e(&b" + version + "&e)"));
+                Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&aYou are using the last version. &f(&b" + version + "&f)"));
             }
         } catch (Exception ex) {
             updateCheckerWork = false;
             Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&cError while checking update."));
         }
     }
-
     // Método para comparar versiones
     private int compareVersions(String currentVersion, String latestVersion) {
         String[] currentParts = currentVersion.split("\\.");

@@ -4,6 +4,7 @@ import mb.Guayando.MineBank;
 import mb.Guayando.config.BankManager;
 import mb.Guayando.utils.MessageUtils;
 import mb.Guayando.config.LanguageManager;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -54,7 +55,11 @@ public class SubComandoBalTop implements CommandExecutor {
         for (int i = 0; i < Math.min(10, sortedList.size()); i++) {
             Map.Entry<String, Integer> entry = sortedList.get(i);
             String baltop = languageManager.getMessage("bank.top.entry");
-            player.sendMessage(MessageUtils.getColoredMessage(baltop.replace("%plugin%", MineBank.prefix).replace("%position%", String.valueOf(i + 1)).replace("%player%", entry.getKey()).replace("%balance%", String.valueOf(entry.getValue()))));
+            if (baltop != null) {
+                baltop = baltop.replace("%plugin%", MineBank.prefix).replace("%position%", String.valueOf(i + 1)).replace("%player%", entry.getKey()).replace("%balance%", String.valueOf(entry.getValue()));
+                baltop = PlaceholderAPI.setPlaceholders(player, baltop); // Procesar placeholders de PlaceholderAPI
+                player.sendMessage(MessageUtils.getColoredMessage(baltop));
+            }
         }
 
         return true;
@@ -63,7 +68,9 @@ public class SubComandoBalTop implements CommandExecutor {
     private void title(Player player) {
         String title = languageManager.getMessage("bank.top.title");
         if (title != null) {
-            player.sendMessage(MessageUtils.getColoredMessage(title.replace("%plugin%", MineBank.prefix)));
+            title = title.replace("%plugin%", MineBank.prefix);
+            title = PlaceholderAPI.setPlaceholders(player, title); // Procesar placeholders de PlaceholderAPI
+            player.sendMessage(MessageUtils.getColoredMessage(title));
         }
     }
 }

@@ -11,6 +11,7 @@ import mb.Guayando.event.BankInventoryEvent;
 import mb.Guayando.config.BankManager;
 import mb.Guayando.utils.MessageUtils;
 import mb.Guayando.config.LanguageManager;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -66,19 +67,19 @@ public class ComandoBank implements CommandExecutor {
 
         // Obtener el valor actualizado del booleano
         boolean bankUse = plugin.getConfig().getBoolean("config.bank-use");
-
+        Player player = (Player) sender;
         if (!bankUse) {
-            bankDisabled(sender);
+            bankDisabled(player);
             return true;
         }
 
-        if (!sender.hasPermission("minebank.use") && !sender.hasPermission("minebank.admin")) {
-            noPerm(sender);
+        if (!player.hasPermission("minebank.use") && !player.hasPermission("minebank.admin")) {
+            noPerm(player);
             return true;
         }
 
-        if (!(sender instanceof Player)) {
-            notPlayer(sender);
+        if (!(player instanceof Player)) {
+            notPlayer(player);
             return true;
         }
         // Sin argumentos
@@ -87,9 +88,9 @@ public class ComandoBank implements CommandExecutor {
             String version = Bukkit.getVersion();
             boolean isRecentVersion = version.contains("1.13") || version.contains("1.14") || version.contains("1.15") || version.contains("1.16") || version.contains("1.17") || version.contains("1.18") || version.contains("1.19") || version.contains("1.20") || version.contains("1.21");
             if (isRecentVersion) {
-                bankInventoryEvent.openBankInventory((Player) sender); // Abrir el inventario del banco si tiene version reciente
+                bankInventoryEvent.openBankInventory(player); // Abrir el inventario del banco si tiene version reciente
             } else {
-                bankUsage(sender);
+                bankUsage(player);
             }
             return true;
         }
@@ -98,60 +99,64 @@ public class ComandoBank implements CommandExecutor {
 
         if (action.equals("bal") || action.equals("balance")) {
             // Delegar al subcomando
-            return subComandoBalance.onCommand(sender, command, label, args);
+            return subComandoBalance.onCommand(player, command, label, args);
         } else if (action.equals("add") || action.equals("deposit")) {
-            return subComandoAdd.onCommand(sender, command, label, args);
+            return subComandoAdd.onCommand(player, command, label, args);
         } else if (action.equals("take") || action.equals("withdraw")) {
-            return subComandoTake.onCommand(sender, command, label, args);
+            return subComandoTake.onCommand(player, command, label, args);
         } else if (action.equals("max")) {
-            return subComandoMax.onCommand(sender, command, label, args);
+            return subComandoMax.onCommand(player, command, label, args);
         } else if (action.equals("top") || action.equals("baltop") || action.equals("balancetop")) {
-            return subComandoBalTop.onCommand(sender, command, label, args);
+            return subComandoBalTop.onCommand(player, command, label, args);
         } else if (action.equals("level")) {
-            return subComandoLevel.onCommand(sender, command, label, args);
+            return subComandoLevel.onCommand(player, command, label, args);
         } else if (action.equals("levelup")) {
-            return subComandoLevelUp.onCommand(sender, command, label, args);
+            return subComandoLevelUp.onCommand(player, command, label, args);
         } else if (action.equals("set")) {
-            if (!sender.hasPermission("minebank.admin")) {
-                noPerm(sender);
+            if (!player.hasPermission("minebank.admin")) {
+                noPerm(player);
                 return true;
             }
-            return subComandoSet.onCommand(sender, command, label, args);
+            return subComandoSet.onCommand(player, command, label, args);
         } else if (action.equals("help")) {
-            return subComandoHelp.onCommand(sender, command, label, args);
+            return subComandoHelp.onCommand(player, command, label, args);
         } else {
-            bankUsage(sender);
+            bankUsage(player);
         }
         // Aquí puedes añadir más lógica si el comando es ejecutado por un jugador.
         return true;
     }
 
-    private void bankDisabled(CommandSender sender){
+    private void bankDisabled(Player player){
         String mensaje = languageManager.getMessage("config.bank-disabled");
         if (mensaje != null) {
             mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix);
-            sender.sendMessage(MessageUtils.getColoredMessage(mensaje));
+            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
+            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
         }
     }
-    public void bankUsage(CommandSender sender){
+    public void bankUsage(Player player){
         String mensaje = languageManager.getMessage("bank.usage.bank");
         if (mensaje != null) {
             mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix);
-            sender.sendMessage(MessageUtils.getColoredMessage(mensaje));
+            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
+            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
         }
     }
-    private void notPlayer(CommandSender sender) {
+    private void notPlayer(Player player) {
         String mensaje = languageManager.getMessage("bank.notPlayer");
         if (mensaje != null) {
             mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix);
-            sender.sendMessage(MessageUtils.getColoredMessage(mensaje));
+            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
+            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
         }
     }
-    private void noPerm(CommandSender sender){
+    private void noPerm(Player player){
         String mensaje = languageManager.getMessage("messages.no-perm");
         if (mensaje != null) {
             mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix);
-            sender.sendMessage(MessageUtils.getColoredMessage(mensaje));
+            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
+            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
         }
     }
 }
