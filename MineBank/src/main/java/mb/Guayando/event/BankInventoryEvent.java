@@ -187,7 +187,7 @@ public class BankInventoryEvent implements Listener {
         checkConfigChange();
         FileConfiguration enConfig = bankInventoryManager.getCustomConfig("bankInventory/" + bankInventoryManager.getBankInventoryFile());
         String expectedInventoryName = enConfig.getString("bank-inventory.main.name");
-        expectedInventoryName = PlaceholderAPI.setPlaceholders(player, expectedInventoryName); // Procesar placeholders de PlaceholderAPI
+        expectedInventoryName = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, expectedInventoryName); // Procesar placeholders de PlaceholderAPI
         if (!event.getView().getTitle().equals(MessageUtils.getColoredMessage(expectedInventoryName))) {
             event.setCancelled(true);
             return;
@@ -240,7 +240,7 @@ public class BankInventoryEvent implements Listener {
         }
         FileConfiguration enConfig = bankInventoryManager.getCustomConfig("bankInventory/" + bankInventoryManager.getBankInventoryFile());
         String newInventoryName = enConfig.getString("bank-inventory.main.name");
-        newInventoryName = PlaceholderAPI.setPlaceholders(player, newInventoryName); // Procesar placeholders de PlaceholderAPI
+        newInventoryName = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, newInventoryName); // Procesar placeholders de PlaceholderAPI
         if (!newInventoryName.equals(playerInventoryNames.get(player))) {
             player.closeInventory();
             openBankInventory(player);
@@ -447,7 +447,7 @@ public class BankInventoryEvent implements Listener {
 
             // Reemplazar placeholders dinámicos como %playerName<1>%
             line = replaceTopPlaceholders(MessageUtils.getColoredMessage(line));
-            line = PlaceholderAPI.setPlaceholders(player, line); // Procesar placeholders de PlaceholderAPI
+            line = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, line); // Procesar placeholders de PlaceholderAPI
 
             updatedLore.add(MessageUtils.getColoredMessage(line));
         }
@@ -577,11 +577,10 @@ public class BankInventoryEvent implements Listener {
     }
 
     private void noPerm(Player player){
-        String mensaje = languageManager.getMessage("messages.no-perm");
-        if (mensaje != null) {
-            mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix);
-            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
+        String message = languageManager.getMessage("messages.no-perm");
+        if (message != null) {
+            message = message.replaceAll("%plugin%", MineBank.prefix);
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 }

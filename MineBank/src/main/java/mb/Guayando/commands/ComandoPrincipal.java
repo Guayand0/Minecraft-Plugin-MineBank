@@ -122,36 +122,32 @@ public class ComandoPrincipal implements CommandExecutor {
         // Reiniciar la tarea del banco después de recargar la configuración
         plugin.scheduleBankTask();
 
-        String mensaje = languageManager.getMessage("messages.reload");
-        if (mensaje != null) {
-            mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix);
-            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
+        String message = languageManager.getMessage("messages.reload");
+        if (message != null) {
+            message = message.replaceAll("%plugin%", MineBank.prefix);
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
     public void subCommandVersion(Player player) {
-        String mensaje = languageManager.getMessage("messages.version");
-        if (mensaje != null) {
-            mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix).replaceAll("%version%", plugin.version).replaceAll("%latestversion%", plugin.getLatestVersion());
-            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
+        String message = languageManager.getMessage("messages.version");
+        if (message != null) {
+            message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%version%", plugin.version).replaceAll("%latestversion%", plugin.getLatestVersion());
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
     public void subCommandAutor(Player player) {
-        String mensaje = languageManager.getMessage("messages.author");
-        if (mensaje != null) {
-            mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix).replaceAll("%author%", plugin.getDescription().getAuthors().toString());
-            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
+        String message = languageManager.getMessage("messages.author");
+        if (message != null) {
+            message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%author%", plugin.getDescription().getAuthors().toString());
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
     public void subCommandPlugin(Player player){
-        String mensaje = "%plugin% &7https://www.spigotmc.org/resources/119147/".replaceAll("%plugin%", MineBank.prefix);
-        mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
-        player.sendMessage(MessageUtils.getColoredMessage(mensaje));
+        String message = "%plugin% &7https://www.spigotmc.org/resources/119147/".replaceAll("%plugin%", MineBank.prefix);
+        player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
     }
 
     public void subCommandPermissions(Player player){
@@ -165,27 +161,24 @@ public class ComandoPrincipal implements CommandExecutor {
     }
 
     public void noPerm(Player player){
-        String mensaje = languageManager.getMessage("messages.no-perm");
-        if (mensaje != null) {
-            mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix);
-            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
+        String message = languageManager.getMessage("messages.no-perm");
+        if (message != null) {
+            message = message.replaceAll("%plugin%", MineBank.prefix);
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
     public void noArg(Player player){
-        String mensaje = languageManager.getMessage("messages.command-no-argument");
-        if (mensaje != null) {
-            mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix);
-            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
+        String message = languageManager.getMessage("messages.command-no-argument");
+        if (message != null) {
+            message = message.replaceAll("%plugin%", MineBank.prefix);
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
     public void consoleError(Player player){
-        String mensaje = languageManager.getMessage("messages.console-error");
-        if (mensaje != null) {
-            mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix);
-            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
+        String message = languageManager.getMessage("messages.console-error");
+        if (message != null) {
+            message = message.replaceAll("%plugin%", MineBank.prefix);
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 }

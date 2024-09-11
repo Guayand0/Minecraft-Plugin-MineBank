@@ -2,6 +2,7 @@ package mb.Guayando.utils;
 
 import mb.Guayando.config.LanguageManager;
 import me.clip.placeholderapi.PlaceholderAPI;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,29 +18,29 @@ public class UpdateChecker implements Listener{
     @EventHandler
     public void CheckUpdate(PlayerJoinEvent event) {
         try{
-            Player jugador = event.getPlayer();
+            Player player = event.getPlayer();
             boolean updateChecker = plugin.getConfig().getBoolean("config.update-checker");
             boolean isOutdatedVersion = !(plugin.getVersion().equals(plugin.getLatestVersion()));
             boolean updateCheckerWork = plugin.getUpdateCheckerWork();
 
             // Verificar si el mensaje de actualización debe enviarse
             if (updateChecker && isOutdatedVersion) {
-                if (jugador.isOp() || jugador.hasPermission("minebank.updatechecker") || jugador.hasPermission("minebank.admin")) {
+                if (player.isOp() || player.hasPermission("minebank.updatechecker") || player.hasPermission("minebank.admin")) {
                     LanguageManager languageManager = plugin.getLanguageManager();
                     languageManager.reloadLanguage(); // Recargar el archivo de idioma
                     if(!updateCheckerWork){
                         plugin.comprobarActualizaciones();
                     }
-                    String mensaje = languageManager.getMessage("config.update-checker");
-                    if (mensaje != null) {
-                        mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix).replaceAll("%version%", plugin.getVersion()).replaceAll("%latestversion%", plugin.getLatestVersion()).replaceAll("%link%", "https://www.spigotmc.org/resources/119147/");
-                        mensaje = PlaceholderAPI.setPlaceholders(jugador, mensaje); // Procesar placeholders de PlaceholderAPI
-                        jugador.sendMessage(ChatColor.translateAlternateColorCodes('&', mensaje));
+                    String message = languageManager.getMessage("config.update-checker");
+                    if (message != null) {
+                        message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%version%", plugin.getVersion()).replaceAll("%latestversion%", plugin.getLatestVersion()).replaceAll("%link%", "https://www.spigotmc.org/resources/119147/");
+                        player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
                     }
                 }
             }
         }catch (NullPointerException e){
-            //plugin.getLogger().warning(MessageUtils.getColoredMessage("[CustomDrop] &7NullPointerException, PlayerJoinEvent, UpdateChecker"));
+            Bukkit.getConsoleSender().sendMessage(e.getMessage());
+            e.printStackTrace();
         }
     }
 }

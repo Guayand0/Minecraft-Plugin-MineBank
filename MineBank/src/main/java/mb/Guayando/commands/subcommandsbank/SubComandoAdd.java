@@ -99,8 +99,7 @@ public class SubComandoAdd implements CommandExecutor {
         String message = languageManager.getMessage("bank.usage.add");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix);
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
@@ -108,8 +107,7 @@ public class SubComandoAdd implements CommandExecutor {
         String message = languageManager.getMessage("bank.add.balanceExceeds");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%maxStorage%", String.valueOf(maxStorage));
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
@@ -117,8 +115,7 @@ public class SubComandoAdd implements CommandExecutor {
         String message = languageManager.getMessage("bank.add.depositFailure");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix);
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
@@ -126,8 +123,7 @@ public class SubComandoAdd implements CommandExecutor {
         String message = languageManager.getMessage("bank.add.notEnoughMoney");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix);
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
@@ -135,8 +131,7 @@ public class SubComandoAdd implements CommandExecutor {
         String message = languageManager.getMessage("bank.add.depositSuccess");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%amount%", String.valueOf(amount));
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 

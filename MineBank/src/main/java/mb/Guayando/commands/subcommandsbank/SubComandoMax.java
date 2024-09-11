@@ -82,8 +82,7 @@ public class SubComandoMax implements CommandExecutor {
         String message = languageManager.getMessage("bank.usage.max");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix);
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
@@ -91,8 +90,7 @@ public class SubComandoMax implements CommandExecutor {
         String message = languageManager.getMessage("bank.max.yourMaxStorage");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%maxStorage%", String.valueOf(maxStorage));
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
@@ -100,8 +98,7 @@ public class SubComandoMax implements CommandExecutor {
         String message = languageManager.getMessage("bank.max.playerMaxStorage");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%player%", targetPlayerName).replaceAll("%maxStorage%", String.valueOf(maxStorage));
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
@@ -109,8 +106,7 @@ public class SubComandoMax implements CommandExecutor {
         String message = languageManager.getMessage("bank.max.maxLevel");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%maxLevel%", String.valueOf(maxLevel));
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
@@ -151,8 +147,7 @@ public class SubComandoMax implements CommandExecutor {
         String message = languageManager.getMessage("bank.notFoundPlayer");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%player%", targetPlayerName);
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 

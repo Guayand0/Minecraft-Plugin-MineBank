@@ -57,8 +57,7 @@ public class SubComandoBalTop implements CommandExecutor {
             String baltop = languageManager.getMessage("bank.top.entry");
             if (baltop != null) {
                 baltop = baltop.replace("%plugin%", MineBank.prefix).replace("%position%", String.valueOf(i + 1)).replace("%player%", entry.getKey()).replace("%balance%", String.valueOf(entry.getValue()));
-                baltop = PlaceholderAPI.setPlaceholders(player, baltop); // Procesar placeholders de PlaceholderAPI
-                player.sendMessage(MessageUtils.getColoredMessage(baltop));
+                player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, baltop)));// Procesar placeholders de PlaceholderAPI
             }
         }
 
@@ -69,8 +68,7 @@ public class SubComandoBalTop implements CommandExecutor {
         String title = languageManager.getMessage("bank.top.title");
         if (title != null) {
             title = title.replace("%plugin%", MineBank.prefix);
-            title = PlaceholderAPI.setPlaceholders(player, title); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(title));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, title)));// Procesar placeholders de PlaceholderAPI
         }
     }
 }

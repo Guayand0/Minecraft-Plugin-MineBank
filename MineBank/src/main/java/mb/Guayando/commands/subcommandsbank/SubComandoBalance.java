@@ -18,6 +18,8 @@ public class SubComandoBalance implements CommandExecutor {
     private final LanguageManager languageManager;
     private final BankManager bankManager;
 
+    private static String currentTargetPlayerName = null;
+
     public SubComandoBalance(MineBank plugin) {
         this.languageManager = plugin.getLanguageManager();
         this.bankManager = plugin.getBankManager();
@@ -32,8 +34,10 @@ public class SubComandoBalance implements CommandExecutor {
 
         if (args.length > 1) {
             targetPlayerName = args[1];
+            currentTargetPlayerName = targetPlayerName; // Almacena el target player en la variable estática
         } else {
             targetPlayerName = null;
+            currentTargetPlayerName = null; // Si no hay target, se limpia
         }
 
         // Lógica para obtener el balance
@@ -47,7 +51,6 @@ public class SubComandoBalance implements CommandExecutor {
                 notFoundPlayer(player);
             }
         }
-
         return true;
     }
 
@@ -58,8 +61,7 @@ public class SubComandoBalance implements CommandExecutor {
         String message = languageManager.getMessage("bank.bal.yourBalance");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%balance%", String.valueOf(balance));
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
@@ -71,8 +73,7 @@ public class SubComandoBalance implements CommandExecutor {
         String message = languageManager.getMessage("bank.bal.playerBalance");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%player%", targetPlayerName).replaceAll("%balance%", String.valueOf(balance));
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
@@ -80,8 +81,7 @@ public class SubComandoBalance implements CommandExecutor {
         String message = languageManager.getMessage("bank.notFoundPlayer");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%player%", targetPlayerName);
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
@@ -97,5 +97,9 @@ public class SubComandoBalance implements CommandExecutor {
             }
         }
         return null; // Retorna null si no se encuentra el jugador
+    }
+
+    public static String getCurrentTargetPlayerName() {
+        return currentTargetPlayerName;
     }
 }

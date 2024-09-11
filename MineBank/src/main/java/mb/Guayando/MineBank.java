@@ -1,5 +1,6 @@
 package mb.Guayando;
 
+import mb.Guayando.api.PlaceholderAPIBank;
 import mb.Guayando.config.BankInventoryManager;
 import mb.Guayando.config.LanguageManager;
 import mb.Guayando.event.BankInventoryEvent;
@@ -51,14 +52,6 @@ public class MineBank extends JavaPlugin implements Listener {
         if (setupEconomy()) {
             Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&aVault found and linked successfully."));
         }
-        // Crear variables PlaceholderAPI
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&bPlaceholderAPI activated."));
-            // Aquí puedes registrar tus placeholders
-            //new PlaceholderAPIBank(this).register();
-        }
-        Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage("&9<------------------------------------>"));
-
         saveDefaultConfig();
         this.configManager = new MainConfigManager(this);
         this.languageManager = new LanguageManager(this);
@@ -70,6 +63,20 @@ public class MineBank extends JavaPlugin implements Listener {
         scheduleBankTask();
         registrarComandos();
         registrarEventos();
+
+        // Crear variables PlaceholderAPI
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&bPlaceholderAPI detected. Registering placeholders..."));
+            try {
+                new PlaceholderAPIBank(this).register();
+                Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&aMineBank placeholders registered successfully."));
+            } catch (Exception e) {
+                Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&cError registering placeholders: " + e.getMessage()));
+                e.printStackTrace();
+            }
+        }
+        Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage("&9<------------------------------------>"));
+
         // Ejecutar comprobarActualizaciones() después de que el servidor haya iniciado completamente
         new BukkitRunnable() {
             @Override

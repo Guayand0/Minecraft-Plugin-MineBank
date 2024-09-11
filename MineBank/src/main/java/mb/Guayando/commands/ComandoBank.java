@@ -128,35 +128,31 @@ public class ComandoBank implements CommandExecutor {
     }
 
     private void bankDisabled(Player player){
-        String mensaje = languageManager.getMessage("config.bank-disabled");
-        if (mensaje != null) {
-            mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix);
-            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
+        String message = languageManager.getMessage("config.bank-disabled");
+        if (message != null) {
+            message = message.replaceAll("%plugin%", MineBank.prefix);
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
     public void bankUsage(Player player){
-        String mensaje = languageManager.getMessage("bank.usage.bank");
-        if (mensaje != null) {
-            mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix);
-            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
+        String message = languageManager.getMessage("bank.usage.bank");
+        if (message != null) {
+            message = message.replaceAll("%plugin%", MineBank.prefix);
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
     private void notPlayer(Player player) {
-        String mensaje = languageManager.getMessage("bank.notPlayer");
-        if (mensaje != null) {
-            mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix);
-            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
+        String message = languageManager.getMessage("bank.notPlayer");
+        if (message != null) {
+            message = message.replaceAll("%plugin%", MineBank.prefix);
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
     private void noPerm(Player player){
-        String mensaje = languageManager.getMessage("messages.no-perm");
-        if (mensaje != null) {
-            mensaje = mensaje.replaceAll("%plugin%", MineBank.prefix);
-            mensaje = PlaceholderAPI.setPlaceholders(player, mensaje); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(mensaje));
+        String message = languageManager.getMessage("messages.no-perm");
+        if (message != null) {
+            message = message.replaceAll("%plugin%", MineBank.prefix);
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 }

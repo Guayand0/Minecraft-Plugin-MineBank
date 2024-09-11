@@ -99,8 +99,7 @@ public class SubComandoTake implements CommandExecutor {
         String message = languageManager.getMessage("bank.usage.take");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix);
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
@@ -108,8 +107,7 @@ public class SubComandoTake implements CommandExecutor {
         String message = languageManager.getMessage("bank.take.withdrawFailure");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix);
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
@@ -117,8 +115,7 @@ public class SubComandoTake implements CommandExecutor {
         String message = languageManager.getMessage("bank.take.withdrawExceeds");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix);
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
@@ -126,8 +123,7 @@ public class SubComandoTake implements CommandExecutor {
         String message = languageManager.getMessage("bank.take.withdrawSuccess");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replace("%amount%", String.valueOf(totalAmount)).replace("%percentage%", String.valueOf(interestPercentage)).replace("%totalDeducted%", String.valueOf(amount));
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 

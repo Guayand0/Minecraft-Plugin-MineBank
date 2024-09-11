@@ -35,8 +35,7 @@ public class SubComandoHelp implements CommandExecutor {
 
         if (helpMessages != null) {
             for (String message : helpMessages) {
-                message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-                player.sendMessage(MessageUtils.getColoredMessage(message));
+                player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
             }
         }
 

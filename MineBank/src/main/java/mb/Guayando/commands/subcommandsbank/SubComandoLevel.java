@@ -53,12 +53,9 @@ public class SubComandoLevel implements CommandExecutor {
             playerLevel(player, name, level);
         } else {
             String playerPath = "bank." + player.getUniqueId() + "." + player.getName();
-
             int level = bankConfig.getInt(playerPath + ".level", 1);
-
             yourLevel(player, level);
         }
-
         return true;
     }
 
@@ -66,8 +63,7 @@ public class SubComandoLevel implements CommandExecutor {
         String message = languageManager.getMessage("bank.level.yourLevel");
         if (message != null) {
             message = message.replace("%plugin%", MineBank.prefix).replace("%level%", String.valueOf(level));
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
@@ -75,8 +71,7 @@ public class SubComandoLevel implements CommandExecutor {
         String message = languageManager.getMessage("bank.level.playerLevel");
         if (message != null) {
             message = message.replace("%plugin%", MineBank.prefix).replace("%player%", targetPlayerName).replace("%level%", String.valueOf(level));
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
@@ -84,8 +79,7 @@ public class SubComandoLevel implements CommandExecutor {
         String message = languageManager.getMessage("bank.notFoundPlayer");
         if (message != null) {
             message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%player%", targetPlayerName);
-            message = PlaceholderAPI.setPlaceholders(player, message); // Procesar placeholders de PlaceholderAPI
-            player.sendMessage(MessageUtils.getColoredMessage(message));
+            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
         }
     }
 
