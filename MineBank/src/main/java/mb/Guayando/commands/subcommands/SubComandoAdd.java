@@ -1,10 +1,8 @@
-package mb.Guayando.commands.subcommandsbank;
+package mb.Guayando.commands.subcommands;
 
 import mb.Guayando.MineBank;
-import mb.Guayando.utils.MessageUtils;
-import mb.Guayando.config.BankManager;
-import mb.Guayando.config.LanguageManager;
-import me.clip.placeholderapi.PlaceholderAPI;
+import mb.Guayando.utils.*;
+import mb.Guayando.managers.*;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -16,23 +14,20 @@ public class SubComandoAdd implements CommandExecutor {
 
     private final MineBank plugin;
     private final Economy economy;
-    private final LanguageManager languageManager;
     private final BankManager bankManager;
-    int amount, maxStorage;
+    int amount;
 
     public SubComandoAdd(MineBank plugin) {
         this.plugin = plugin;
         this.economy = plugin.getEconomy();
-        this.languageManager = plugin.getLanguageManager();
         this.bankManager = plugin.getBankManager();
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        languageManager.reloadLanguage();
-        bankManager.reloadBank(); // Recargar la configuración del banco
 
         Player player = (Player) sender;
+
         if (args.length < 2) {
             bankAdd(player);
             return true;
@@ -47,7 +42,8 @@ public class SubComandoAdd implements CommandExecutor {
             int playerBalance = (int) economy.getBalance(player);
             int bankBalance = bankConfig.getInt(playerPath + ".balance", 0);
             int level = bankConfig.getInt(playerPath + ".level", 1);
-            maxStorage = getMaxStorageAmount(level);
+            String bankName = bankConfig.getString(playerPath + ".bank-name");
+            int maxStorage = MethodUtils.getMaxStorageAmount(plugin, bankName, level);
 
             if (amountString.equalsIgnoreCase("mid") || amountString.equalsIgnoreCase("midmax") || amountString.equalsIgnoreCase("max")) {
                 // Asignar la cantidad basada en el tipo de comando
@@ -96,58 +92,27 @@ public class SubComandoAdd implements CommandExecutor {
     }
 
     public void bankAdd(Player player){
-        String message = languageManager.getMessage("bank.usage.add");
-        if (message != null) {
-            message = message.replaceAll("%plugin%", MineBank.prefix);
-            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
-        }
+        String messagePath = "bank.usage.add";
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
     }
 
     private void balanceExceeds(Player player) {
-        String message = languageManager.getMessage("bank.add.balanceExceeds");
-        if (message != null) {
-            message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%maxStorage%", String.valueOf(maxStorage));
-            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
-        }
+        String messagePath = "bank.add.balanceExceeds";
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
     }
 
     private void depositFailure(Player player) {
-        String message = languageManager.getMessage("bank.add.depositFailure");
-        if (message != null) {
-            message = message.replaceAll("%plugin%", MineBank.prefix);
-            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
-        }
+        String messagePath = "bank.add.depositFailure";
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
     }
 
     private void notEnoughMoneyAdd(Player player) {
-        String message = languageManager.getMessage("bank.add.notEnoughMoney");
-        if (message != null) {
-            message = message.replaceAll("%plugin%", MineBank.prefix);
-            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
-        }
+        String messagePath = "bank.add.notEnoughMoney";
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
     }
 
     private void depositSuccess(Player player) {
-        String message = languageManager.getMessage("bank.add.depositSuccess");
-        if (message != null) {
-            message = message.replaceAll("%plugin%", MineBank.prefix).replaceAll("%amount%", String.valueOf(amount));
-            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
-        }
-    }
-
-    private int getMaxStorageAmount(int level) {
-        String levelData = plugin.getConfig().getString("bank.level." + level);
-
-        if (levelData != null && levelData.contains(";")) {
-            String[] parts = levelData.split(";");
-            if (parts.length > 0) {
-                try {
-                    return Integer.parseInt(parts[0]);
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return 0;
+        String messagePath = "bank.add.depositSuccess";
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, amount);
     }
 }

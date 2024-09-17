@@ -29,7 +29,6 @@
 
 messages:
 
-  # 변수: NA
   help:
     - '&b<-----------------&aMINEBANK 명령어&a----------------->'
     - '&e/minebank help &7- 이 메시지를 표시합니다.'
@@ -41,7 +40,6 @@ messages:
     - '&e/bank help &7- 은행 명령어 목록을 표시합니다.'
     - '&7별칭: &eminebank&7, &emb'
 
-  # 변수: NA
   help-bank:
     - '&b<-----------------&aMINEBANK 명령어&a----------------->'
     - '&e/bank &7- 인벤토리 열기(1.13+)'
@@ -71,31 +69,23 @@ messages:
     - '&e/bank level <플레이어> &7- 플레이어 은행 레벨 확인'
     - '&e/bank levelup &7- 은행 레벨 업'
 
-  # 변수: %plugin%
   reload: '%plugin% &a플러그인이 재로드되었습니다.'
-
-  # 변수: %plugin%, %version%, %latestversion%
   version: '%plugin% &a플러그인 버전: &b%version%'
-
-  # 변수: %plugin%, %author%
   author: '%plugin% &a플러그인 제작자: &b%author%'
 
-  # 변수: NA
   permissions:
     - '&b<-----------------&aMINEBANK 권한&a----------------->'
     - '&eminebank.admin &7- 모든 권한'
     - '&eminebank.updatechecker &7- 업데이트가 가능할 때 알림 받기'
     - '&eminebank.use &7- 은행을 사용할 수 있는 권한'
+    - '&eminebank.bank.<bankName> &7- 은행 <bankName>을(를) 플레이어에게 설정합니다'
 
-  # 변수: %plugin%
   command-no-argument: '%plugin% &7명령어 목록을 보려면 &e/minebank help &7를 사용하세요.'
   no-perm: '%plugin% &c이 명령어를 사용할 권한이 없습니다.'
   console-error: '%plugin% &c콘솔에서는 이 명령어를 사용할 수 없습니다.'
 
 config:
-  # 변수: %plugin%
   bank-disabled: '%plugin% &c은행 기능이 현재 비활성화되어 있습니다.'
-  # 변수: %plugin%, %version%, %latestversion%, %link%
   update-checker: '%plugin% &b새 버전이 사용 가능합니다 &e(&f%latestversion%&e)&b. 다운로드 링크: &7%link%'
 
 # ############################################################################################################# #
@@ -113,80 +103,50 @@ config:
 
 bank:
   usage:
-    # 변수: %plugin%
-    bank: '%plugin% &e사용법: /bank <top/bal/max/level/levelup/add/take/set>'
-    add: '%plugin% &e사용법: /bank add <금액>'
-    take: '%plugin% &e사용법: /bank take <금액>'
-    set: '%plugin% &e사용법: /bank set <플레이어> <bal/level> <금액> [true/false]'
-    top: '%plugin% &e사용법: /bank top'
-    bal: '%plugin% &e사용법: /bank bal [플레이어]'
-    max: '%plugin% &e사용법: /bank max <bal/level>'
-    level: '%plugin% &e사용법: /bank level [플레이어]'
-    levelup: '%plugin% &e사용법: /bank levelup'
+    bank: '%plugin% &e사용법: /bank {help/add/take/bal/top/max/level/levelup/set}'
+    add: '%plugin% &e사용법: /bank add {<amount>/mid/midmax/max}'
+    take: '%plugin% &e사용법: /bank take {<amount>/mid/midmax/max}'
+    set: '%plugin% &e사용법: /bank set <player> {bal/level} {<amount>/midmax/max} [true/false]'
+    bal: '%plugin% &e사용법: /bank bal [player]'
+    max: '%plugin% &e사용법: /bank max {bal/level} [player]'
+    level: '%plugin% &e사용법: /bank level [player]'
   bal:
-    # 변수: %plugin%, %balance%
-    yourBalance: '%plugin% &e현재 은행 잔액: &a$%balance%'
-    # 변수: %plugin%, %player%, %balance%
-    playerBalance: '%plugin% &e%player% 의 잔액: &a$%balance%'
+    playerBankBalance: '%plugin% &e현재 은행 잔액은: &a$%playerBankBalance%'
+    targetBankBalance: '%plugin% &e%targetName%의 잔액은: &a$%targetBankBalance%'
   take:
-    # 변수: %plugin%, %amount%, %percentage%, %totalDeducted%
-    withdrawSuccess: '%plugin% &a$%amount% 을 은행에서 인출했습니다. 수수료: $%totalDeducted%'
-    # 변수: %plugin%
-    withdrawFailure: '%plugin% &c금액은 양의 정수여야 합니다.'
-    withdrawExceeds: '%plugin% &c은행에 그 금액을 인출할 만큼의 충분한 잔액이 없습니다.'
+    withdrawSuccess: '%plugin% &a은행에서 $%amountReceived%을(를) 인출했습니다. 은행 수수료는: $%amountDeducted%. 은행 이자는: %interestPercentage%%'
+    withdrawFailure: '%plugin% &c금액은 양수이고 정수여야 합니다.'
+    withdrawExceeds: '%plugin% &c그 금액을 인출할 충분한 돈이 은행에 없습니다.'
   add:
-    # 변수: %plugin%, %amount%
-    depositSuccess: '%plugin% &a$%amount% 을 은행에 입금했습니다.'
-    # 변수: %plugin%, %maxStorage%
-    balanceExceeds: '%plugin% &c현재 은행 레벨에서 저장할 수 있는 최대 금액은 $%maxStorage% 입니다.'
-    # 변수: %plugin%
-    depositFailure: '%plugin% &c금액은 양의 정수여야 합니다.'
-    notEnoughMoney: '%plugin% &c그 금액을 입금할 만큼의 충분한 잔액이 없습니다.'
+    depositSuccess: '%plugin% &a은행에 $%amount%을(를) 입금했습니다.'
+    balanceExceeds: '%plugin% &c현재 은행 레벨에서 $%playerBankMaxStorage% 이상 저장할 수 없습니다.'
+    depositFailure: '%plugin% &c금액은 양수이고 정수여야 합니다.'
+    notEnoughMoney: '%plugin% &c그 금액을 입금할 충분한 돈이 없습니다.'
   set:
-    # 변수: %plugin%, %maxStorage%
-    maxBalance: '%plugin% &c금액은 $%maxStorage% 을 초과할 수 없습니다.'
-    # 변수: %plugin%, %maxLevel%
-    maxLevel: '%plugin% &c레벨은 %maxLevel% 을 초과할 수 없습니다.'
-    # 변수: %plugin%, %player%, $%amount%
-    setBalanceSuccess: '%plugin% &a%player% 의 은행 잔액이 $%amount% 으로 설정되었습니다.'
-    # 변수: %plugin%, %player%, $%level%
-    setLevelSuccess: '%plugin% &a%player% 의 은행 레벨이 %level% 으로 설정되었습니다.'
-    # 변수: %plugin%
-    depositFailure: '%plugin% &c금액은 양의 정수여야 합니다.'
+    maxBalance: '%plugin% &c금액은 $%targetBankMaxStorage%를 초과할 수 없습니다.'
+    maxLevel: '%plugin% &c레벨은 %targetBankMaxLevel%을(를) 초과할 수 없습니다.'
+    setBalanceSuccess: '%plugin% &a%targetName%의 은행 잔액을 $%amount%으로 설정했습니다.'
+    setLevelSuccess: '%plugin% &a%targetName%의 은행 레벨을 %setBankLevel%로 설정했습니다.'
+    depositFailure: '%plugin% &c금액은 양수이고 정수여야 합니다.'
   top:
-    # 변수: %plugin%
-    title: '%plugin% &e은행에 가장 많은 돈을 가진 상위 10명의 플레이어:'
-    # 변수: %plugin%, %position%, %player%, %balance%
-    entry: '&e%position%. %player% : &a$%balance%'
+    title: '%plugin% &e은행에 가장 많은 돈을 가진 상위 플레이어:'
+    entry: '&a상위 %topPosition%: &f%topName% - %topBank% - $%topBalance%'
   level:
-    # 변수: %plugin%, %level%
-    yourLevel: '%plugin% &e현재 은행 레벨: &a%level%'
-    # 변수: %plugin%, %player%, %level%
-    playerLevel: '%plugin% &e%player% 의 은행 레벨: &a%level%'
+    playerBankLevel: '%plugin% &e당신의 은행 레벨은: &a%playerBankLevel%'
+    targetBankLevel: '%plugin% &e%targetName%의 레벨은: &a%targetBankLevel%'
   levelup:
-    # 변수: %plugin%, %unlockPrice%
-    notEnoughMoney: '%plugin% &c은행 레벨업에 충분한 돈이 없습니다. $%unlockPrice% 가 필요합니다.'
-    # 변수: %plugin%, %unlockLevel%
-    unlockPriceError: '%plugin% &c레벨 %unlockLevel% 설정에서 유효하지 않은 해제 가격.'
-    # 변수: %plugin%, %newLevel%
-    success: '%plugin% &a레벨 %newLevel% 에 성공했습니다.'
-    # 변수: %plugin%
+    notEnoughMoney: '%plugin% &c은행에 레벨 업을 할 만큼의 돈이 없습니다. $%unlockNextLevelPrice%이(가) 필요합니다.'
+    unlockPriceError: '%plugin% &c레벨 %unlockNextLevel%의 구성에서 잘못된 잠금 해제 가격'
+    success: '%plugin% &a레벨 %playerBankLevel%로 성공적으로 레벨 업했습니다.'
     alreadyMax: '%plugin% &c이미 최대 레벨에 도달했습니다.'
   max:
-    # 변수: %plugin%, %maxStorage%
-    yourMaxStorage: '%plugin% &e현재 레벨에서 저장할 수 있는 최대 금액: &a$%maxStorage%'
-    # 변수: %plugin%, %player%, %maxStorage%
-    playerMaxStorage: '%plugin% &e%player%가 현재 레벨에서 저장할 수 있는 최대 양은 &a$%maxStorage%입니다'
-    # 변수: %plugin%, %maxLevel%
-    maxLevel: '%plugin% &a은행의 최대 레벨은 &e%maxLevel% 입니다.'
+    playerBankMaxStorage: '%plugin% &e현재 은행 레벨에서 저장할 수 있는 최대 금액은: &a$%playerBankMaxStorage%'
+    targetBankMaxStorage: '%plugin% &e%targetName%이(가) 현재 은행 레벨에서 저장할 수 있는 최대 금액은: &a$%targetBankMaxStorage%'
+    playerBankMaxLevel: '%plugin% &a현재 은행의 최대 레벨은 &e%playerBankMaxLevel%입니다.'
+    targetBankMaxLevel: '%plugin% &a%targetName%의 은행 최대 레벨은 &e%targetBankMaxLevel%입니다.'
   profit:
-    # 변수: %plugin%, $%profit%, %percentage%
-    received: '%plugin% &a은행에 돈을 예치하여 $%profit% 의 이익을 얻었습니다!'
-    # 변수: %plugin%, %amount%
-    min-storage: '%plugin% &c이익을 얻으려면 은행에 최소 $%amount% 의 잔액이 필요합니다.'
-    # 변수: %plugin%
+    received: '%plugin% &a은행에 돈을 예치하여 $%keepInBankProfit%를 받았습니다! 은행 이익률은: %profitPercentage%%'
+    min-storage: '%plugin% &c이익을 얻으려면 은행에 최소 $%minAmountToWinProfit%을(를) 보관해야 합니다.'
     max-storage: '%plugin% &c이익을 계속 얻으려면 은행에서 돈을 인출해야 합니다.'
-  # 변수: %plugin%
   notPlayer: '%plugin% &c이 명령어는 플레이어만 사용할 수 있습니다.'
-  # 변수: %plugin%, %player%
-  notFoundPlayer: '%plugin% &c플레이어 %player% 를 찾을 수 없습니다.'
+  notFoundPlayer: '%plugin% &c플레이어 %targetName%을(를) 찾을 수 없습니다.'

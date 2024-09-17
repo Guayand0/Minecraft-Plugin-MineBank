@@ -1,6 +1,6 @@
 main: mb.Guayando.MineBank
 name: MineBank
-version: 3.3.2
+version: 4.0.1
 author: Guayando
 api-version: 1.13
 depend: [Vault]
@@ -24,4 +24,5 @@ permissions:
     default: op
     description: Sirve para comprobar si hay una nueva version del plugin
   minebank.use:
-    description: Sirve para poder usar el plugin
+    default: op
+    description: Sirve para poder usar el banco

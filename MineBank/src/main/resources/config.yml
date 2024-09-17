@@ -31,7 +31,7 @@ config:
 
   # You can add a new language adding (language.yml) to lang folder
   # If you want to have support for more languages by default, send
-  # the .yml file with the translations and the language via github
+  # the .yml file with the translations and the language via GitHub
   # https://github.com/Guayand0/Minecraft-Plugin-MineBank/issues
 
   # Available default languages: en, es, fr, pt, it, ge, ru, ja, ko, zhcn
@@ -42,7 +42,7 @@ config:
   inventory-language: en
 
   # Enable/Disable the bank function
-  bank-use: true
+  bank-use: true # (you need to use "/mb reload" to apply changes)
 
   # Enable/Disable the new version available message (update-message)
   update-checker: true
@@ -61,20 +61,44 @@ config:
 # ############################################################################################################# #
 
 bank:
+  # The first bank in config, it will be the default bank when players join the server by first time
+  # The other banks only accesible by permissions
+  # You can add and remove banks
+  # You can add and remove levels and change levels data in all banks
+  # The banks levels must be CONSECUTIVE NUMBERS or errors may appear
+  # Be sure your bank level data format is correct
+  # The bank priority order (first bank less priority, last bank more priority)
+  user:
+    level:
+      # MaxStorageAmount;UnlockNextLevelPrice
+      1: 5000;2500
+      2: 10000;5000
+      3: 20000;10000
+      4: 50000;25000
+      5: 100000;50000
+  vip:
+    level:
+      1: 15000;7000
+      2: 25000;10000
+      3: 50000;20000
+      4: 100000;40000
+      5: 250000;100000
+      6: 500000;180000
+  mod:
+    level:
+      1: 25000;10000
+      2: 50000;20000
+      3: 100000;40000
+      4: 250000;100000
+      5: 500000;180000
+      6: 1000000;350000
+      7: 1500000;500000
+      8: 2000000;700000
 
-  level:
-    # MaxStorageAmount;UnlockNextLevelPrice
-    1: 5000;2500
-    2: 10000;5000
-    3: 20000;10000
-    4: 50000;25000
-    5: 100000;50000
-    # You can add and remove levels if you want
-
-  profit:
-    interval: 300 # Interval in seconds to receive profit (set -1 to disable) (you need to use "/mb reload" to apply)
-    min-amount-to-win: 500 # Min amount of money in the bank to receive profit
-    keep-in-bank: 1 # Percentage of profit for having money in the bank
+  profit: # (you need to use "/mb reload" to apply changes)
+    intervalSeconds: 300 # Interval in seconds to receive profit (set -1 to disable profit)
+    minBankBalanceToApply: 500 # Min amount of money in the bank to receive profit (if less than 100, player not receive anything)
+    keepInBankPercentage: 1 # Percentage of profit for having money in the bank
   interests:
-    min-amount-to-lose: 100 # Min amount of money withdraw to the bank to start rest interest (set -1 to disable)
-    withdraw: 2 # Percentage of interest in withdraw money
+    minBankBalanceToApply: 100 # Min amount of money withdraw to the bank to start rest interest (set -1 to disable)
+    withdrawPercentage: 2 # Percentage of interest in withdraw money

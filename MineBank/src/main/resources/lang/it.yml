@@ -29,7 +29,6 @@
 
 messages:
 
-  # Variabili: NA
   help:
     - '&b<-----------------&aMINEBANK COMANDI&b----------------->'
     - '&e/minebank help &7- Mostra questo messaggio'
@@ -41,7 +40,6 @@ messages:
     - '&e/bank help &7- Mostra l`elenco dei comandi della banca'
     - '&7Alias: &eminebank&7, &emb'
 
-  # Variabili: NA
   help-bank:
     - '&b<-----------------&aMINEBANK COMANDI&b----------------->'
     - '&e/bank &7- Apri inventario (1.13+)'
@@ -71,31 +69,23 @@ messages:
     - '&e/bank level <player> &7- Controlla il livello della banca del giocatore'
     - '&e/bank levelup &7- Aumenta il livello della tua banca'
 
-  # Variabili: %plugin%
   reload: '%plugin% &aIl plugin è stato ricaricato.'
-
-  # Variabili: %plugin%, %version%, %latestversion%
   version: '%plugin% &aVersione del plugin: &b%version%'
-
-  # Variabili: %plugin%, %author%
   author: '%plugin% &aAutore del plugin: &b%author%'
 
-  # Variabili: NA
   permissions:
     - '&b<-----------------&aAUTORIZZAZIONI MINEBANK&b----------------->'
     - '&eminebank.admin &7- Tutte le autorizzazioni'
     - '&eminebank.updatechecker &7- Permette di ricevere un messaggio quando è disponibile un aggiornamento'
     - '&eminebank.use &7- Permette di utilizzare la banca'
+    - '&eminebank.bank.<bankName> &7- Imposta la banca <bankName> per il giocatore'
 
-  # Variabili: %plugin%
   command-no-argument: '%plugin% &7Usa &e/minebank help &7per vedere l`elenco dei comandi.'
   no-perm: '%plugin% &cNon hai il permesso di usare questo comando.'
   console-error: '%plugin% &cNon puoi usare questo comando nella console.'
 
 config:
-  # Variabili: %plugin%
   bank-disabled: '%plugin% &cLa funzione banca è attualmente disabilitata.'
-  # Variabili: %plugin%, %version%, %latestversion%, %link%
   update-checker: '%plugin% &bNuova versione disponibile &e(&f%latestversion%&e)&b. Scaricala qui: &7%link%'
 
 # ############################################################################################################# #
@@ -113,80 +103,50 @@ config:
 
 bank:
   usage:
-    # Variabili: %plugin%
-    bank: '%plugin% &eUso: /bank <top/bal/max/level/levelup/add/take/set>'
-    add: '%plugin% &eUso: /bank add <importo>'
-    take: '%plugin% &eUso: /bank take <importo>'
-    set: '%plugin% &eUso: /bank set <giocatore> <bal/level> <importo> [true/false]'
-    top: '%plugin% &eUso: /bank top'
+    bank: '%plugin% &eUso: /bank {help/add/take/bal/top/max/level/levelup/set}'
+    add: '%plugin% &eUso: /bank add {<importo>/mid/midmax/max}'
+    take: '%plugin% &eUso: /bank take {<importo>/mid/midmax/max}'
+    set: '%plugin% &eUso: /bank set <giocatore> {bal/level} {<importo>/midmax/max} [true/false]'
     bal: '%plugin% &eUso: /bank bal [giocatore]'
-    max: '%plugin% &eUso: /bank max <bal/level>'
+    max: '%plugin% &eUso: /bank max {bal/level} [giocatore]'
     level: '%plugin% &eUso: /bank level [giocatore]'
-    levelup: '%plugin% &eUso: /bank levelup'
   bal:
-    # Variabili: %plugin%, %balance%
-    yourBalance: '%plugin% &eIl tuo saldo bancario attuale è: &a$%balance%'
-    # Variabili: %plugin%, %player%, %balance%
-    playerBalance: '%plugin% &eIl saldo di %player% è: &a$%balance%'
+    playerBankBalance: '%plugin% &eIl tuo saldo bancario attuale è: &a$%playerBankBalance%'
+    targetBankBalance: '%plugin% &eIl saldo di %targetName% è: &a$%targetBankBalance%'
   take:
-    # Variabili: %plugin%, %amount%, %percentage%, %totalDeducted%
-    withdrawSuccess: '%plugin% &aHai prelevato $%amount% dalla tua banca. Spese bancarie: $%totalDeducted%'
-    # Variabili: %plugin%
-    withdrawFailure: '%plugin% &cL`importo deve essere positivo e un numero intero.'
-    withdrawExceeds: '%plugin% &cNon hai abbastanza soldi in banca per prelevare questo importo.'
+    withdrawSuccess: '%plugin% &aHai prelevato $%amountReceived% dal tuo conto bancario. La commissione bancaria è: $%amountDeducted%. L’interesse bancario è: %interestPercentage%%'
+    withdrawFailure: '%plugin% &cL’importo deve essere un numero intero positivo.'
+    withdrawExceeds: '%plugin% &cNon hai abbastanza soldi sul tuo conto bancario per prelevare tale importo.'
   add:
-    # Variabili: %plugin%, %amount%
-    depositSuccess: '%plugin% &aHai depositato $%amount% nella tua banca.'
-    # Variabili: %plugin%, %maxStorage%
-    balanceExceeds: '%plugin% &cNon puoi salvare più di $%maxStorage% al tuo livello bancario attuale.'
-    # Variabili: %plugin%
-    depositFailure: '%plugin% &cL`importo deve essere positivo e un numero intero.'
-    notEnoughMoney: '%plugin% &cNon hai abbastanza soldi per depositare questo importo.'
+    depositSuccess: '%plugin% &aHai depositato $%amount% sul tuo conto bancario.'
+    balanceExceeds: '%plugin% &cNon puoi immagazzinare più di $%playerBankMaxStorage% al tuo attuale livello bancario.'
+    depositFailure: '%plugin% &cL’importo deve essere un numero intero positivo.'
+    notEnoughMoney: '%plugin% &cNon hai abbastanza soldi per depositare tale importo.'
   set:
-    # Variabili: %plugin%, %maxStorage%
-    maxBalance: '%plugin% &cL`importo non può superare $%maxStorage%.'
-    # Variabili: %plugin%, %maxLevel%
-    maxLevel: '%plugin% &cIl livello non può superare %maxLevel%.'
-    # Variabili: %plugin%, %player%, $%amount%
-    setBalanceSuccess: '%plugin% &aIl saldo bancario di %player% è stato impostato a $%amount%.'
-    # Variabili: %plugin%, %player%, $%level%
-    setLevelSuccess: '%plugin% &aIl livello bancario di %player% è stato impostato a %level%.'
-    # Variabili: %plugin%
-    depositFailure: '%plugin% &cL`importo deve essere positivo e un numero intero.'
+    maxBalance: '%plugin% &cL’importo non può essere superiore a $%targetBankMaxStorage%'
+    maxLevel: '%plugin% &cIl livello non può essere superiore a %targetBankMaxLevel%'
+    setBalanceSuccess: '%plugin% &aSaldo bancario di %targetName% impostato a $%amount%'
+    setLevelSuccess: '%plugin% &aLivello bancario di %targetName% impostato a %setBankLevel%'
+    depositFailure: '%plugin% &cL’importo deve essere un numero intero positivo.'
   top:
-    # Variabili: %plugin%
-    title: '%plugin% &eTop 10 giocatori con più soldi in banca:'
-    # Variabili: %plugin%, %position%, %player%, %balance%
-    entry: '&e%position%. %player% : &a$%balance%'
+    title: '%plugin% &eGiocatori con il maggior denaro in banca:'
+    entry: '&aTop %topPosition%: &f%topName% - %topBank% - $%topBalance%'
   level:
-    # Variabili: %plugin%, %level%
-    yourLevel: '%plugin% &eIl tuo livello bancario è: &a%level%'
-    # Variabili: %plugin%, %player%, %level%
-    playerLevel: '%plugin% &eIl livello bancario di %player% è: &a%level%'
+    playerBankLevel: '%plugin% &eIl tuo livello bancario è: &a%playerBankLevel%'
+    targetBankLevel: '%plugin% &eIl livello di %targetName% è: &a%targetBankLevel%'
   levelup:
-    # Variabili: %plugin%, %unlockPrice%
-    notEnoughMoney: '%plugin% &cNon hai abbastanza soldi in banca per migliorare. Ti servono $%unlockPrice%'
-    # Variabili: %plugin%, %unlockLevel%
-    unlockPriceError: '%plugin% &cPrezzo di sblocco non valido nella configurazione per il Livello %unlockLevel%'
-    # Variabili: %plugin%, %newLevel%
-    success: '%plugin% &aHai raggiunto con successo il Livello %newLevel%.'
-    # Variabili: %plugin%
+    notEnoughMoney: '%plugin% &cNon hai abbastanza soldi in banca per salire di livello, ti servono $%unlockNextLevelPrice%'
+    unlockPriceError: '%plugin% &cPrezzo di sblocco non valido nella configurazione per il livello %unlockNextLevel%'
+    success: '%plugin% &aSei salito con successo al livello %playerBankLevel%'
     alreadyMax: '%plugin% &cSei già al livello massimo.'
   max:
-    # Variabili: %plugin%, %maxStorage%
-    yourMaxStorage: '%plugin% &eL`importo massimo che puoi salvare al tuo livello attuale è: &a$%maxStorage%'
-    # Variabili: %plugin%, %player%, %maxStorage%
-    playerMaxStorage: '%plugin% &eLa quantità massima che %player% può memorizzare al suo livello attuale è: &a$%maxStorage%'
-    # Variabili: %plugin%, %maxLevel%
-    maxLevel: '%plugin% &aIl livello massimo bancario è &e%maxLevel%.'
+    playerBankMaxStorage: '%plugin% &eL’importo massimo che puoi immagazzinare al tuo attuale livello bancario è: &a$%playerBankMaxStorage%'
+    targetBankMaxStorage: '%plugin% &eL’importo massimo che %targetName% può immagazzinare al suo attuale livello bancario è: &a$%targetBankMaxStorage%'
+    playerBankMaxLevel: '%plugin% &aIl livello massimo della banca del tuo attuale conto è &e%playerBankMaxLevel%.'
+    targetBankMaxLevel: '%plugin% &aIl livello massimo della banca di %targetName% è &e%targetBankMaxLevel%.'
   profit:
-    # Variabili: %plugin%, $%profit%, %percentage%
-    received: '%plugin% &aHai ricevuto $%profit% come profitto per aver lasciato i tuoi soldi in banca!'
-    # Variabili: %plugin%, %amount%
-    min-storage: '%plugin% &cDevi avere almeno $%amount% in banca per guadagnare interessi.'
-    # Variabili: %plugin%
-    max-storage: '%plugin% &cDevi prelevare soldi dalla banca per continuare a guadagnare interessi.'
-  # Variabili: %plugin%
+    received: '%plugin% &aHai ricevuto $%keepInBankProfit% per mantenere i tuoi soldi in banca! Il profitto bancario è: %profitPercentage%%'
+    min-storage: '%plugin% &cDevi avere almeno $%minAmountToWinProfit% in banca per iniziare a guadagnare benefici.'
+    max-storage: '%plugin% &cDevi prelevare soldi dalla banca per continuare a guadagnare benefici.'
   notPlayer: '%plugin% &cSolo i giocatori possono usare questo comando.'
-  # Variabili: %plugin%, %player%
-  notFoundPlayer: '%plugin% &cGiocatore %player% non trovato.'
+  notFoundPlayer: '%plugin% &cGiocatore %targetName% non trovato.'

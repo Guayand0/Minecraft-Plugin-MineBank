@@ -29,7 +29,6 @@
 
 messages:
 
-  # переменные: NA
   help:
     - '&b<-----------------&aКоманды MINEBANK&a----------------->'
     - '&e/minebank help &7- Показать это сообщение'
@@ -41,7 +40,6 @@ messages:
     - '&e/bank help &7- Показать список команд банка'
     - '&7Псевдонимы: &eminebank&7, &emb'
 
-  # переменные: NA
   help-bank:
     - '&b<-----------------&aКоманды MINEBANK&a----------------->'
     - '&e/bank &7- Открыть инвентарь (1.13+)'
@@ -71,31 +69,23 @@ messages:
     - '&e/bank level <игрок> &7- Проверьте уровень банка игрока'
     - '&e/bank levelup &7- Повысьте уровень своего банка'
 
-  # переменные: %plugin%
   reload: '%plugin% &aПлагин перезагружен'
-
-  # переменные: %plugin%, %version%, %latestversion%
   version: '%plugin% &aВерсия плагина: &b%version%'
-
-  # переменные: %plugin%, %author%
   author: '%plugin% &aАвтор плагина: &b%author%'
 
-  # переменные: NA
   permissions:
     - '&b<-----------------&aРазрешения MINEBANK&a----------------->'
     - '&eminebank.admin &7- Полный доступ'
     - '&eminebank.updatechecker &7- Получать уведомления о доступных обновлениях'
     - '&eminebank.use &7- Доступ к использованию банка'
+    - '&eminebank.bank.<bankName> &7- Установить банк <bankName> для игрока'
 
-  # переменные: %plugin%
   command-no-argument: '%plugin% &7Чтобы просмотреть список команд, используйте &e/minebank help &7.'
   no-perm: '%plugin% &cУ вас нет разрешения на использование этой команды.'
   console-error: '%plugin% &cЭту команду нельзя использовать из консоли.'
 
 config:
-  # переменные: %plugin%
   bank-disabled: '%plugin% &cФункция банка в данный момент отключена.'
-  # переменные: %plugin%, %version%, %latestversion%, %link%
   update-checker: '%plugin% &bДоступна новая версия &e(&f%latestversion%&e)&b. Ссылка для загрузки: &7%link%'
 
 # ############################################################################################################# #
@@ -113,80 +103,50 @@ config:
 
 bank:
   usage:
-    # переменные: %plugin%
-    bank: '%plugin% &eИспользование: /bank <top/bal/max/level/levelup/add/take/set>'
-    add: '%plugin% &eИспользование: /bank add <сумма>'
-    take: '%plugin% &eИспользование: /bank take <сумма>'
-    set: '%plugin% &eИспользование: /bank set <игрок> <bal/level> <сумма> [true/false]'
-    top: '%plugin% &eИспользование: /bank top'
-    bal: '%plugin% &eИспользование: /bank bal [игрок]'
-    max: '%plugin% &eИспользование: /bank max <bal/level>'
-    level: '%plugin% &eИспользование: /bank level [игрок]'
-    levelup: '%plugin% &eИспользование: /bank levelup'
+    bank: '%plugin% &eИспользование: /bank {help/add/take/bal/top/max/level/levelup/set}'
+    add: '%plugin% &eИспользование: /bank add {<amount>/mid/midmax/max}'
+    take: '%plugin% &eИспользование: /bank take {<amount>/mid/midmax/max}'
+    set: '%plugin% &eИспользование: /bank set <player> {bal/level} {<amount>/midmax/max} [true/false]'
+    bal: '%plugin% &eИспользование: /bank bal [player]'
+    max: '%plugin% &eИспользование: /bank max {bal/level} [player]'
+    level: '%plugin% &eИспользование: /bank level [player]'
   bal:
-    # переменные: %plugin%, %balance%
-    yourBalance: '%plugin% &eВаш текущий баланс в банке: &a$%balance%'
-    # переменные: %plugin%, %player%, %balance%
-    playerBalance: '%plugin% &eБаланс игрока %player% : &a$%balance%'
+    playerBankBalance: '%plugin% &eВаш текущий банковский баланс: &a$%playerBankBalance%'
+    targetBankBalance: '%plugin% &eБаланс %targetName%: &a$%targetBankBalance%'
   take:
-    # переменные: %plugin%, %amount%, %percentage%, %totalDeducted%
-    withdrawSuccess: '%plugin% &aВы сняли $%amount% с банковского счета. Комиссия: $%totalDeducted%'
-    # переменные: %plugin%
+    withdrawSuccess: '%plugin% &aВы сняли $%amountReceived% из вашего банка. Банковская комиссия: $%amountDeducted%. Банковский процент: %interestPercentage%%'
     withdrawFailure: '%plugin% &cСумма должна быть положительным целым числом.'
-    withdrawExceeds: '%plugin% &cНа банковском счете недостаточно средств для снятия этой суммы.'
+    withdrawExceeds: '%plugin% &cУ вас недостаточно денег в банке для снятия этой суммы.'
   add:
-    # переменные: %plugin%, %amount%
-    depositSuccess: '%plugin% &aВы внесли $%amount% на банковский счет.'
-    # переменные: %plugin%, %maxStorage%
-    balanceExceeds: '%plugin% &cМаксимальная сумма, которую можно хранить на текущем уровне: $%maxStorage%'
-    # переменные: %plugin%
+    depositSuccess: '%plugin% &aВы внесли $%amount% в ваш банк.'
+    balanceExceeds: '%plugin% &cВы не можете хранить более $%playerBankMaxStorage% на вашем текущем уровне банка.'
     depositFailure: '%plugin% &cСумма должна быть положительным целым числом.'
-    notEnoughMoney: '%plugin% &cУ вас недостаточно средств для внесения этой суммы.'
+    notEnoughMoney: '%plugin% &cУ вас недостаточно денег для внесения этой суммы.'
   set:
-    # переменные: %plugin%, %maxStorage%
-    maxBalance: '%plugin% &cСумма не может превышать $%maxStorage%.'
-    # переменные: %plugin%, %maxLevel%
-    maxLevel: '%plugin% &cУровень не может превышать %maxLevel%.'
-    # переменные: %plugin%, %player%, $%amount%
-    setBalanceSuccess: '%plugin% &aБаланс игрока %player% установлен на $%amount%.'
-    # переменные: %plugin%, %player%, $%level%
-    setLevelSuccess: '%plugin% &aУровень банка игрока %player% установлен на %level%.'
-    # переменные: %plugin%
+    maxBalance: '%plugin% &cСумма не может быть больше $%targetBankMaxStorage%'
+    maxLevel: '%plugin% &cУровень не может быть выше %targetBankMaxLevel%'
+    setBalanceSuccess: '%plugin% &aУстановлен баланс банка %targetName% на $%amount%'
+    setLevelSuccess: '%plugin% &aУстановлен уровень банка %targetName% на %setBankLevel%'
     depositFailure: '%plugin% &cСумма должна быть положительным целым числом.'
   top:
-    # переменные: %plugin%
-    title: '%plugin% &eТоп-10 игроков с наибольшим балансом в банке:'
-    # переменные: %plugin%, %position%, %player%, %balance%
-    entry: '&e%position%. %player% : &a$%balance%'
+    title: '%plugin% &eТоп игроков с наибольшим количеством денег в банке:'
+    entry: '&aТоп %topPosition%: &f%topName% - %topBank% - $%topBalance%'
   level:
-    # переменные: %plugin%, %level%
-    yourLevel: '%plugin% &eВаш текущий уровень банка: &a%level%'
-    # переменные: %plugin%, %player%, %level%
-    playerLevel: '%plugin% &eУровень банка игрока %player% : &a%level%'
+    playerBankLevel: '%plugin% &eВаш уровень банка: &a%playerBankLevel%'
+    targetBankLevel: '%plugin% &eУровень банка %targetName%: &a%targetBankLevel%'
   levelup:
-    # переменные: %plugin%, %unlockPrice%
-    notEnoughMoney: '%plugin% &cУ вас недостаточно денег для повышения уровня банка. Требуется $%unlockPrice%.'
-    # переменные: %plugin%, %unlockLevel%
-    unlockPriceError: '%plugin% &cНеверная цена для повышения уровня до %unlockLevel%.'
-    # переменные: %plugin%, %newLevel%
-    success: '%plugin% &aВаш уровень банка успешно повышен до %newLevel%!'
-    # переменные: %plugin%
-    alreadyMax: '%plugin% &cВы уже достигли максимального уровня.'
+    notEnoughMoney: '%plugin% &cУ вас недостаточно денег в банке для повышения уровня, вам нужно $%unlockNextLevelPrice%'
+    unlockPriceError: '%plugin% &cНедопустимая цена разблокировки в конфигурации для уровня %unlockNextLevel%'
+    success: '%plugin% &aВы успешно повысили уровень до %playerBankLevel%'
+    alreadyMax: '%plugin% &cВы уже на максимальном уровне.'
   max:
-    # переменные: %plugin%, %maxBalance%
-    yourMaxStorage: '%plugin% &eМаксимальный возможный баланс: &a$%maxBalance%'
-    # Переменные: %plugin%, %player%, %maxStorage%
-    playerMaxStorage: '%plugin% &eМаксимальное количество, которое %player% может хранить на текущем уровне: &a$%maxStorage%'
-    # переменные: %plugin%, %maxLevel%
-    level: '%plugin% &eМаксимальный уровень: &a%maxLevel%'
+    playerBankMaxStorage: '%plugin% &eМаксимальная сумма, которую вы можете хранить на вашем текущем уровне банка: &a$%playerBankMaxStorage%'
+    targetBankMaxStorage: '%plugin% &eМаксимальная сумма, которую %targetName% может хранить на своем текущем уровне банка: &a$%targetBankMaxStorage%'
+    playerBankMaxLevel: '%plugin% &aМаксимальный уровень банка вашего текущего банка &e%playerBankMaxLevel%.'
+    targetBankMaxLevel: '%plugin% &aМаксимальный уровень банка банка %targetName% &e%targetBankMaxLevel%.'
   profit:
-    # переменные: %plugin%, $%profit%, %percentage%
-    received: '%plugin% &aВы получили $%profit% за хранение денег в банке!'
-    # переменные: %plugin%, %amount%
-    min-storage: '%plugin% &cДля получения прибыли вам нужно иметь как минимум $%amount% на банковском счете.'
-    # переменные: %plugin%
-    max-storage: '%plugin% &cВам нужно снять деньги с банковского счета, чтобы продолжить получать прибыль.'
-  # переменные: %plugin%
+    received: '%plugin% &aВы получили $%keepInBankProfit% за хранение ваших денег в банке! Прибыль банка: %profitPercentage%%'
+    min-storage: '%plugin% &cВам нужно иметь как минимум $%minAmountToWinProfit% в банке, чтобы начать получать прибыль.'
+    max-storage: '%plugin% &cВам нужно снять деньги из банка, чтобы продолжить получать прибыль.'
   notPlayer: '%plugin% &cТолько игроки могут использовать эту команду.'
-  # переменные: %plugin%, %player%
-  notFoundPlayer: '%plugin% &cИгрок %player% не найден.'
+  notFoundPlayer: '%plugin% &cИгрок %targetName% не найден.'

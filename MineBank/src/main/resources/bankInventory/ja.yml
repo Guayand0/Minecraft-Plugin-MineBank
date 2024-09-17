@@ -1,7 +1,39 @@
+# ############################################################################################################# #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# |                                                                                                           | #
+# |                      ███╗   ███╗██╗███╗  ██╗███████╗██████╗  █████╗ ███╗  ██╗██╗  ██╗                     | #
+# |                      ████╗ ████║██║████╗ ██║██╔════╝██╔══██╗██╔══██╗████╗ ██║██║ ██╔╝                     | #
+# |                      ██╔████╔██║██║██╔██╗██║█████╗  ██████╦╝███████║██╔██╗██║█████═╝                      | #
+# |                      ██║╚██╔╝██║██║██║╚████║██╔══╝  ██╔══██╗██╔══██║██║╚████║██╔═██╗                      | #
+# |                      ██║ ╚═╝ ██║██║██║ ╚███║███████╗██████╦╝██║  ██║██║ ╚███║██║ ╚██╗                     | #
+# |                      ╚═╝     ╚═╝╚═╝╚═╝  ╚══╝╚══════╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚══╝╚═╝  ╚═╝                     | #
+# |                                                                                                           | #
+# |                    Youtube:    www.youtube.com/@davigamer1614                                             | #
+# |                    Github:     https://github.com/Guayand0/Minecraft-Plugin-MineBank                      | #
+# |                                                                                                           | #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# ############################################################################################################# #
+
+# ############################################################################################################# #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# |                                                                                                           | #
+# |                  ██╗███╗  ██╗██╗   ██╗███████╗███╗  ██╗████████╗ █████╗ ██████╗ ██╗   ██╗                 | #
+# |                  ██║████╗ ██║██║   ██║██╔════╝████╗ ██║╚══██╔══╝██╔══██╗██╔══██╗╚██╗ ██╔╝                 | #
+# |                  ██║██╔██╗██║╚██╗ ██╔╝█████╗  ██╔██╗██║   ██║   ██║  ██║██████╔╝ ╚████╔╝                  | #
+# |                  ██║██║╚████║ ╚████╔╝ ██╔══╝  ██║╚████║   ██║   ██║  ██║██╔══██╗  ╚██╔╝                   | #
+# |                  ██║██║ ╚███║  ╚██╔╝  ███████╗██║ ╚███║   ██║   ╚█████╔╝██║  ██║   ██║                    | #
+# |                  ╚═╝╚═╝  ╚══╝   ╚═╝   ╚══════╝╚═╝  ╚══╝   ╚═╝    ╚════╝ ╚═╝  ╚═╝   ╚═╝                    | #
+# |                                                                                                           | #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# ############################################################################################################# #
+
 bank-inventory:
   main:
+    # インベントリ名
     name: '&4&l[&6&lMineBank&4&l]'
+    # インベントリサイズ
     size: 6 # 9*6=54 54スロット（6行）のインベントリを作成
+    # インベントリ内のスロット位置
     position-slot:
       # デフォルトはすべてのスロットが空
       default:
@@ -9,119 +41,156 @@ bank-inventory:
         amount: 1
         name: ' '
       # インベントリスロット: https://wiki.vg/images/b/bb/DoubleChest-slots.png
-      11:
+      10:
+        # マインクラフトの素材: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
         item: EMERALD
+        # アイテムの量
         amount: 1
-        name: '&a500追加'
+        # アイテム名
+        name: '&a500を追加'
+        # アイテムの説明
         lore:
           - '&fクリックして &e500 &fを銀行に預ける'
+        # アイテムをクリックしたときのコマンド
         command: 'bank add 500'
+        # コマンドを使用するのに必要な権限
         permission: 'minebank.use'
-      12:
-        item: EMERALD
-        amount: 2
-        name: '&a半分追加'
-        lore:
-          - '&fクリックして &e半分 &fを預ける'
-          - '&f最大ストレージバランスの'
-        command: 'bank add mid'
-      20:
+      11:
         item: EMERALD
         amount: 3
-        name: '&a最大追加'
+        name: '&a最大の半分を追加'
         lore:
-          - '&fクリックして &e最大 &fを預ける'
-          - '&fストレージバランスの'
+          - '&fクリックして最大の半分を'
+          - '&f預ける'
+        command: 'bank add midmax'
+      12:
+        item: EMERALD
+        amount: 5
+        name: '&a最大を追加'
+        lore:
+          - '&fクリックして最大額を'
+          - '&f預ける'
         command: 'bank add max'
-      21:
+      19:
+        item: EMERALD
+        amount: 2
+        name: '&a2000を追加'
+        lore:
+          - '&fクリックして &e2000 &fを銀行に預ける'
+        command: 'bank add 2000'
+      20:
         item: EMERALD
         amount: 4
+        name: '&a現在の半分を追加'
+        lore:
+          - '&fクリックして現在の半分を'
+          - '&f預ける'
+        command: 'bank add mid'
+      21:
+        item: EMERALD
+        amount: 6
         name: '&aカスタム追加'
         lore:
-          - '&fクリックして &eカスタム金額 &fを預ける'
-          - '&fあなたの銀行に'
+          - '&fクリックしてカスタム額を'
+          - '&f銀行に預ける'
         command: 'bank add <amount>'
 
       14:
         item: REDSTONE
         amount: 1
-        name: '&c500引き出し'
+        name: '&c500を引き出す'
         lore:
           - '&fクリックして &e500 &fを銀行から引き出す'
         command: 'bank take 500'
       15:
         item: REDSTONE
-        amount: 2
-        name: '&c半分引き出し'
+        amount: 3
+        name: '&c最大の半分を引き出す'
         lore:
-          - '&fクリックして &e半分 &fを引き出す'
-          - '&fストレージバランスの'
-        command: 'bank take mid'
+          - '&fクリックして最大の半分を'
+          - '&f引き出す'
+        command: 'bank take midmax'
+      16:
+        item: REDSTONE
+        amount: 5
+        name: '&c最大を引き出す'
+        lore:
+          - '&fクリックして最大額を'
+          - '&f銀行から引き出す'
+        command: 'bank take max'
       23:
         item: REDSTONE
-        amount: 3
-        name: '&c最大引き出し'
+        amount: 2
+        name: '&c2000を引き出す'
         lore:
-          - '&fクリックして &e最大 &fを引き出す'
-          - '&fストレージバランスの'
-        command: 'bank take max'
+          - '&fクリックして &e2000 &fを銀行から引き出す'
+        command: 'bank take 2000'
       24:
         item: REDSTONE
         amount: 4
+        name: '&c現在の半分を引き出す'
+        lore:
+          - '&fクリックして現在の半分を'
+          - '&f引き出す'
+        command: 'bank take mid'
+      25:
+        item: REDSTONE
+        amount: 6
         name: '&cカスタム引き出し'
         lore:
-          - '&fクリックして &eカスタム金額 &fを引き出す'
-          - '&fあなたの銀行から'
+          - '&fクリックしてカスタム額を'
+          - '&f銀行から引き出す'
         command: 'bank take <amount>'
 
       38:
         item: PLAYER_HEAD
         # https://minecraft-heads.com/custom-heads/head/50151-dollar
-        # バージョン1.8から1.20.2まで（「開発者向け：値」セクション）
-        # texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjg4OWNmY2JhY2JlNTk4ZThhMWNkODYxMGI0OWZjYjYyNjQ0ZThjYmE5ZDQ5MTFkMTIxMTM0NTA2ZDhlYTFiNyJ9fX0='
-        # バージョン1.20.4以降（「開発者向け：Minecraft URL」セクション）
-        texture: 'http://textures.minecraft.net/texture/b889cfcbacbe598e8a1cd8610b49fcb62644e8cba9d4911d121134506d8ea1b7'
+        # 1.8から1.20.2までのバージョン用（「For Developers: Value」セクション）
+        texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjg4OWNmY2JhY2JlNTk4ZThhMWNkODYxMGI0OWZjYjYyNjQ0ZThjYmE5ZDQ5MTFkMTIxMTM0NTA2ZDhlYTFiNyJ9fX0='
+        # 1.20.4以降のバージョン用（「For Developers: Minecraft URL」セクション）
+        # texture: 'http://textures.minecraft.net/texture/b889cfcbacbe598e8a1cd8610b49fcb62644e8cba9d4911d121134506d8ea1b7'
         amount: 1
         name: '&eあなたのアカウント'
         lore:
-          - '&a残高: &f%playerBalance%'
+          - '&a銀行: &f%playerBankName%'
+          - '&a残高: &f%playerBankBalance%/%playerBankMaxStorage%'
+          - '&aレベル: &f%playerBankLevel%/%playerBankMaxLevel%'
           - ''
-          - '&a銀行残高: &f%bankBalance%/%maxStorage%'
-          - '&a銀行レベル: &f%level%/%maxLevel%'
+          - '&a経済: &f%playerBalance%'
       40:
         item: PLAYER_HEAD
         # https://minecraft-heads.com/custom-heads/head/70110-level-up
-        # バージョン1.8から1.20.2まで（「開発者向け：値」セクション）
-        # texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjQxNWEzNTQ2NmM3NTk5MDNhNDIzNjgyMjZmOGI0ODVhNDdiYjE2N2YwYTFlOTc4YjU1Mzg4ODEyNGE4OTA5ZCJ9fX0='
-        # バージョン1.20.4以降（「開発者向け：Minecraft URL」セクション）
-        texture: 'http://textures.minecraft.net/texture/6415a35466c759903a42368226f8b485a47bb167f0a1e978b553888124a8909d'
+        # 1.8から1.20.2までのバージョン用（「For Developers: Value」セクション）
+        texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjQxNWEzNTQ2NmM3NTk5MDNhNDIzNjgyMjZmOGI0ODVhNDdiYjE2N2YwYTFlOTc4YjU1Mzg4ODEyNGE4OTA5ZCJ9fX0='
+        # 1.20.4以降のバージョン用（「For Developers: Minecraft URL」セクション）
+        # texture: 'http://textures.minecraft.net/texture/6415a35466c759903a42368226f8b485a47bb167f0a1e978b553888124a8909d'
         amount: 1
         name: '&eレベルアップ'
         lore:
-          - '&a次のレベル: &f%bankBalance%/%nextLevelBalance%'
-          - '&a銀行レベル: &f%level%/%maxLevel%'
+          - '&a次のレベル: &f%playerBankBalance%/%unlockNextLevelPrice%'
+          - '&a銀行レベル: &f%playerBankLevel%/%playerBankMaxLevel%'
           - ''
-          - '&fクリックして &e銀行のレベルを上げる &f'
-          - '&f十分なお金がある場合'
+          - '&fクリックして &e銀行のレベルをアップ'
+          - '&fさせる（十分なお金があれば）'
         command: 'bank levelup'
       42:
         item: PLAYER_HEAD
         # https://minecraft-heads.com/custom-heads/head/74737-gilded-blackstone-1
-        # バージョン1.8から1.20.2まで（「開発者向け：値」セクション）
-        # texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODZiYzE4NzcyYWNkMzQzZTZhYjIwMTAzYzRhOWU0MjExNWYyMjQ4NDI3ZWNiZDIwNjcxZDZjZDI0ZWU3ZWY4YyJ9fX0='
-        # バージョン1.20.4以降（「開発者向け：Minecraft URL」セクション）
-        texture: 'http://textures.minecraft.net/texture/86bc18772acd343e6ab20103c4a9e42115f2248427ecbd20671d6cd24ee7ef8c'
+        # 1.8から1.20.2までのバージョン用（「For Developers: Value」セクション）
+        texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODZiYzE4NzcyYWNkMzQzZTZhYjIwMTAzYzRhOWU0MjExNWYyMjQ4NDI3ZWNiZDIwNjcxZDZjZDI0ZWU3ZWY4YyJ9fX0='
+        # 1.20.4以降のバージョン用（「For Developers: Minecraft URL」セクション）
+        # texture: 'http://textures.minecraft.net/texture/86bc18772acd343e6ab20103c4a9e42115f2248427ecbd20671d6cd24ee7ef8c'
         amount: 1
-        name: '&eバンクランキング'
+        name: '&eバンクトップ'
         lore:
-          # 最大10人のプレイヤーを追加できます
-          - '&aトップ 1: &f%playerName<1>% - %bankBalance<1>%'
-          - '&aトップ 2: &f%playerName<2>% - %bankBalance<2>%'
-          - '&aトップ 3: &f%playerName<3>% - %bankBalance<3>%'
+          # 最大50人まで追加可能
+          - '&aトップ %bankTopPosition<1>%: &f%bankTopName<1>% - %bankTopBankName<1>% - $%bankTopBalance<1>%'
+          - '&aトップ %bankTopPosition<2>%: &f%bankTopName<2>% - %bankTopBankName<2>% - $%bankTopBalance<2>%'
+          - '&aトップ %bankTopPosition<3>%: &f%bankTopName<3>% - %bankTopBankName<3>% - $%bankTopBalance<3>%'
           - ''
           - '&6あなたの順位:'
-          - '&aトップ %playerTop%: &b%playerName% - %bankBalance%'
+          - '&aトップ %playerBankTop%: &b%playerName% - %playerBankName% - $%playerBankBalance%'
           - ''
-          - '&fクリックして &eトップ 10 プレイヤー'
-          - '&fを確認'
+          - '&fクリックして &eトップ10プレイヤー'
+          - '&f銀行残高が最も多いプレイヤーを表示'
         command: 'bank baltop'

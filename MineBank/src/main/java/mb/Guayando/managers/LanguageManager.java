@@ -1,4 +1,4 @@
-package mb.Guayando.config;
+package mb.Guayando.managers;
 
 import mb.Guayando.MineBank;
 import mb.Guayando.utils.MessageUtils;
@@ -77,7 +77,6 @@ public class LanguageManager {
 
     public void reloadConfig() {
         plugin.reloadConfig();
-        plugin.getConfigManager().reloadConfig();
         // Obtener el idioma seleccionado de la configuración
         String selectedLanguage = plugin.getConfig().getString("config.message-language", "en");
         // Cargar el archivo de idioma seleccionado

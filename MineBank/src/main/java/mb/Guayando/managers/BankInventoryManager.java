@@ -1,4 +1,4 @@
-package mb.Guayando.config;
+package mb.Guayando.managers;
 
 import mb.Guayando.MineBank;
 import mb.Guayando.utils.MessageUtils;

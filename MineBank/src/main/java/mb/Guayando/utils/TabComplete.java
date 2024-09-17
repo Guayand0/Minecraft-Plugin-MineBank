@@ -64,10 +64,8 @@ public class TabComplete implements TabCompleter {
                     completions.addAll(Arrays.asList("true", "false"));
                 }
             } else if (args.length >= 3 && args[0].equalsIgnoreCase("max")) {
-                if (args.length == 3 && (args[1].equalsIgnoreCase("balance") || args[1].equalsIgnoreCase("bal"))) {
-                    // Añadir lista de jugadores conectados
-                    completions.addAll(Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList()));
-                }
+                // Añadir lista de jugadores conectados
+                completions.addAll(Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList()));
             }
         }
         return completions.stream().filter(option -> option.toLowerCase().startsWith(args[args.length - 1].toLowerCase())).collect(Collectors.toList());

@@ -5,18 +5,14 @@
 package mb.Guayando.commands;
 
 import mb.Guayando.MineBank;
-import mb.Guayando.commands.subcommandsbank.*;
-import mb.Guayando.config.BankInventoryManager;
-import mb.Guayando.event.BankInventoryEvent;
-import mb.Guayando.config.BankManager;
-import mb.Guayando.utils.MessageUtils;
-import mb.Guayando.config.LanguageManager;
-import me.clip.placeholderapi.PlaceholderAPI;
+import mb.Guayando.commands.subcommands.*;
+import mb.Guayando.managers.*;
+import mb.Guayando.events.*;
+import mb.Guayando.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 public class ComandoBank implements CommandExecutor {
@@ -25,7 +21,6 @@ public class ComandoBank implements CommandExecutor {
     private final LanguageManager languageManager;
     private final BankManager bankManager;
     private final BankInventoryManager bankInventoryManager;
-    private final FileConfiguration config;
     private final BankInventoryEvent bankInventoryEvent;
 
     private final SubComandoBalance subComandoBalance;
@@ -43,7 +38,6 @@ public class ComandoBank implements CommandExecutor {
         this.languageManager = plugin.getLanguageManager();
         this.bankManager = plugin.getBankManager();
         this.bankInventoryManager = plugin.getBankInventoryManager();
-        this.config = plugin.getConfig();
         this.bankInventoryEvent = new BankInventoryEvent(plugin); // Inicializar BankInventoryEvent
         plugin.getServer().getPluginManager().registerEvents(bankInventoryEvent, plugin); // Registrar el evento
 
@@ -61,13 +55,19 @@ public class ComandoBank implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         languageManager.reloadLanguage();
-        bankManager.reloadBank(); // Recargar la configuración del banco
+        bankManager.reloadBank();
         plugin.reloadConfig();
         bankInventoryManager.reloadInventory();
 
-        // Obtener el valor actualizado del booleano
-        boolean bankUse = plugin.getConfig().getBoolean("config.bank-use");
         Player player = (Player) sender;
+
+        if (!(player instanceof Player)) {
+            notPlayer(player);
+            return true;
+        }
+
+        // Obtener el valor actualizado del booleano
+        boolean bankUse = plugin.getConfig().getBoolean("config.bank-use", true);
         if (!bankUse) {
             bankDisabled(player);
             return true;
@@ -78,10 +78,6 @@ public class ComandoBank implements CommandExecutor {
             return true;
         }
 
-        if (!(player instanceof Player)) {
-            notPlayer(player);
-            return true;
-        }
         // Sin argumentos
         if (args.length == 0) {
             // Detectar la versión de Minecraft
@@ -97,62 +93,57 @@ public class ComandoBank implements CommandExecutor {
 
         String action = args[0].toLowerCase();
 
-        if (action.equals("bal") || action.equals("balance")) {
-            // Delegar al subcomando
-            return subComandoBalance.onCommand(player, command, label, args);
-        } else if (action.equals("add") || action.equals("deposit")) {
-            return subComandoAdd.onCommand(player, command, label, args);
-        } else if (action.equals("take") || action.equals("withdraw")) {
-            return subComandoTake.onCommand(player, command, label, args);
-        } else if (action.equals("max")) {
-            return subComandoMax.onCommand(player, command, label, args);
-        } else if (action.equals("top") || action.equals("baltop") || action.equals("balancetop")) {
-            return subComandoBalTop.onCommand(player, command, label, args);
-        } else if (action.equals("level")) {
-            return subComandoLevel.onCommand(player, command, label, args);
-        } else if (action.equals("levelup")) {
-            return subComandoLevelUp.onCommand(player, command, label, args);
-        } else if (action.equals("set")) {
-            if (!player.hasPermission("minebank.admin")) {
-                noPerm(player);
-                return true;
-            }
-            return subComandoSet.onCommand(player, command, label, args);
-        } else if (action.equals("help")) {
-            return subComandoHelp.onCommand(player, command, label, args);
-        } else {
-            bankUsage(player);
+        switch (action) {
+            case "bal":
+            case "balance":
+                // Delegar al subcomando
+                return subComandoBalance.onCommand(player, command, label, args);
+            case "add":
+            case "deposit":
+                return subComandoAdd.onCommand(player, command, label, args);
+            case "take":
+            case "withdraw":
+                return subComandoTake.onCommand(player, command, label, args);
+            case "max":
+                return subComandoMax.onCommand(player, command, label, args);
+            case "top":
+            case "baltop":
+            case "balancetop":
+                return subComandoBalTop.onCommand(player, command, label, args);
+            case "level":
+                return subComandoLevel.onCommand(player, command, label, args);
+            case "levelup":
+                return subComandoLevelUp.onCommand(player, command, label, args);
+            case "set":
+                if (!player.hasPermission("minebank.admin")) {
+                    noPerm(player);
+                    return true;
+                }
+                return subComandoSet.onCommand(player, command, label, args);
+            case "help":
+                return subComandoHelp.onCommand(player, command, label, args);
+            default:
+                bankUsage(player);
+                break;
         }
-        // Aquí puedes añadir más lógica si el comando es ejecutado por un jugador.
+
         return true;
     }
 
     private void bankDisabled(Player player){
-        String message = languageManager.getMessage("config.bank-disabled");
-        if (message != null) {
-            message = message.replaceAll("%plugin%", MineBank.prefix);
-            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
-        }
+        String messagePath = "config.bank-disabled";
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
     }
     public void bankUsage(Player player){
-        String message = languageManager.getMessage("bank.usage.bank");
-        if (message != null) {
-            message = message.replaceAll("%plugin%", MineBank.prefix);
-            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
-        }
+        String messagePath = "bank.usage.bank";
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
     }
     private void notPlayer(Player player) {
-        String message = languageManager.getMessage("bank.notPlayer");
-        if (message != null) {
-            message = message.replaceAll("%plugin%", MineBank.prefix);
-            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
-        }
+        String messagePath = "bank.notPlayer";
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
     }
     private void noPerm(Player player){
-        String message = languageManager.getMessage("messages.no-perm");
-        if (message != null) {
-            message = message.replaceAll("%plugin%", MineBank.prefix);
-            player.sendMessage(MessageUtils.getColoredMessage(me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message)));// Procesar placeholders de PlaceholderAPI
-        }
+        String messagePath = "messages.no-perm";
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
     }
 }
