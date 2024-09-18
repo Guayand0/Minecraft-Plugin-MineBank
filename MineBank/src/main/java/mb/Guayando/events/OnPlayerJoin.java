@@ -2,7 +2,6 @@ package mb.Guayando.events;
 
 import mb.Guayando.MineBank;
 import mb.Guayando.managers.BankManager;
-import mb.Guayando.managers.LanguageManager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -35,7 +34,8 @@ public class OnPlayerJoin implements Listener {
         Player player = event.getPlayer();
         String playerPath = "bank." + player.getUniqueId() + "." + player.getName();
 
-        if (!bankConfig.contains(playerPath)) {
+        // Si el jugador no tiene el campo "bank-name", asignarlo
+        if (!bankConfig.contains(playerPath + ".bank-name")) {
             // Buscar el primer banco disponible en la configuración
             String firstBankName = null;
             if (config.contains("bank")) {
@@ -50,11 +50,20 @@ public class OnPlayerJoin implements Listener {
                 firstBankName = "NULL";
             }
 
-            // Establecer al unirse
             bankConfig.set(playerPath + ".bank-name", firstBankName);
-            bankConfig.set(playerPath + ".balance", 0);
-            bankConfig.set(playerPath + ".level", 1);
-            bankManager.saveBank(); // Guarda la configuración
         }
+
+        // Si el jugador no tiene el campo "balance", asignar 0 por defecto
+        if (!bankConfig.contains(playerPath + ".balance")) {
+            bankConfig.set(playerPath + ".balance", 0);
+        }
+
+        // Si el jugador no tiene el campo "level", asignar 1 por defecto
+        if (!bankConfig.contains(playerPath + ".level")) {
+            bankConfig.set(playerPath + ".level", 1);
+        }
+
+        // Guardar la configuración del banco después de las asignaciones
+        bankManager.saveBank();
     }
 }

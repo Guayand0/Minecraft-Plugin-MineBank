@@ -151,8 +151,16 @@ public class MethodUtils {
 
                     line = line.replace(topBankPosition, String.valueOf(i))
                             .replace(topBankName, topPlayerName)
-                            .replace(topBankBalance, String.valueOf(topBankBalanceValue))
-                            .replace(topBankBankName, topBankBankNameValue.substring(0, 1).toUpperCase() + topBankBankNameValue.substring(1).toLowerCase()); // Reemplazar el nombre del banco
+                            .replace(topBankBalance, String.valueOf(topBankBalanceValue));
+
+                    if (topBankBankNameValue != null && !topBankBankNameValue.isEmpty()) {
+                        // Solo realiza substring si el valor no es nulo ni vacío
+                        line = line.replace(topBankBankName, topBankBankNameValue.substring(0, 1).toUpperCase() + topBankBankNameValue.substring(1).toLowerCase());
+                    } else {
+                        // Si es nulo o vacío, reemplaza con un valor por defecto
+                        line = line.replace(topBankBankName, "N/A");
+                    }
+
                 } else {
                     // Si el ranking solicitado está fuera del rango, reemplaza con vacío o mensaje por defecto
                     line = line.replace(topBankPosition, String.valueOf(i))
