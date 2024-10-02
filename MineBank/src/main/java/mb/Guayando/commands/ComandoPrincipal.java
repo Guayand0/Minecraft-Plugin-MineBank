@@ -83,7 +83,7 @@ public class ComandoPrincipal implements CommandExecutor {
 
     public void help(Player player) {
         String messagePath = "messages.help";
-        MessageUtils.sendMessageListWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageListWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     public void subCommandReload(Player player) {
@@ -93,40 +93,40 @@ public class ComandoPrincipal implements CommandExecutor {
         plugin.scheduleBankTask(); // Reiniciar la tarea del banco después de recargar la configuración
 
         String messagePath = "messages.reload";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     public void subCommandVersion(Player player) {
         String messagePath = "messages.version";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     public void subCommandAutor(Player player) {
         String messagePath = "messages.author";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     public void subCommandPlugin(Player player){
-        player.sendMessage(MessageUtils.applyPlaceholdersAndColor(player, null, "%plugin% &7%link%", plugin, 0));
+        player.sendMessage(MessageUtils.applyPlaceholdersAndColor(player, null, "%plugin% &7%link%", plugin, 0, MineBank.getPlaceholderAPI()));
     }
 
     public void subCommandPermissions(Player player){
         String messagePath = "messages.permissions";
-        MessageUtils.sendMessageListWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageListWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     public void noPerm(Player player){
         String messagePath = "messages.no-perm";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     public void noArg(Player player){
         String messagePath = "messages.command-no-argument";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     public void consoleError(Player player){
         String messagePath = "messages.console-error";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 }

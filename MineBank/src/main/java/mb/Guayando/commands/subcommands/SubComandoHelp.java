@@ -22,7 +22,7 @@ public class SubComandoHelp implements CommandExecutor {
         Player player = (Player) sender;
 
         String messagePath = "messages.help-bank";
-        MessageUtils.sendMessageListWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageListWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
         return true;
     }
 }

@@ -22,7 +22,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.profile.PlayerProfile;
 import org.bukkit.profile.PlayerTextures;
 
@@ -77,7 +76,7 @@ public class BankInventoryEvent implements Listener {
         player.openInventory(bankInventory);
         playerInventories.put(player, bankInventory);
         String inventoryName = languageInventoryManager.getString("bank-inventory.main.name");
-        inventoryName = MessageUtils.applyPlaceholdersAndColor(player, null, inventoryName, plugin, 0);
+        inventoryName = MessageUtils.applyPlaceholdersAndColor(player, null, inventoryName, plugin, 0, MineBank.getPlaceholderAPI());
         playerInventoryNames.put(player, inventoryName);
         updatingPlayers.add(player);
     }
@@ -85,7 +84,7 @@ public class BankInventoryEvent implements Listener {
     private Inventory createInventory(FileConfiguration languageInventoryManager, Player player) {
         int size = languageInventoryManager.getInt("bank-inventory.main.size", 6);
         String inventoryName = languageInventoryManager.getString("bank-inventory.main.name");
-        return Bukkit.createInventory(null, size * 9, MessageUtils.applyPlaceholdersAndColor(player,null, inventoryName, plugin, 0));
+        return Bukkit.createInventory(null, size * 9, MessageUtils.applyPlaceholdersAndColor(player,null, inventoryName, plugin, 0, MineBank.getPlaceholderAPI()));
     }
 
     private void loadItemsIntoInventory(FileConfiguration languageInventoryManager, Player player) {
@@ -119,7 +118,7 @@ public class BankInventoryEvent implements Listener {
         Material material = Material.getMaterial(materialName.toUpperCase());
         int amount = itemData.getInt("amount");
         String name = itemData.getString("name");
-        name = MessageUtils.applyPlaceholdersAndColor(player, null, name, plugin, 0);
+        name = MessageUtils.applyPlaceholdersAndColor(player, null, name, plugin, 0, MineBank.getPlaceholderAPI());
         ItemStack item = new ItemStack(material, amount);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
@@ -138,7 +137,7 @@ public class BankInventoryEvent implements Listener {
         String defaultMaterialName = (String) defaultItemConfig.get("item");
         Material defaultMaterial = Material.getMaterial(defaultMaterialName.toUpperCase());
         int defaultAmount = (int) defaultItemConfig.get("amount");
-        String defaultName = MessageUtils.applyPlaceholdersAndColor(player, null, (String) defaultItemConfig.get("name"), plugin, 0);
+        String defaultName = MessageUtils.applyPlaceholdersAndColor(player, null, (String) defaultItemConfig.get("name"), plugin, 0, MineBank.getPlaceholderAPI());
 
         ItemStack defaultItem = new ItemStack(defaultMaterial, defaultAmount);
         ItemMeta defaultMeta = defaultItem.getItemMeta();
@@ -181,7 +180,7 @@ public class BankInventoryEvent implements Listener {
         checkConfigChange();
         FileConfiguration languageInventoryManager = bankInventoryManager.getCustomConfig("bankInventory/" + bankInventoryManager.getBankInventoryFile());
         String expectedInventoryName = languageInventoryManager.getString("bank-inventory.main.name");
-        if (!event.getView().getTitle().equals(MessageUtils.applyPlaceholdersAndColor(player, null, expectedInventoryName, plugin, 0))) {
+        if (!event.getView().getTitle().equals(MessageUtils.applyPlaceholdersAndColor(player, null, expectedInventoryName, plugin, 0, MineBank.getPlaceholderAPI()))) {
             event.setCancelled(true);
             return;
         }
@@ -234,7 +233,7 @@ public class BankInventoryEvent implements Listener {
         }
         FileConfiguration languageInventoryManager = bankInventoryManager.getCustomConfig("bankInventory/" + bankInventoryManager.getBankInventoryFile());
         String newInventoryName = languageInventoryManager.getString("bank-inventory.main.name");
-        newInventoryName = MessageUtils.applyPlaceholdersAndColor(player, null, newInventoryName, plugin, 0);
+        newInventoryName = MessageUtils.applyPlaceholdersAndColor(player, null, newInventoryName, plugin, 0, MineBank.getPlaceholderAPI());
         if (!newInventoryName.equals(playerInventoryNames.get(player))) {
             player.closeInventory();
             openBankInventory(player);
@@ -434,6 +433,6 @@ public class BankInventoryEvent implements Listener {
 
     private void noPerm(Player player){
         String messagePath = "messages.no-perm";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 }

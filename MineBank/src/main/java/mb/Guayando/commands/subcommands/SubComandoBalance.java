@@ -46,16 +46,16 @@ public class SubComandoBalance implements CommandExecutor {
 
     public void playerBalance(Player player) {
         String messagePath = "bank.bal.playerBankBalance";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void targetBalance(String targetPlayerName, Player player) {
         String messagePath = "bank.bal.targetBankBalance";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void notFoundPlayer(Player player, String targetPlayerName) {
         String messagePath = "bank.notFoundPlayer";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 }

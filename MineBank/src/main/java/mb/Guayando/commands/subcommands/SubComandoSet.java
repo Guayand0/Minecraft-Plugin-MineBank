@@ -131,36 +131,36 @@ public class SubComandoSet implements CommandExecutor {
 
     private void notFoundPlayer(Player player, String targetPlayerName) {
         String messagePath = "bank.notFoundPlayer";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void depositFailure(Player player, String targetPlayerName) {
         String messagePath = "bank.set.depositFailure";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void maxBalance(Player player, String targetPlayerName) {
         String messagePath = "bank.set.maxBalance";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void maxLevel(Player player, String targetPlayerName) {
         String messagePath = "bank.set.maxLevel";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void setBalanceSuccess(Player player, String targetPlayerName) {
         String messagePath = "bank.set.setBalanceSuccess";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, amount);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, amount, MineBank.getPlaceholderAPI());
     }
 
     private void setLevelSuccess(Player player, String targetPlayerName) {
         String messagePath = "bank.set.setLevelSuccess";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, level);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, level, MineBank.getPlaceholderAPI());
     }
 
     private void bankSetUsage(Player player) {
         String messagePath = "bank.usage.set";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 }

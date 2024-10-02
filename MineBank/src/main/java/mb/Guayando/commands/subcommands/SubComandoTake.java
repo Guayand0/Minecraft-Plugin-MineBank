@@ -91,21 +91,21 @@ public class SubComandoTake implements CommandExecutor {
 
     private void takeUsage(Player player) {
         String messagePath = "bank.usage.take";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void withdrawFailure(Player player) {
         String messagePath = "bank.take.withdrawFailure";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void withdrawExceeds(Player player) {
         String messagePath = "bank.take.withdrawExceeds";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void withdrawSuccess(Player player) {
         String messagePath = "bank.take.withdrawSuccess";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, amount);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, amount, MineBank.getPlaceholderAPI());
     }
 }

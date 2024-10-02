@@ -45,16 +45,16 @@ public class SubComandoLevel implements CommandExecutor {
 
     private void playerBankLevel(Player player) {
         String messagePath = "bank.level.playerBankLevel";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void targetBankLevel(Player player, String targetPlayerName) {
         String messagePath = "bank.level.targetBankLevel";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void notFoundPlayer(Player player, String targetPlayerName) {
         String messagePath = "bank.notFoundPlayer";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 }

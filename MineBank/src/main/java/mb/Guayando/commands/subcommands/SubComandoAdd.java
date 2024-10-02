@@ -93,26 +93,26 @@ public class SubComandoAdd implements CommandExecutor {
 
     public void bankAdd(Player player){
         String messagePath = "bank.usage.add";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void balanceExceeds(Player player) {
         String messagePath = "bank.add.balanceExceeds";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void depositFailure(Player player) {
         String messagePath = "bank.add.depositFailure";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void notEnoughMoneyAdd(Player player) {
         String messagePath = "bank.add.notEnoughMoney";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void depositSuccess(Player player) {
         String messagePath = "bank.add.depositSuccess";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, amount);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, amount, MineBank.getPlaceholderAPI());
     }
 }

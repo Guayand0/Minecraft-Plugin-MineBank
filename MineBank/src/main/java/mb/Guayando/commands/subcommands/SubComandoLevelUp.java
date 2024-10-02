@@ -82,22 +82,22 @@ public class SubComandoLevelUp implements CommandExecutor {
 
     private void successLevelUp(Player player) {
         String messagePath = "bank.levelup.success";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void notEnoughMoneyLevelUp(Player player) {
         String messagePath = "bank.levelup.notEnoughMoney";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void alreadyMaxLevel(Player player) {
         String messagePath = "bank.levelup.alreadyMax";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void unlockPriceError(Player player) {
         String messagePath = "bank.levelup.unlockPriceError";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
 
     }
 }

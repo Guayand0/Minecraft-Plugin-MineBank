@@ -20,18 +20,17 @@ public class UpdateChecker implements Listener{
         try{
             Player player = event.getPlayer();
             boolean updateChecker = plugin.getConfig().getBoolean("config.update-checker");
-            boolean isOutdatedVersion = !(plugin.getVersion().equals(plugin.getLatestVersion()));
             boolean updateCheckerWork = plugin.getUpdateCheckerWork();
 
             // Verificar si el mensaje de actualización debe enviarse
-            if (updateChecker && isOutdatedVersion) {
+            if (updateChecker && (MineBank.compareVersions(plugin.version, plugin.latestversion) < 0)) {
                 if (player.isOp() || player.hasPermission("minebank.updatechecker") || player.hasPermission("minebank.admin")) {
                     languageManager.reloadLanguage(); // Recargar el archivo de idioma
                     if(!updateCheckerWork){
                         plugin.comprobarActualizaciones();
                     }
                     String messagePath = "config.update-checker";
-                    MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+                    MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
                 }
             }
         }catch (NullPointerException e){

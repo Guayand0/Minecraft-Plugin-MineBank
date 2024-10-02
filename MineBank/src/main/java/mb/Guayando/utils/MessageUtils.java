@@ -22,7 +22,7 @@ public class MessageUtils {
         return ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(player, message));
     }
 
-    public static String applyPlaceholdersAndColor(Player player, String targetPlayerName, String message, MineBank plugin, int amount) {
+    public static String applyPlaceholdersAndColor(Player player, String targetPlayerName, String message, MineBank plugin, int amount, boolean PlaceholderAPIWorks) {
         FileConfiguration bankConfig = plugin.getBankManager().getBank(); // Obtener la configuración actualizada
         if (player != null) {
             String playerPath = "bank." + player.getUniqueId() + "." + player.getName();
@@ -117,27 +117,32 @@ public class MessageUtils {
         // Reemplazar los placeholders de los tops
         message = MethodUtils.replaceTopPlaceholders(message, plugin);
 
-        // Aplicar color y placeholders con PlaceholderAPI
-        return ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(player, message));
+        if (PlaceholderAPIWorks) {
+            // Aplicar color y placeholders con PlaceholderAPI
+            return getColoredMessage(PlaceholderAPI.setPlaceholders(player, message));
+        } else {
+            // Aplicar color y placeholders
+            return getColoredMessage(message);
+        }
     }
 
     // String messagePath = "bank.bal.playerBalance";
     // MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
-    public static void sendMessageWithPlaceholdersAndColor(Player player, String targetPlayerName, String messagePath, MineBank plugin, int amount) {
+    public static void sendMessageWithPlaceholdersAndColor(Player player, String targetPlayerName, String messagePath, MineBank plugin, int amount, boolean PlaceholderAPIWorks) {
         String message = plugin.getLanguageManager().getMessage(messagePath);
         if (player != null) {
-            message = applyPlaceholdersAndColor(player, targetPlayerName, message, plugin, amount);
+            message = applyPlaceholdersAndColor(player, targetPlayerName, message, plugin, amount, PlaceholderAPIWorks);
             player.sendMessage(message);
         }
     }
 
     // String messagePath = "bank.bal.playerBalance";
     // MessageUtils.sendMessageListWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
-    public static void sendMessageListWithPlaceholdersAndColor(Player player, String targetPlayerName, String messagePath, MineBank plugin, int amount) {
+    public static void sendMessageListWithPlaceholdersAndColor(Player player, String targetPlayerName, String messagePath, MineBank plugin, int amount, boolean PlaceholderAPIWorks) {
         List<String> messages = plugin.getLanguageManager().getStringList(messagePath);
         if (player != null) {
             for (String msg : messages) {
-                String processedMessage = applyPlaceholdersAndColor(player, targetPlayerName, msg, plugin, amount);
+                String processedMessage = applyPlaceholdersAndColor(player, targetPlayerName, msg, plugin, amount, PlaceholderAPIWorks);
                 player.sendMessage(processedMessage);
             }
         }

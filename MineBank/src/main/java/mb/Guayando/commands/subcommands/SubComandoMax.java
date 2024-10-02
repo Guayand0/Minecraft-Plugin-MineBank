@@ -69,33 +69,33 @@ public class SubComandoMax implements CommandExecutor {
 
     private void maxUsage(Player player) {
         String messagePath = "bank.usage.max";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void playerBankMaxStorage(Player player) {
         String messagePath = "bank.max.playerBankMaxStorage";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void targetBankMaxStorage(Player player) {
         // Mensaje de depuración
         String messagePath = "bank.max.targetBankMaxStorage";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void playerBankMaxLevel(Player player) {
         String messagePath = "bank.max.playerBankMaxLevel";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void targetBankMaxLevel(Player player) {
         // Mensaje de depuración
         String messagePath = "bank.max.targetBankMaxLevel";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 
     private void notFoundPlayer(Player player) {
         String messagePath = "bank.notFoundPlayer";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, targetPlayerName, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 }

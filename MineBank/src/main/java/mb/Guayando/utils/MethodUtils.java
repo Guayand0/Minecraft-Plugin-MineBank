@@ -62,17 +62,22 @@ public class MethodUtils {
 
     public static int getMaxBankLevel(MineBank plugin, String bankName) {
         int maxLevel = 1;
-        Set<String> levels = plugin.getConfig().getConfigurationSection("bank." + bankName + ".level").getKeys(false);
-        for (String level : levels) {
-            try {
-                int levelNumber = Integer.parseInt(level);
-                if (levelNumber > maxLevel) {
-                    maxLevel = levelNumber;
+        ConfigurationSection levelSection = plugin.getConfig().getConfigurationSection("bank." + bankName + ".level");
+
+        if (levelSection != null) {
+            Set<String> levels = levelSection.getKeys(false);
+            for (String level : levels) {
+                try {
+                    int levelNumber = Integer.parseInt(level);
+                    if (levelNumber > maxLevel) {
+                        maxLevel = levelNumber;
+                    }
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
                 }
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
             }
         }
+
         return maxLevel;
     }
 
@@ -111,7 +116,7 @@ public class MethodUtils {
         List<String> updatedLore = new ArrayList<>();
         for (String line : lore) {
             // Reemplazar placeholders dinámicos como %playerName<1>%
-            updatedLore.add(MessageUtils.applyPlaceholdersAndColor(player, null, replaceTopPlaceholders(line, plugin), plugin, 0));
+            updatedLore.add(MessageUtils.applyPlaceholdersAndColor(player, null, replaceTopPlaceholders(line, plugin), plugin, 0, MineBank.getPlaceholderAPI()));
         }
         return updatedLore;
     }

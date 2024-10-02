@@ -25,6 +25,7 @@ public class MineBank extends JavaPlugin implements Listener {
     public String version = getDescription().getVersion();
     public String latestversion;
     public boolean updateCheckerWork = true;
+    public static boolean PlaceholderAPI = true;
     private Economy economy;
     private LanguageManager languageManager;
     private BankManager bankManager;
@@ -50,8 +51,6 @@ public class MineBank extends JavaPlugin implements Listener {
             Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + " &aVault found and linked successfully."));
         }
 
-
-
         saveDefaultConfig();
         this.languageManager = new LanguageManager(this);
         this.bankManager = new BankManager(this);
@@ -72,10 +71,10 @@ public class MineBank extends JavaPlugin implements Listener {
                 Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + " &cError registering placeholders: " + e.getMessage()));
                 e.printStackTrace();
             }
+        }  else {
+            PlaceholderAPI = false;
         }
         Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage("&9<------------------------------------>"));
-
-
 
         // Ejecutar comprobarActualizaciones() después de que el servidor haya iniciado completamente
         new BukkitRunnable() {
@@ -89,16 +88,12 @@ public class MineBank extends JavaPlugin implements Listener {
         Metrics metrics = new Metrics(this, 23185); // Bstats
     }
 
-
-
     @Override
     public void onDisable() {
         if (bankTask != null) { bankTask.cancel(); } // Cancelar la tarea del banco al deshabilitar el plugin
         Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + " &fDisabled, (&aVersion: &b" + version + "&f)"));
         Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + " &6Thanks for using my plugin :)"));
     }
-
-
 
     public void registrarComandos() {
         this.getCommand("minebank").setExecutor(new ComandoPrincipal(this));
@@ -113,8 +108,6 @@ public class MineBank extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new OnPlayerJoin(this), this);
     }
 
-
-
     public LanguageManager getLanguageManager() {
         return languageManager;
     }
@@ -125,8 +118,6 @@ public class MineBank extends JavaPlugin implements Listener {
     public BankInventoryManager getBankInventoryManager() {
         return bankInventoryManager;
     }
-
-
 
     // Método para comprobar ultima version
     public void comprobarActualizaciones() {
@@ -150,7 +141,7 @@ public class MineBank extends JavaPlugin implements Listener {
         }
     }
     // Método para comparar versiones
-    private int compareVersions(String currentVersion, String latestVersion) {
+    public static int compareVersions(String currentVersion, String latestVersion) {
         String[] currentParts = currentVersion.split("\\.");
         String[] latestParts = latestVersion.split("\\.");
 
@@ -190,8 +181,6 @@ public class MineBank extends JavaPlugin implements Listener {
         return economy;
     }
 
-
-
     public void scheduleBankTask() {
         // Cancelar la tarea existente si ya está programada
         if (bankTask != null) {
@@ -209,7 +198,7 @@ public class MineBank extends JavaPlugin implements Listener {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 try {
                     // Aquí llamamos al método que aplica los placeholders para cada jugador conectado
-                    MessageUtils.applyPlaceholdersAndColor(player, null, null, this, 0);
+                    MessageUtils.applyPlaceholdersAndColor(player, null, null, this, 0, MineBank.getPlaceholderAPI());
                 } catch (NullPointerException e) {
                     // Manejar el error y registrar la excepción para depuración
                     //Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + " &cError al aplicar placeholders para el jugador " + player.getName() + ": " + e.getMessage()));
@@ -221,5 +210,9 @@ public class MineBank extends JavaPlugin implements Listener {
                 }
             }
         }, 0L, 40L); // 40 ticks son 2 segundos (20 ticks = 1 segundo)
+    }
+
+    public static boolean getPlaceholderAPI(){
+        return PlaceholderAPI;
     }
 }

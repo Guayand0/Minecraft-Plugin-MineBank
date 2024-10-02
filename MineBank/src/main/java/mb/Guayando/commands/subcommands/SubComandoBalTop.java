@@ -30,7 +30,7 @@ public class SubComandoBalTop implements CommandExecutor {
 
         // Enviar los mensajes ya formateados al jugador
         for (String message : topBalancesMessages) {
-            player.sendMessage(MessageUtils.applyPlaceholdersAndColor(player, null, message, plugin, 0));
+            player.sendMessage(MessageUtils.applyPlaceholdersAndColor(player, null, message, plugin, 0, MineBank.getPlaceholderAPI()));
         }
 
         return true;
@@ -38,6 +38,6 @@ public class SubComandoBalTop implements CommandExecutor {
 
     private void sendTitle(Player player) {
         String messagePath = "bank.top.title";
-        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0);
+        MessageUtils.sendMessageWithPlaceholdersAndColor(player, null, messagePath, plugin, 0, MineBank.getPlaceholderAPI());
     }
 }
