@@ -247,4 +247,9 @@ public class MethodUtils {
 
         return formattedMessages;
     }
+
+    // Método para obtener el simbolo de dinero
+    public static String getMoneySymbol(MineBank plugin) {
+        return "\\" + plugin.getConfig().getString("bank.money.symbol");
+    }
 }

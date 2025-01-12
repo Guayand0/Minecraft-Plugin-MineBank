@@ -156,7 +156,7 @@ bank-inventory:
           - '&aSolde: &f%playerBankBalance%/%playerBankMaxStorage%'
           - '&aNiveau: &f%playerBankLevel%/%playerBankMaxLevel%'
           - ''
-          - '&aÉconomie: &f%playerBalance%'
+          - '&aÉconomie: &f%moneySymbol%%playerBalance%'
       40:
         item: PLAYER_HEAD
         # https://minecraft-heads.com/custom-heads/head/70110-level-up
@@ -184,12 +184,12 @@ bank-inventory:
         name: '&eTop de la Banque'
         lore:
           # Vous pouvez ajouter jusqu'à 50 joueurs
-          - '&aTop %bankTopPosition<1>%: &f%bankTopName<1>% - %bankTopBankName<1>% - $%bankTopBalance<1>%'
-          - '&aTop %bankTopPosition<2>%: &f%bankTopName<2>% - %bankTopBankName<2>% - $%bankTopBalance<2>%'
-          - '&aTop %bankTopPosition<3>%: &f%bankTopName<3>% - %bankTopBankName<3>% - $%bankTopBalance<3>%'
+          - '&aTop %bankTopPosition<1>%: &f%bankTopName<1>% - %bankTopBankName<1>% - %moneySymbol%%bankTopBalance<1>%'
+          - '&aTop %bankTopPosition<2>%: &f%bankTopName<2>% - %bankTopBankName<2>% - %moneySymbol%%bankTopBalance<2>%'
+          - '&aTop %bankTopPosition<3>%: &f%bankTopName<3>% - %bankTopBankName<3>% - %moneySymbol%%bankTopBalance<3>%'
           - ''
           - '&6Votre position:'
-          - '&aTop %playerBankTop%: &b%playerName% - %playerBankName% - $%playerBankBalance%'
+          - '&aTop %playerBankTop%: &b%playerName% - %playerBankName% - %moneySymbol%%playerBankBalance%'
           - ''
           - '&fCliquez pour voir les &etop 10 joueurs'
           - '&favec le plus de solde bancaire'

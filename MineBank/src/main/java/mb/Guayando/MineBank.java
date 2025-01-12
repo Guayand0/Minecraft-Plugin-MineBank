@@ -14,10 +14,8 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
 
 public class MineBank extends JavaPlugin implements Listener {
 
@@ -25,13 +23,20 @@ public class MineBank extends JavaPlugin implements Listener {
     public String version = getDescription().getVersion();
     public String latestversion;
     public boolean updateCheckerWork = true;
-    public static boolean PlaceholderAPI = true;
+    public static boolean PlaceholderAPIEnable = false;
     private Economy economy;
+
+    //private final File configFile = new File(getDataFolder(), "config.yml");
+    //private final YamlUpdater updater = new YamlUpdater(configFile);
+
     private LanguageManager languageManager;
     private BankManager bankManager;
     private BankInventoryManager bankInventoryManager;
-    private ProfitBankTask bankTask;
     PermissionManager permissionManager;
+    private ProfitBankTask bankTask;
+
+    public static int spigotID = 119147;
+    public static int bstatsID = 23185;
 
     @Override
     public void onEnable() {
@@ -52,6 +57,8 @@ public class MineBank extends JavaPlugin implements Listener {
         }
 
         saveDefaultConfig();
+        //updater.addDefaultValues();
+
         this.languageManager = new LanguageManager(this);
         this.bankManager = new BankManager(this);
         this.bankInventoryManager = new BankInventoryManager(this);
@@ -63,6 +70,7 @@ public class MineBank extends JavaPlugin implements Listener {
 
         // Crear variables PlaceholderAPI
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            PlaceholderAPIEnable = true;
             Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + " &bPlaceholderAPI detected. Registering placeholders..."));
             try {
                 new PlaceholderAPIMineBank(this).register();
@@ -71,8 +79,6 @@ public class MineBank extends JavaPlugin implements Listener {
                 Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + " &cError registering placeholders: " + e.getMessage()));
                 e.printStackTrace();
             }
-        }  else {
-            PlaceholderAPI = false;
         }
         Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage("&9<------------------------------------>"));
 
@@ -85,7 +91,7 @@ public class MineBank extends JavaPlugin implements Listener {
             }
         }.runTask(this); // Ejecuta la tarea en el siguiente tick
 
-        Metrics metrics = new Metrics(this, 23185); // Bstats
+        Metrics metrics = new Metrics(this, bstatsID); // Bstats
     }
 
     @Override
@@ -112,9 +118,11 @@ public class MineBank extends JavaPlugin implements Listener {
         return languageManager;
     }
 
+
     public BankManager getBankManager() {
         return bankManager;
     }
+
     public BankInventoryManager getBankInventoryManager() {
         return bankInventoryManager;
     }
@@ -122,7 +130,7 @@ public class MineBank extends JavaPlugin implements Listener {
     // Método para comprobar ultima version
     public void comprobarActualizaciones() {
         try {
-            HttpURLConnection con = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=119147").openConnection();
+            HttpURLConnection con = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=" + spigotID).openConnection();
             int timed_out = 5000;
             con.setConnectTimeout(timed_out);
             con.setReadTimeout(timed_out);
@@ -130,16 +138,27 @@ public class MineBank extends JavaPlugin implements Listener {
 
             if (compareVersions(version, latestversion) < 0) {
                 Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&bThere is a new version available. &f(&7" + latestversion + "&f)"));
-                Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&bYou can download it at:&f https://www.spigotmc.org/resources/119147/"));
-                updateCheckerWork = true;
+                Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&bYou can download it at:&f https://www.spigotmc.org/resources/" + spigotID + "/"));
+                Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&bSome updates may require you to change some things manually:"));
+                Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&bRead the changelog here:&f https://www.spigotmc.org/resources/" + spigotID + "/updates"));
             } else {
                 Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&aYou are using the last version. &f(&b" + version + "&f)"));
             }
+            updateCheckerWork = true;
+        } catch (SocketTimeoutException ex) {
+            updateCheckerWork = false;
+            Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&cConection timed out. The version will be checked later."));
         } catch (Exception ex) {
             updateCheckerWork = false;
             Bukkit.getConsoleSender().sendMessage(MessageUtils.getColoredMessage(prefix + "&cError while checking update."));
         }
     }
+
+    // Por si falla la comprobación de actualización
+    public boolean getUpdateCheckerWork(){
+        return updateCheckerWork;
+    }
+
     // Método para comparar versiones
     public static int compareVersions(String currentVersion, String latestVersion) {
         String[] currentParts = currentVersion.split("\\.");
@@ -156,20 +175,16 @@ public class MineBank extends JavaPlugin implements Listener {
         }
         return Integer.compare(latestParts.length, currentParts.length); // Comparar longitud si son iguales hasta el mínimo
     }
-    // Por si falla la comprobación de actualización
-    public boolean getUpdateCheckerWork(){
-        return updateCheckerWork;
-    }
+
     // Version actual del plugin
     public String getVersion() {
         return this.version;
     }
+
     // Ultima version según en spigot
     public String getLatestVersion() {
         return this.latestversion;
     }
-
-
 
     private boolean setupEconomy() {
         if (getServer().getPluginManager().getPlugin("Vault") == null) { return false; }
@@ -193,6 +208,7 @@ public class MineBank extends JavaPlugin implements Listener {
         // Programar la tarea para que se ejecute repetidamente con el intervalo configurado
         bankTask.runTaskTimer(this, interval, interval);
     }
+
     public void startPlaceholderUpdateTask() {
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             for (Player player : Bukkit.getOnlinePlayers()) {
@@ -213,6 +229,6 @@ public class MineBank extends JavaPlugin implements Listener {
     }
 
     public static boolean getPlaceholderAPI(){
-        return PlaceholderAPI;
+        return PlaceholderAPIEnable;
     }
 }

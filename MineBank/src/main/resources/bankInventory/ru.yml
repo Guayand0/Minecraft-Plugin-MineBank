@@ -156,7 +156,7 @@ bank-inventory:
           - '&aБаланс: &f%playerBankBalance%/%playerBankMaxStorage%'
           - '&aУровень: &f%playerBankLevel%/%playerBankMaxLevel%'
           - ''
-          - '&aЭкономика: &f%playerBalance%'
+          - '&aЭкономика: &f%moneySymbol%%playerBalance%'
       40:
         item: PLAYER_HEAD
         # https://minecraft-heads.com/custom-heads/head/70110-level-up
@@ -184,12 +184,12 @@ bank-inventory:
         name: '&eТоп банка'
         lore:
           # Вы можете добавить до 50 игроков
-          - '&aТоп %bankTopPosition<1>%: &f%bankTopName<1>% - %bankTopBankName<1>% - $%bankTopBalance<1>%'
-          - '&aТоп %bankTopPosition<2>%: &f%bankTopName<2>% - %bankTopBankName<2>% - $%bankTopBalance<2>%'
-          - '&aТоп %bankTopPosition<3>%: &f%bankTopName<3>% - %bankTopBankName<3>% - $%bankTopBalance<3>%'
+          - '&aТоп %bankTopPosition<1>%: &f%bankTopName<1>% - %bankTopBankName<1>% - %moneySymbol%%bankTopBalance<1>%'
+          - '&aТоп %bankTopPosition<2>%: &f%bankTopName<2>% - %bankTopBankName<2>% - %moneySymbol%%bankTopBalance<2>%'
+          - '&aТоп %bankTopPosition<3>%: &f%bankTopName<3>% - %bankTopBankName<3>% - %moneySymbol%%bankTopBalance<3>%'
           - ''
           - '&6Ваша позиция:'
-          - '&aТоп %playerBankTop%: &b%playerName% - %playerBankName% - $%playerBankBalance%'
+          - '&aТоп %playerBankTop%: &b%playerName% - %playerBankName% - %moneySymbol%%playerBankBalance%'
           - ''
           - '&fНажмите, чтобы увидеть &eТоп 10 игроков'
           - '&fс наибольшим банковским балансом'

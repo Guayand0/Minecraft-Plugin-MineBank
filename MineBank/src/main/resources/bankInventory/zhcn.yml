@@ -156,7 +156,7 @@ bank-inventory:
           - '&a余额: &f%playerBankBalance%/%playerBankMaxStorage%'
           - '&a等级: &f%playerBankLevel%/%playerBankMaxLevel%'
           - ''
-          - '&a经济: &f%playerBalance%'
+          - '&a经济: &f%moneySymbol%%playerBalance%'
       40:
         item: PLAYER_HEAD
         # https://minecraft-heads.com/custom-heads/head/70110-level-up
@@ -184,12 +184,12 @@ bank-inventory:
         name: '&e银行排名'
         lore:
           # 你可以添加最多50个玩家
-          - '&a排名 %bankTopPosition<1>%: &f%bankTopName<1>% - %bankTopBankName<1>% - $%bankTopBalance<1>%'
-          - '&a排名 %bankTopPosition<2>%: &f%bankTopName<2>% - %bankTopBankName<2>% - $%bankTopBalance<2>%'
-          - '&a排名 %bankTopPosition<3>%: &f%bankTopName<3>% - %bankTopBankName<3>% - $%bankTopBalance<3>%'
+          - '&a排名 %bankTopPosition<1>%: &f%bankTopName<1>% - %bankTopBankName<1>% - %moneySymbol%%bankTopBalance<1>%'
+          - '&a排名 %bankTopPosition<2>%: &f%bankTopName<2>% - %bankTopBankName<2>% - %moneySymbol%%bankTopBalance<2>%'
+          - '&a排名 %bankTopPosition<3>%: &f%bankTopName<3>% - %bankTopBankName<3>% - %moneySymbol%%bankTopBalance<3>%'
           - ''
           - '&6你的排名:'
-          - '&a排名 %playerBankTop%: &b%playerName% - %playerBankName% - $%playerBankBalance%'
+          - '&a排名 %playerBankTop%: &b%playerName% - %playerBankName% - %moneySymbol%%playerBankBalance%'
           - ''
           - '&f点击查看 &e前10名玩家'
           - '&f拥有最多银行余额'

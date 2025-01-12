@@ -95,10 +95,13 @@ bank:
       7: 1500000;500000
       8: 2000000;700000
 
-  profit: # (you need to use "/mb reload" to apply changes)
+# (you need to use "/mb reload" to apply changes if modify the below config)
+  profit:
     intervalSeconds: 300 # Interval in seconds to receive profit (set -1 to disable profit)
     minBankBalanceToApply: 500 # Min amount of money in the bank to receive profit (if less than 100, player not receive anything)
     keepInBankPercentage: 1 # Percentage of profit for having money in the bank
   interests:
     minBankBalanceToApply: 100 # Min amount of money withdraw to the bank to start rest interest (set -1 to disable)
     withdrawPercentage: 2 # Percentage of interest in withdraw money
+  money:
+    symbol: $ # Symbol for the bank money (default: $)

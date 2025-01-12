@@ -73,13 +73,14 @@ public class MessageUtils {
         int keepInBankProfit = MethodUtils.getRoundedProfit(plugin, player);
         int profitPercentage = MethodUtils.getProfitPercentage(plugin);
         int minAmountToWinProfit = MethodUtils.getMinAmountToWinProfit(plugin);
+        String moneySymbol = MethodUtils.getMoneySymbol(plugin);
 
         // Reemplazar los placeholders
         message = message
                 .replaceAll("%plugin%", MineBank.prefix)
                 .replaceAll("%version%", plugin.getVersion())
                 .replaceAll("%latestversion%", plugin.getLatestVersion())
-                .replaceAll("%link%", "https://www.spigotmc.org/resources/119147/")
+                .replaceAll("%link%", "https://www.spigotmc.org/resources/" + MineBank.spigotID + "/")
                 .replaceAll("%author%", plugin.getDescription().getAuthors().toString())
                 // ------------------------------------------ //
                 .replaceAll("%playerName%", playerName)
@@ -112,6 +113,7 @@ public class MessageUtils {
                 .replaceAll("%keepInBankProfit%", String.valueOf(keepInBankProfit))
                 .replaceAll("%profitPercentage%", String.valueOf(profitPercentage))
                 .replaceAll("%minAmountToWinProfit%", String.valueOf(minAmountToWinProfit))
+                .replaceAll("%moneySymbol%", moneySymbol)
                 ;
 
         // Reemplazar los placeholders de los tops

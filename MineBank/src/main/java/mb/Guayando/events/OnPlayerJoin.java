@@ -1,7 +1,8 @@
 package mb.Guayando.events;
 
 import mb.Guayando.MineBank;
-import mb.Guayando.managers.BankManager;
+import mb.Guayando.managers.*;
+import mb.Guayando.utils.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -57,6 +58,7 @@ public class OnPlayerJoin implements Listener {
         if (!bankConfig.contains(playerPath + ".balance")) {
             bankConfig.set(playerPath + ".balance", 0);
         }
+
 
         // Si el jugador no tiene el campo "level", asignar 1 por defecto
         if (!bankConfig.contains(playerPath + ".level")) {

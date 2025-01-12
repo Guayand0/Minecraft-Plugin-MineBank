@@ -47,10 +47,10 @@ bank-inventory:
         # Item amount
         amount: 1
         # Item name
-        name: '&aAdd 500'
+        name: '&aAdd %moneySymbol%500'
         # Item description
         lore:
-          - '&fClick to &edeposit 500 &fin the bank'
+          - '&fClick to &edeposit %moneySymbol%500 &fin the bank'
         # Command when click item
         command: 'bank add 500'
         # Permission required to use the command
@@ -74,9 +74,9 @@ bank-inventory:
       19:
         item: EMERALD
         amount: 2
-        name: '&aAdd 2000'
+        name: '&aAdd %moneySymbol%2000'
         lore:
-          - '&fClick to &edeposit 2000 &fin the bank'
+          - '&fClick to &edeposit %moneySymbol%2000 &fin the bank'
         command: 'bank add 2000'
       20:
         item: EMERALD
@@ -98,9 +98,9 @@ bank-inventory:
       14:
         item: REDSTONE
         amount: 1
-        name: '&cTake 500'
+        name: '&cTake %moneySymbol%500'
         lore:
-          - '&fClick to &ewithdraw 500 &ffrom the bank'
+          - '&fClick to &ewithdraw %moneySymbol%500 &ffrom the bank'
         command: 'bank take 500'
       15:
         item: REDSTONE
@@ -121,9 +121,9 @@ bank-inventory:
       23:
         item: REDSTONE
         amount: 2
-        name: '&cTake 2000'
+        name: '&cTake %moneySymbol%2000'
         lore:
-          - '&fClick to &ewithdraw 2000 &ffrom the bank'
+          - '&fClick to &ewithdraw %moneySymbol%2000 &ffrom the bank'
         command: 'bank take 2000'
       24:
         item: REDSTONE
@@ -153,10 +153,10 @@ bank-inventory:
         name: '&eYour Account'
         lore:
           - '&aBank: &f%playerBankName%'
-          - '&aBalance: &f%playerBankBalance%/%playerBankMaxStorage%'
+          - '&aBalance: &f%moneySymbol%%playerBankBalance%/%moneySymbol%%playerBankMaxStorage%'
           - '&aLevel: &f%playerBankLevel%/%playerBankMaxLevel%'
           - ''
-          - '&aEconomy: &f%playerBalance%'
+          - '&aEconomy: &f%moneySymbol%%playerBalance%'
       40:
         item: PLAYER_HEAD
         # https://minecraft-heads.com/custom-heads/head/70110-level-up
@@ -167,7 +167,7 @@ bank-inventory:
         amount: 1
         name: '&eLevel Up'
         lore:
-          - '&aNext level: &f%playerBankBalance%/%unlockNextLevelPrice%'
+          - '&aNext level: &f%moneySymbol%%playerBankBalance%/%moneySymbol%%unlockNextLevelPrice%'
           - '&aBank level: &f%playerBankLevel%/%playerBankMaxLevel%'
           - ''
           - '&fClick to &elevel up &fyour bank'
@@ -184,12 +184,12 @@ bank-inventory:
         name: '&eBank Top'
         lore:
           # You can add up to 50 players
-          - '&aTop %bankTopPosition<1>%: &f%bankTopName<1>% - %bankTopBankName<1>% - $%bankTopBalance<1>%'
-          - '&aTop %bankTopPosition<2>%: &f%bankTopName<2>% - %bankTopBankName<2>% - $%bankTopBalance<2>%'
-          - '&aTop %bankTopPosition<3>%: &f%bankTopName<3>% - %bankTopBankName<3>% - $%bankTopBalance<3>%'
+          - '&aTop %bankTopPosition<1>%: &f%bankTopName<1>% - %bankTopBankName<1>% - %moneySymbol%%bankTopBalance<1>%'
+          - '&aTop %bankTopPosition<2>%: &f%bankTopName<2>% - %bankTopBankName<2>% - %moneySymbol%%bankTopBalance<2>%'
+          - '&aTop %bankTopPosition<3>%: &f%bankTopName<3>% - %bankTopBankName<3>% - %moneySymbol%%bankTopBalance<3>%'
           - ''
           - '&6Your position:'
-          - '&aTop %playerBankTop%: &b%playerName% - %playerBankName% - $%playerBankBalance%'
+          - '&aTop %playerBankTop%: &b%playerName% - %playerBankName% - %moneySymbol%%playerBankBalance%'
           - ''
           - '&fClick to see the &etop 10 players'
           - '&fwith the most bank balance'

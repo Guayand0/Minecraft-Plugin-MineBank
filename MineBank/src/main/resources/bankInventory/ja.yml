@@ -156,7 +156,7 @@ bank-inventory:
           - '&a残高: &f%playerBankBalance%/%playerBankMaxStorage%'
           - '&aレベル: &f%playerBankLevel%/%playerBankMaxLevel%'
           - ''
-          - '&a経済: &f%playerBalance%'
+          - '&a経済: &f%moneySymbol%%playerBalance%'
       40:
         item: PLAYER_HEAD
         # https://minecraft-heads.com/custom-heads/head/70110-level-up
@@ -184,12 +184,12 @@ bank-inventory:
         name: '&eバンクトップ'
         lore:
           # 最大50人まで追加可能
-          - '&aトップ %bankTopPosition<1>%: &f%bankTopName<1>% - %bankTopBankName<1>% - $%bankTopBalance<1>%'
-          - '&aトップ %bankTopPosition<2>%: &f%bankTopName<2>% - %bankTopBankName<2>% - $%bankTopBalance<2>%'
-          - '&aトップ %bankTopPosition<3>%: &f%bankTopName<3>% - %bankTopBankName<3>% - $%bankTopBalance<3>%'
+          - '&aトップ %bankTopPosition<1>%: &f%bankTopName<1>% - %bankTopBankName<1>% - %moneySymbol%%bankTopBalance<1>%'
+          - '&aトップ %bankTopPosition<2>%: &f%bankTopName<2>% - %bankTopBankName<2>% - %moneySymbol%%bankTopBalance<2>%'
+          - '&aトップ %bankTopPosition<3>%: &f%bankTopName<3>% - %bankTopBankName<3>% - %moneySymbol%%bankTopBalance<3>%'
           - ''
           - '&6あなたの順位:'
-          - '&aトップ %playerBankTop%: &b%playerName% - %playerBankName% - $%playerBankBalance%'
+          - '&aトップ %playerBankTop%: &b%playerName% - %playerBankName% - %moneySymbol%%playerBankBalance%'
           - ''
           - '&fクリックして &eトップ10プレイヤー'
           - '&f銀行残高が最も多いプレイヤーを表示'
