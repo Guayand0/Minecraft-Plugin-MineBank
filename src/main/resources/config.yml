@@ -1,0 +1,155 @@
+# ############################################################################################################# #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# |                                                                                                           | #
+# |                      ███╗   ███╗██╗███╗  ██╗███████╗██████╗  █████╗ ███╗  ██╗██╗  ██╗                     | #
+# |                      ████╗ ████║██║████╗ ██║██╔════╝██╔══██╗██╔══██╗████╗ ██║██║ ██╔╝                     | #
+# |                      ██╔████╔██║██║██╔██╗██║█████╗  ██████╦╝███████║██╔██╗██║█████═╝                      | #
+# |                      ██║╚██╔╝██║██║██║╚████║██╔══╝  ██╔══██╗██╔══██║██║╚████║██╔═██╗                      | #
+# |                      ██║ ╚═╝ ██║██║██║ ╚███║███████╗██████╦╝██║  ██║██║ ╚███║██║ ╚██╗                     | #
+# |                      ╚═╝     ╚═╝╚═╝╚═╝  ╚══╝╚══════╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚══╝╚═╝  ╚═╝                     | #
+# |                                                                                                           | #
+# |                    Youtube:    www.youtube.com/@davigamer1614                                             | #
+# |                    Github:     https://github.com/Guayand0/Minecraft-Plugin-MineBank                      | #
+# |                                                                                                           | #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# ############################################################################################################# #
+
+# +----------------------------------+ #
+# |                                  | #
+# |          PLUGIN CONFIG           | #
+# |                                  | #
+# +----------------------------------+ #
+config:
+
+  # You can add a new language adding (language.yml) to lang folder
+  # If you want to have support for more languages by default, send
+  # the .yml file with the translations and the language via GitHub
+  # https://github.com/Guayand0/Minecraft-Plugin-MineBank/issues
+
+  # Available default languages: en, es, fr, pt, it, ge, ru, ja, ko, zhcn
+  # English - en.yml    # Portuguese - pt.yml   # Russian - ru.yml    # Simplified Chinese - zhcn.yml
+  # Spanish - es.yml    # Italian - it.yml      # Japanese - ja.yml
+  # French - fr.yml     # German - ge.yml       # Korean - ko.yml
+
+  # Language of all chat messages
+  message-language: en
+
+  # Language of all gui items
+  gui-language: en
+
+  # Enable/Disable the update checker
+  # If set to true, OP players and players with the "minebank.updatechecker" or
+  # "minebank.admin" permission will receive a message when an update is available
+  update-checker: true
+
+  # Chat prefix for plugin chat messages for variable %chatplugin%
+  chat-prefix: "&4&l[&6&lMine&a&lBank&4&l]&f"
+
+  # Enable/Disable the bank function
+  # If set to false, all "/bank" commands will be disabled until set true
+  # It is highly recommended to disable this option and reload the plugin
+  # if any .json file is going to be modified without stopping the server
+  # Once the files have been modified, this option can be activated again
+  # That way you avoid many problems
+  bank-allowed: true
+
+  # List of allowed worlds in which the plugin works
+  allowed-worlds:
+    - world
+    - skyblock
+
+# +----------------------------------+ #
+# |                                  | #
+# |           BANK CONFIG            | #
+# |                                  | #
+# +----------------------------------+ #
+bank:
+
+  # All player and bank data will be stored here
+  data:
+
+    # Only JSON is available at the moment, more ways to store data will be added in the future
+    type: JSON
+
+    # When there are more ways to store data, these options will be needed, at the moment they do nothing
+    host:
+    port:
+    batabase-name:
+    user:
+    password:
+
+  # You can add more banks in the banks.json file and also add more levels for the banks
+  # The priority of the banks is the order of the banks, first is the worst bank and last is the best bank
+  # Make sure that the level numbers are consecutive numbers or errors may appear
+  # Make sure all "max_balance" of each level is less than 2147483647
+  # Make sure that the last level of each bank and only the last one level has ("final_level" : true)
+  start:
+
+    # Before modify start section, check in banks.json the level does not exceed the maximum level for first bank
+    # and the balance does not exceed the maximum storage for first bank level or errors may appear
+
+    # Start level of the bank for new players
+    level: 1
+
+    # Start balance of the bank for new players
+    balance: 0
+
+  # The priority of the banks is the order of the banks, first is the worst bank and last is the best bank
+  # If set to true, OP players and players with the "minebank.admin" permission will have the best bank
+  admin-should-have-last-bank: false
+
+  # Add to tabCompleter offline players (ony for op and admins)
+  # If set to false, the "/bank set <player> ..." command will only show connected players
+  set-offline: true
+
+  # Money configuration
+  money:
+
+    # Symbol for bank balance for variable %moneySymbol%
+    symbol: $
+
+  # By having balance in the bank, automatically every player receive a profit of balance
+  profit:
+
+    # Interval in seconds to receive profit (set -1 to disable profit)
+    interval-in-seconds: 300
+
+    # If set to true, players will receive the message if the bank balance is less than min-bank-balance-to-receive
+    not-enough-balance-to-receive-message: true
+
+    # Min amount of balance in the bank to receive profit
+    min-bank-balance-to-receive: 1500
+
+    # Percentage of profit for having balance in the bank
+    keep-in-bank-percentage: 1.25
+
+    # If set to true, the keep-in-bank-percentage will be multiplied by the player bank level
+    multiply-by-bank-level: true
+
+    # Number of times players can accumulate profits while offline (set -1 to disable)
+    times-profits-offline: 4
+
+  # Balance held by the bank when withdrawing money from the bank
+  interest:
+
+    # Min amount of balance withdraw to the bank to start rest interest (set -1 to disable interest)
+    min-bank-balance-to-apply: 1500
+
+    # Percentage of interest in withdraw balance
+    withdraw-percentage: 1.25
+
+    # If set to true, the withdraw-percentage will be multiplied by the player bank level
+    multiply-by-bank-level: true
+
+# +----------------------------------+ #
+# |                                  | #
+# |        EXCEPTION CONFIG          | #
+# |                                  | #
+# +----------------------------------+ #
+exception:
+
+  # Save plugin exceptions in "exceptions" folder
+  save: true
+
+  # Delete the plugin exceptions folder when start the server
+  delete-on-start: false

@@ -1,0 +1,218 @@
+# ############################################################################################################# #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# |                                                                                                           | #
+# |                      ███╗   ███╗██╗███╗  ██╗███████╗██████╗  █████╗ ███╗  ██╗██╗  ██╗                     | #
+# |                      ████╗ ████║██║████╗ ██║██╔════╝██╔══██╗██╔══██╗████╗ ██║██║ ██╔╝                     | #
+# |                      ██╔████╔██║██║██╔██╗██║█████╗  ██████╦╝███████║██╔██╗██║█████═╝                      | #
+# |                      ██║╚██╔╝██║██║██║╚████║██╔══╝  ██╔══██╗██╔══██║██║╚████║██╔═██╗                      | #
+# |                      ██║ ╚═╝ ██║██║██║ ╚███║███████╗██████╦╝██║  ██║██║ ╚███║██║ ╚██╗                     | #
+# |                      ╚═╝     ╚═╝╚═╝╚═╝  ╚══╝╚══════╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚══╝╚═╝  ╚═╝                     | #
+# |                                                                                                           | #
+# |                    Youtube:    www.youtube.com/@davigamer1614                                             | #
+# |                    Github:     https://github.com/Guayand0/Minecraft-Plugin-MineBank                      | #
+# |                                                                                                           | #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# ############################################################################################################# #
+
+# +----------------------------------+ #
+# |                                  | #
+# |          INVENTORY GUI           | #
+# |                                  | #
+# +----------------------------------+ #
+
+# 你可能需要使用这些页面来修改此文件：
+# Minecraft 材料: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+# 库存槽位: https://wiki.vg/images/b/bb/DoubleChest-slots.png
+# 头部纹理: https://minecraft-heads.com/custom-heads
+
+gui:
+
+  # 主库存
+  main:
+
+    # 库存标题名称
+    name: '&4&l[&6&lMine&a&lBank&4&l]'
+
+    # 库存大小
+    size: 6 # 9*6=54 创建一个54槽位的库存（6行）
+
+    # 库存位置槽
+    position-slot:
+
+      # 所有空的库存槽
+      default:
+
+        # 在库存槽中显示的物品
+        # Minecraft 材料: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+        item: WHITE_STAINED_GLASS_PANE
+
+        # 设置数量为0以禁用显示物品
+        amount: 1
+
+        # 设置自定义物品名称或为空以使用原始物品名称
+        name: ' '
+
+        # 注释或删除lore以不显示lore
+        lore:
+        #  - 'Lore不可见'
+
+      # 库存中的第10个槽位的物品
+      # 库存槽位: https://wiki.vg/images/b/bb/DoubleChest-slots.png
+      10:
+        item: EMERALD
+        amount: 1
+        name: '&a添加 %moneySymbol%500'
+        lore:
+          - '&f点击&e存入 %moneySymbol%500 &f到银行'
+        # 点击物品时使用命令
+        command: 'bank add 500'
+        # 使用命令所需的权限
+        permission: 'minebank.use'
+
+      11:
+        item: EMERALD
+        amount: 3
+        name: '&a添加最大余额的一半'
+        lore:
+          - '&f点击&e存入最大&emax &f存储余额的一半'
+        command: 'bank add mid-max'
+
+      12:
+        item: EMERALD
+        amount: 5
+        name: '&a添加全部'
+        lore:
+          - '&f点击&e存入全部&f存储余额'
+        command: 'bank add all'
+
+      19:
+        item: EMERALD
+        amount: 2
+        name: '&a添加 %moneySymbol%2000'
+        lore:
+          - '&f点击&e存入 %moneySymbol%2000 &f到银行'
+        command: 'bank add 2000'
+
+      20:
+        item: EMERALD
+        amount: 4
+        name: '&a添加余额的一半'
+        lore:
+          - '&f点击&e存入当前&ecurrent &f存储余额的一半'
+        command: 'bank add half-balance'
+
+      21:
+        item: EMERALD
+        amount: 6
+        name: '&a添加自定义金额'
+        lore:
+          - '&f点击&e存入自定义金额 &f到你的银行'
+          - '&f输入&eexit &f以取消交易'
+        command: 'bank add <amount>'
+
+      14:
+        item: REDSTONE
+        amount: 1
+        name: '&c提取 %moneySymbol%500'
+        lore:
+          - '&f点击&e从银行提取 %moneySymbol%500'
+        command: 'bank take 500'
+
+      15:
+        item: REDSTONE
+        amount: 3
+        name: '&c提取最大的一半'
+        lore:
+          - '&f点击&e提取最大存储余额的'
+          - '&f一半'
+        command: 'bank take mid-max'
+
+      16:
+        item: REDSTONE
+        amount: 5
+        name: '&c提取所有'
+        lore:
+          - '&f点击&e提取所有存储余额'
+        command: 'bank take all'
+
+      23:
+        item: REDSTONE
+        amount: 2
+        name: '&c提取 %moneySymbol%2000'
+        lore:
+          - '&f点击&e从银行提取 %moneySymbol%2000'
+        command: 'bank take 2000'
+
+      24:
+        item: REDSTONE
+        amount: 4
+        name: '&c提取当前余额的一半'
+        lore:
+          - '&f点击&e提取当前存储余额的'
+          - '&f一半'
+        command: 'bank take half-balance'
+
+      25:
+        item: REDSTONE
+        amount: 6
+        name: '&c提取自定义金额'
+        lore:
+          - '&f点击&e提取自定义金额'
+          - '&f从银行'
+          - '&f输入&eexit &f以取消交易'
+        command: 'bank take <amount>'
+
+      38:
+        item: PLAYER_HEAD
+        # 头部纹理: https://minecraft-heads.com/custom-heads/head/50151-dollar
+        # 在1.8到1.20.3版本之间使用（打开链接并在“开发者：值”部分查找）
+        # texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjg4OWNmY2JhY2JlNTk4ZThhMWNkODYxMGI0OWZjYjYyNjQ0ZThjYmE5ZDQ5MTFkMTIxMTM0NTA2ZDhlYTFiNyJ9fX0='
+        # 在1.20.4及更高版本之间使用（打开链接并在“开发者：Minecraft URL”部分查找）
+        texture: 'http://textures.minecraft.net/texture/b889cfcbacbe598e8a1cd8610b49fcb62644e8cba9d4911d121134506d8ea1b7'
+        amount: 1
+        name: '&e您的账户'
+        lore:
+          - '&a名称: &f%playerBankName%'
+          - '&a余额: &f%moneySymbol%%playerBankBalance%/%moneySymbol%%playerBankMaxBalance%'
+          - '&a等级: &f%playerBankLevel%/%playerBankMaxLevel%'
+          - ''
+          - '&a经济: &f%moneySymbol%%playerEconomyBalance%'
+
+      40:
+        item: PLAYER_HEAD
+        # 头部纹理: https://minecraft-heads.com/custom-heads/head/70110-level-up
+        # 在1.8到1.20.3版本之间使用（打开链接并在“开发者：值”部分查找）
+        # texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjQxNWEzNTQ2NmM3NTk5MDNhNDIzNjgyMjZmOGI0ODVhNDdiYjE2N2YwYTFlOTc4YjU1Mzg4ODEyNGE4OTA5ZCJ9fX0='
+        # 在1.20.4及更高版本之间使用（打开链接并在“开发者：Minecraft URL”部分查找）
+        texture: 'http://textures.minecraft.net/texture/6415a35466c759903a42368226f8b485a47bb167f0a1e978b553888124a8909d'
+        amount: 1
+        name: '&e升级'
+        lore:
+          - '&a下一级: &f%moneySymbol%%playerBankBalance%/%moneySymbol%%playerBankNextLevelCost%'
+          - '&a银行等级: &f%playerBankLevel%/%playerBankMaxLevel%'
+          - ''
+          - '&f点击&e升级 &f您的银行'
+          - '&f如果你有足够的资金'
+        command: 'bank levelup'
+
+      42:
+        item: PLAYER_HEAD
+        # 头部纹理: https://minecraft-heads.com/custom-heads/head/74737-gilded-blackstone-1
+        # 在1.8到1.20.3版本之间使用（打开链接并在“开发者：值”部分查找）
+        #texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODZiYzE4NzcyYWNkMzQzZTZhYjIwMTAzYzRhOWU0MjExNWYyMjQ4NDI3ZWNiZDIwNjcxZDZjZDI0ZWU3ZWY4YyJ9fX0='
+        # 在1.20.4及更高版本之间使用（打开链接并在“开发者：Minecraft URL”部分查找）
+        texture: 'http://textures.minecraft.net/texture/86bc18772acd343e6ab20103c4a9e42115f2248427ecbd20671d6cd24ee7ef8c'
+        amount: 1
+        name: '&e银行排行榜'
+        lore:
+          # 您最多可以添加100个玩家
+          - '&a排行榜 %bankTopBankPosition_1%: &f%bankTopPlayerName_1% - %bankTopBankName_1% - %bankTopBankLevel_1% - %moneySymbol%%bankTopBankBalance_1%'
+          - '&a排行榜 %bankTopBankPosition_2%: &f%bankTopPlayerName_2% - %bankTopBankName_2% - %bankTopBankLevel_1% - %moneySymbol%%bankTopBankBalance_2%'
+          - '&a排行榜 %bankTopBankPosition_3%: &f%bankTopPlayerName_3% - %bankTopBankName_3% - %bankTopBankLevel_1% - %moneySymbol%%bankTopBankBalance_3%'
+          - ''
+          - '&6您的排名：'
+          - '&a排行榜 %playerBankTop%: &b%playerName% - %playerBankName% - %playerBankLevel% - %moneySymbol%%playerBankBalance%'
+          - ''
+          - '&f点击查看前10名玩家'
+          - '&f拥有最多银行余额'
+        command: 'bank baltop'

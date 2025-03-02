@@ -1,0 +1,180 @@
+# ############################################################################################################# #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# |                                                                                                           | #
+# |                      ███╗   ███╗██╗███╗  ██╗███████╗██████╗  █████╗ ███╗  ██╗██╗  ██╗                     | #
+# |                      ████╗ ████║██║████╗ ██║██╔════╝██╔══██╗██╔══██╗████╗ ██║██║ ██╔╝                     | #
+# |                      ██╔████╔██║██║██╔██╗██║█████╗  ██████╦╝███████║██╔██╗██║█████═╝                      | #
+# |                      ██║╚██╔╝██║██║██║╚████║██╔══╝  ██╔══██╗██╔══██║██║╚████║██╔═██╗                      | #
+# |                      ██║ ╚═╝ ██║██║██║ ╚███║███████╗██████╦╝██║  ██║██║ ╚███║██║ ╚██╗                     | #
+# |                      ╚═╝     ╚═╝╚═╝╚═╝  ╚══╝╚══════╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚══╝╚═╝  ╚═╝                     | #
+# |                                                                                                           | #
+# |                    Youtube:    www.youtube.com/@davigamer1614                                             | #
+# |                    Github:     https://github.com/Guayand0/Minecraft-Plugin-MineBank                      | #
+# |                                                                                                           | #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# ############################################################################################################# #
+
+# +----------------------------------+ #
+# |                                  | #
+# |             MESSAGES             | #
+# |                                  | #
+# +----------------------------------+ #
+
+messages:
+
+  # 명령 /minebank help
+  help:
+    - '&b<-----------------&aMINEBANK 관리자 명령어&b----------------->'
+    - '&e/minebank help &7- 마인뱅크 도움말 표시'
+    - '&e/minebank reload &7- 플러그인 설정 다시 불러오기'
+    - '&e/minebank info &7- 플러그인 정보 표시'
+    - '&e/minebank permissions &7- 플러그인 권한 표시'
+    - '&7별칭: &eminebank&7, &emb'
+    - '&e/bank help &7- 은행 도움말 표시'
+    - '&e/bank set <플레이어> balance <금액> &7- 플레이어의 잔액 설정'
+    - '&e/bank set <플레이어> balance mid-max &7- 플레이어의 은행 잔액을 최대 절반으로 설정'
+    - '&e/bank set <플레이어> balance max &7- 플레이어의 은행 잔액을 최대값으로 설정'
+    - '&e/bank set <플레이어> level <금액> &7- 플레이어의 레벨 설정'
+    - '&e/bank set <플레이어> level mid-max &7- 플레이어의 은행 레벨을 최대 절반으로 설정'
+    - '&e/bank set <플레이어> level max &7- 플레이어의 은행 레벨을 최대값으로 설정'
+    - '&e/bank add <플레이어> <금액> &7- 플레이어의 은행 잔액에 금액 추가'
+    - '&e/bank take <플레이어> <금액> &7- 플레이어의 은행 잔액에서 금액 출금'
+
+  # 명령 /minebank reload
+  reload: '%plugin% &a플러그인이 재로드되었습니다.'
+
+  # 명령 /minebank info
+  info:
+    - '&b&l--> --> %plugin% &e&l정보 &b&l<-- <--'
+    - '&6&l>> &e플러그인 버전: &b%version%'
+    - '&6&l>> &e플러그인 데이터 저장소: &b%dataStorage%'
+    - '&b&l····· &a플러그인 훅 &b&l·····'
+    - '%pluginHooksList%'
+
+  # 명령 /minebank permissions
+  permissions:
+    - '&b<-----------------&aMINEBANK 권한&b----------------->'
+    - '&eminebank.admin &7- 모든 권한'
+    - '&eminebank.updatechecker &7- 업데이트가 있을 경우 메시지를 받을 수 있도록 허용'
+    - '&eminebank.bank.use &7- 플레이어가 은행을 사용할 수 있도록 허용'
+    - '&eminebank.bank.<은행 이름> &7- 은행 <은행 이름>을(를) 플레이어에게 설정합니다'
+
+  command-no-argument: '%plugin% &7/e/minebank help &7로 명령어 목록을 확인하세요.'
+
+  no-perm: '%chatPlugin% &c이 명령어를 사용할 권한이 없습니다.'
+
+  console-error: '%plugin% &c콘솔에서는 이 명령어를 사용할 수 없습니다.'
+
+config:
+
+  # 설정에서 "config.update-checker: true"가 활성화되면
+  # 이 메시지는 OP 플레이어 또는
+  # "minebank.updatechecker" 또는 "minebank.admin" 권한이 있는 플레이어의 채팅에만 표시됩니다
+  update-checker:
+    - '&b&l--> --> %plugin% &e&l업데이트 확인기 &b&l<-- <--'
+    - '&b새로운 버전이 사용 가능합니다. &f(&e%latestVersion%&f).'
+    - '&b여기에서 다운로드: &f%link%'
+    - '&b일부 업데이트는 수동으로 일부 항목을 변경해야 할 수 있습니다.'
+    - '&b변경 로그 읽기: &f%link%/updates'
+
+  # 설정에서 "config.bank-allowed: false"가 활성화되면
+  # 은행 명령어를 사용할 때 이 메시지가 채팅에 표시됩니다
+  bank-disabled: '%chatPlugin% &c은행이 일시적으로 비활성화되었습니다.'
+
+bank:
+
+  # 명령 /bank help
+  help:
+    - '&b<-----------------&aMINEBANK 명령어&b----------------->'
+    - '&e/bank &7- GUI 열기 (1.13+)'
+    - '&e/bank help &7- 은행 도움말 보기'
+    - '&e/bank data &7- 이름, 레벨 및 잔액과 같은 당신의 은행 데이터를 보기'
+    - '&e/bank data [플레이어] &7- 플레이어의 이름, 레벨 및 잔액과 같은 은행 데이터를 보기'
+    - '&e/bank add <금액> &7- 지정된 금액 입금'
+    - '&e/bank add half-balance &7- 현재 은행 잔액의 절반 입금'
+    - '&e/bank add all &7- 잔액 전체 또는 최대 은행 잔액까지 입금'
+    - '&e/bank add mid-max &7- 최대 은행 잔액의 절반 입금'
+    - '&e/bank take <금액> &7- 지정된 금액 인출'
+    - '&e/bank take half-balance &7- 현재 은행 잔액의 절반 인출'
+    - '&e/bank take all &7- 모든 은행 잔액 인출'
+    - '&e/bank take mid-max &7- 최대 은행 잔액의 절반 인출'
+    - '&e/bank levelup &7- 은행 레벨 업'
+    - '&e/bank top &7- 가장 많은 돈을 가진 상위 플레이어 보기'
+    - '&e/bank top [금액] &7- 가장 많은 돈을 가진 상위 [금액] 플레이어 보기'
+    - '&e/bank receive profit &7- 오프라인에서 축적된 이익 받기'
+
+  general-usage: '%chatPlugin% &e사용법: /bank {help/data/add/take/levelup/top/receive/set}'
+  data-usage: '%chatPlugin% &e사용법: /bank data [플레이어]'
+  add-usage: '%chatPlugin% &e사용법: /bank {add/deposit} {<금액>/half-balance/all/mid-max}'
+  take-usage: '%chatPlugin% &e사용법: /bank {take/withdraw} {<금액>/half-balance/all/mid-max}'
+  levelup-usage: '%chatPlugin% &e사용법: /bank levelup'
+  baltop-usage: '%chatPlugin% &e사용법: /bank {top/baltop/balancetop} [금액]'
+  set-usage: '%chatPlugin% &e사용법: /bank set <플레이어> {balance/level} {<금액>/mid-max/max}'
+  receive-usage: '%chatPlugin% &e사용법: /bank receive profit'
+
+  data:
+    player-bank-data:
+      - '%chatPlugin% &e&l당신의 은행 데이터:'
+      - '&6&l>> &e이름: &a%playerBankName%'
+      - '&6&l>> &e레벨: &a%playerBankLevel%&e/&a%playerBankMaxLevel%'
+      - '&6&l>> &e잔액: &a%moneySymbol%%playerBankBalance%&e/&a%moneySymbol%%playerBankMaxBalance%'
+    target-bank-data:
+      - '%chatPlugin% &e&l%targetPlayerName%의 은행 데이터:'
+      - '&6&l>> &e이름: &a%targetBankName%'
+      - '&6&l>> &e레벨: &a%targetBankLevel%&e/&a%targetBankMaxLevel%'
+      - '&6&l>> &e잔액: &a%moneySymbol%%targetBankBalance%&e/&a%moneySymbol%%targetBankMaxBalance%'
+
+  # Coreano
+  add:
+    deposit-success: '%chatPlugin% &a%moneySymbol%%amount%을(를) 은행에 입금했습니다.'
+    deposit-exceeds: '%chatPlugin% &c현재 은행 레벨에서는 %moneySymbol%%playerBankMaxBalance% 이상을 저장할 수 없습니다.'
+    deposit-failure: '%chatPlugin% &c금액은 양의 정수여야 합니다.'
+    not-enough-bank-balance: '%chatPlugin% &c이 금액을 입금할 충분한 잔액이 없습니다.'
+    target-deposit-success: '%chatPlugin% &a%targetPlayerName%의 은행에 %moneySymbol%%amount%을(를) 입금했습니다.'
+    target-deposit-exceeds: '%chatPlugin% &c%targetPlayerName%의 은행에서는 %moneySymbol%%targetBankMaxBalance% 이상을 저장할 수 없습니다.'
+    target-deposit-failure: '%chatPlugin% &c금액은 양의 정수여야 합니다.'
+
+  take:
+    withdraw-success: '%chatPlugin% &a은행에서 %moneySymbol%%amountReceived%을(를) 인출했습니다. 은행 수수료는 %moneySymbol%%amountDeducted%입니다. 은행 이자는 %interestPercentage%%입니다.'
+    withdraw-exceeds: '%chatPlugin% &c이자 때문에 이 금액을 인출할 수 없습니다.'
+    withdraw-failure: '%chatPlugin% &c금액은 양의 정수여야 합니다.'
+    not-enough-bank-balance: '%chatPlugin% &c이 금액을 인출할 충분한 은행 잔액이 없습니다.'
+    target-withdraw-success: '%chatPlugin% &a%targetPlayerName%의 은행에서 %moneySymbol%%amount%을(를) 인출했습니다.'
+    target-withdraw-failure: '%chatPlugin% &c금액은 양의 정수여야 합니다.'
+    target-not-enough-bank-balance: '%chatPlugin% &c%targetPlayerName%의 은행에 충분한 잔액이 없습니다.'
+
+  levelup:
+    levelup-success: '%chatPlugin% &a성공적으로 %playerBankLevel% 레벨로 업그레이드되었습니다. 이제 총 %moneySymbol%%playerBankMaxBalance%를 저장할 수 있습니다.'
+    already-max-level: '%chatPlugin% &c이미 최대 은행 레벨에 도달했습니다.'
+    not-enough-bank-balance: '%chatPlugin% &c레벨업을 위해서는 은행에 충분한 잔액이 필요합니다. %moneySymbol%%playerBankNextLevelCost%가 필요합니다.'
+
+  top:
+    title: '%chatPlugin% &e가장 많은 잔액을 가진 상위 플레이어들:'
+    entry: '&a상위 %topBankPosition%: &f%topPlayerName% - %topBankName% - %topBankLevel% - %moneySymbol%%topBankBalance%'
+    baltop-failure: '%chatPlugin% &c금액은 양의 정수여야 합니다.'
+
+  receive:
+    offline-received-success: '%chatPlugin% &a오프라인 혜택으로 %moneySymbol%%offlineProfitAmount%을(를) 받았습니다.'
+    receive-exceeds: '%chatPlugin% &c현재 은행 레벨에서 %moneySymbol%%playerBankMaxBalance% 이상을 저장할 수 없습니다.'
+    offline-not-profit: '%chatPlugin% &c누적된 오프라인 혜택이 없습니다.'
+
+  set:
+    set-balance-success: '%chatPlugin% &a%targetPlayerName% 의 은행 잔액을 %moneySymbol%%amount% 으로 설정했습니다.'
+    max-balance: '%chatPlugin% &c잔액은 %moneySymbol%%targetBankMaxBalance% 를 초과할 수 없습니다.'
+    set-level-success: '%chatPlugin% &a%targetPlayerName% 의 은행 레벨을 %amount% 으로 설정했습니다.'
+    max-level: '%chatPlugin% &c레벨은 %targetBankMaxLevel% 을 초과할 수 없습니다.'
+    set-amount-failure: '%chatPlugin% &c금액은 양의 정수여야 합니다.'
+    target-player-not-found: '%chatPlugin% &c플레이어 %targetPlayerName% 를 찾을 수 없습니다.'
+
+  profit:
+    received: '%chatPlugin% &a은행에 돈을 보관하여 %moneySymbol%%keepInBankProfit% 의 이익을 받았습니다! 은행 이익률은: %profitPercentage%%'
+    min-storage: '%chatPlugin% &c이익을 얻으려면 은행에 최소 %moneySymbol%%minBankBalanceToReceiveProfit% 가 필요합니다.'
+    max-storage: '%chatPlugin% &c이익을 계속 얻으려면 은행에서 돈을 인출해야 합니다.'
+    offline-accumulated: '%chatPlugin% &a당신의 은행은 오프라인 상태일 때 %moneySymbol%%offlineProfitAmount% 의 이익을 축적했습니다. 이를 수집하려면 &e/bank receive profit 을 사용하세요.'
+
+  gui:
+    amount-withdraw: '%chatPlugin% &a인출할 금액을 입력하거나 "exit"을 입력하여 취소하세요:'
+    amount-deposit: '%chatPlugin% &a입금할 금액을 입력하거나 "exit"을 입력하여 취소하세요:'
+    amount-selected: '%chatPlugin% &a선택한 금액:'
+    invalid-amount: '%chatPlugin% &c잘못된 금액입니다. 다시 시도하세요.'
+    transaction-canceled: '%chatPlugin% &c거래가 취소되었습니다.'

@@ -1,0 +1,179 @@
+# ############################################################################################################# #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# |                                                                                                           | #
+# |                      ███╗   ███╗██╗███╗  ██╗███████╗██████╗  █████╗ ███╗  ██╗██╗  ██╗                     | #
+# |                      ████╗ ████║██║████╗ ██║██╔════╝██╔══██╗██╔══██╗████╗ ██║██║ ██╔╝                     | #
+# |                      ██╔████╔██║██║██╔██╗██║█████╗  ██████╦╝███████║██╔██╗██║█████═╝                      | #
+# |                      ██║╚██╔╝██║██║██║╚████║██╔══╝  ██╔══██╗██╔══██║██║╚████║██╔═██╗                      | #
+# |                      ██║ ╚═╝ ██║██║██║ ╚███║███████╗██████╦╝██║  ██║██║ ╚███║██║ ╚██╗                     | #
+# |                      ╚═╝     ╚═╝╚═╝╚═╝  ╚══╝╚══════╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚══╝╚═╝  ╚═╝                     | #
+# |                                                                                                           | #
+# |                    Youtube:    www.youtube.com/@davigamer1614                                             | #
+# |                    Github:     https://github.com/Guayand0/Minecraft-Plugin-MineBank                      | #
+# |                                                                                                           | #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# ############################################################################################################# #
+
+# +----------------------------------+ #
+# |                                  | #
+# |             MESSAGES             | #
+# |                                  | #
+# +----------------------------------+ #
+
+messages:
+
+  # 命令 /minebank help
+  help:
+    - '&b<-----------------&aMINEBANK 管理命令&b----------------->'
+    - '&e/minebank help &7- 显示 MineBank 帮助'
+    - '&e/minebank reload &7- 重新加载插件配置'
+    - '&e/minebank info &7- 显示插件信息'
+    - '&e/minebank permissions &7- 显示插件权限'
+    - '&7别名: &eminebank&7, &emb'
+    - '&e/bank help &7- 显示银行帮助'
+    - '&e/bank set <玩家> balance <金额> &7- 设置玩家的余额'
+    - '&e/bank set <玩家> balance mid-max &7- 将玩家的银行余额设置为最大值的一半'
+    - '&e/bank set <玩家> balance max &7- 将玩家的银行余额设置为最大值'
+    - '&e/bank set <玩家> level <金额> &7- 设置玩家的等级'
+    - '&e/bank set <玩家> level mid-max &7- 将玩家的银行等级设置为最大值的一半'
+    - '&e/bank set <玩家> level max &7- 将玩家的银行等级设置为最大值'
+    - '&e/bank add <玩家> <金额> &7- 增加玩家的银行余额'
+    - '&e/bank take <玩家> <金额> &7- 从玩家的银行余额中取出金额'
+
+  # 命令 /minebank reload
+  reload: '%plugin% &a插件已重新加载。'
+
+  # 命令 /minebank info
+  info:
+    - '&b&l--> --> %plugin% &e&l信息 &b&l<-- <--'
+    - '&6&l>> &e插件版本: &b%version%'
+    - '&6&l>> &e插件数据存储: &b%dataStorage%'
+    - '&b&l····· &a插件钩子 &b&l·····'
+    - '%pluginHooksList%'
+
+  # 命令 /minebank permissions
+  permissions:
+    - '&b<-----------------&aMINEBANK 权限&b----------------->'
+    - '&eminebank.admin &7- 所有权限'
+    - '&eminebank.updatechecker &7- 允许接收更新时的消息'
+    - '&eminebank.bank.use &7- 允许玩家使用银行'
+    - '&eminebank.bank.<银行名称> &7- 将银行 <银行名称> 设置为玩家'
+
+  command-no-argument: '%plugin% &7使用 &e/minebank help &7查看命令列表。'
+
+  no-perm: '%chatPlugin% &c您没有权限使用此命令。'
+
+  console-error: '%plugin% &c您不能在控制台使用此命令。'
+
+config:
+
+  # 如果在配置中启用了 "config.update-checker: true"
+  # 这个消息只会在OP玩家或者
+  # 拥有 "minebank.updatechecker" 或 "minebank.admin" 权限的玩家的聊天中显示
+  update-checker:
+    - '&b&l--> --> %plugin% &e&l更新检查器 &b&l<-- <--'
+    - '&b有一个新的版本可用。 &f(&e%latestVersion%&f)。'
+    - '&b从这里下载： &f%link%'
+    - '&b某些更新可能需要您手动更改一些内容。'
+    - '&b阅读更新日志： &f%link%/updates'
+
+  # 如果在配置中启用了 "config.bank-allowed: false"
+  # 当使用任何银行命令时，这个消息会显示在聊天中
+  bank-disabled: '%chatPlugin% &c银行已暂时禁用。'
+
+bank:
+
+  # 命令 /bank help
+  help:
+    - '&b<-----------------&aMINEBANK命令&b----------------->'
+    - '&e/bank &7- 打开GUI (1.13+)'
+    - '&e/bank help &7- 显示银行帮助'
+    - '&e/bank data &7- 显示您的银行数据，如名称、级别和余额'
+    - '&e/bank data [玩家] &7- 显示玩家的银行数据，如名称、级别和余额'
+    - '&e/bank add <金额> &7- 存入指定金额'
+    - '&e/bank add half-balance &7- 存入您当前余额的一半'
+    - '&e/bank add all &7- 存入所有余额或直到您的最大银行余额'
+    - '&e/bank add mid-max &7- 存入您最大银行余额的一半'
+    - '&e/bank take <金额> &7- 提取指定金额'
+    - '&e/bank take half-balance &7- 提取您当前余额的一半'
+    - '&e/bank take all &7- 提取您所有的银行余额'
+    - '&e/bank take mid-max &7- 提取您最大银行余额的一半'
+    - '&e/bank levelup &7- 提升银行等级'
+    - '&e/bank top &7- 显示最多钱的玩家'
+    - '&e/bank top [金额] &7- 显示前[金额]个最多钱的玩家'
+    - '&e/bank receive profit &7- 接收离线累积的收益'
+
+  general-usage: '%chatPlugin% &e用法: /bank {help/data/add/take/levelup/top/receive/set}'
+  data-usage: '%chatPlugin% &e用法: /bank data [玩家]'
+  add-usage: '%chatPlugin% &e用法: /bank {add/deposit} {<金额>/half-balance/all/mid-max}'
+  take-usage: '%chatPlugin% &e用法: /bank {take/withdraw} {<金额>/half-balance/all/mid-max}'
+  levelup-usage: '%chatPlugin% &e用法: /bank levelup'
+  baltop-usage: '%chatPlugin% &e用法: /bank {top/baltop/balancetop} [金额]'
+  set-usage: '%chatPlugin% &e用法: /bank set <玩家> {balance/level} {<金额>/mid-max/max}'
+  receive-usage: '%chatPlugin% &e用法: /bank receive profit'
+
+  data:
+    player-bank-data:
+      - '%chatPlugin% &e&l您的银行数据：'
+      - '&6&l>> &e姓名：&a%playerBankName%'
+      - '&6&l>> &e等级：&a%playerBankLevel%&e/&a%playerBankMaxLevel%'
+      - '&6&l>> &e余额：&a%moneySymbol%%playerBankBalance%&e/&a%moneySymbol%%playerBankMaxBalance%'
+    target-bank-data:
+      - '%chatPlugin% &e&l%targetPlayerName%的银行数据：'
+      - '&6&l>> &e姓名：&a%targetBankName%'
+      - '&6&l>> &e等级：&a%targetBankLevel%&e/&a%targetBankMaxLevel%'
+      - '&6&l>> &e余额：&a%moneySymbol%%targetBankBalance%&e/&a%moneySymbol%%targetBankMaxBalance%'
+
+  add:
+    deposit-success: '%chatPlugin% &a您已将%moneySymbol%%amount%存入您的银行。'
+    deposit-exceeds: '%chatPlugin% &c您当前银行等级不能存入超过%moneySymbol%%playerBankMaxBalance%。'
+    deposit-failure: '%chatPlugin% &c金额必须是正整数。'
+    not-enough-bank-balance: '%chatPlugin% &c您没有足够的余额存入该金额。'
+    target-deposit-success: '%chatPlugin% &a您已将%moneySymbol%%amount%存入%targetPlayerName%的银行。'
+    target-deposit-exceeds: '%chatPlugin% &c%targetPlayerName%的银行不能存入超过%moneySymbol%%targetBankMaxBalance%。'
+    target-deposit-failure: '%chatPlugin% &c金额必须是正整数。'
+
+  take:
+    withdraw-success: '%chatPlugin% &a您已从银行提取%moneySymbol%%amountReceived%。银行费用为：%moneySymbol%%amountDeducted%。银行利息为：%interestPercentage%%'
+    withdraw-exceeds: '%chatPlugin% &c由于利息，您不能提取该金额。'
+    withdraw-failure: '%chatPlugin% &c金额必须是正整数。'
+    not-enough-bank-balance: '%chatPlugin% &c您的银行余额不足以提取该金额。'
+    target-withdraw-success: '%chatPlugin% &a您已从%targetPlayerName%的银行提取%moneySymbol%%amount%。'
+    target-withdraw-failure: '%chatPlugin% &c金额必须是正整数。'
+    target-not-enough-bank-balance: '%chatPlugin% &c%targetPlayerName%的银行没有足够的余额。'
+
+  levelup:
+    levelup-success: '%chatPlugin% &a您已成功升级到 %playerBankLevel% 级，现在可以存储总计 %moneySymbol%%playerBankMaxBalance%'
+    already-max-level: '%chatPlugin% &c您已经处于银行的最高级别。'
+    not-enough-bank-balance: '%chatPlugin% &c您没有足够的银行余额来升级，您需要 %moneySymbol%%playerBankNextLevelCost%'
+
+  top:
+    title: '%chatPlugin% &e银行中余额最多的前玩家：'
+    entry: '&a第 %topBankPosition% 名: &f%topPlayerName% - %topBankName% - %topBankLevel% - %moneySymbol%%topBankBalance%'
+    baltop-failure: '%chatPlugin% &c金额必须是正整数。'
+
+  receive:
+    offline-received-success: '%chatPlugin% &a您已收到 %moneySymbol%%offlineProfitAmount% 的离线收益。'
+    receive-exceeds: '%chatPlugin% &c您当前银行等级不能存储超过 %moneySymbol%%playerBankMaxBalance%。'
+    offline-not-profit: '%chatPlugin% &c您没有任何累积的离线收益。'
+
+  set:
+    set-balance-success: '%chatPlugin% &a已将 %targetPlayerName% 的银行余额设置为 %moneySymbol%%amount%'
+    max-balance: '%chatPlugin% &c余额不能超过 %moneySymbol%%targetBankMaxBalance%'
+    set-level-success: '%chatPlugin% &a已将 %targetPlayerName% 的银行等级设置为 %amount%'
+    max-level: '%chatPlugin% &c等级不能超过 %targetBankMaxLevel%'
+    set-amount-failure: '%chatPlugin% &c金额必须是正整数。'
+    target-player-not-found: '%chatPlugin% &c未找到玩家 %targetPlayerName%。'
+
+  profit:
+    received: '%chatPlugin% &a您已因将资金存入银行获得 %moneySymbol%%keepInBankProfit%！银行的利润率为：%profitPercentage%%'
+    min-storage: '%chatPlugin% &c要开始获得收益，您需要在银行存入至少 %moneySymbol%%minBankBalanceToReceiveProfit%。'
+    max-storage: '%chatPlugin% &c您需要从银行提取资金才能继续获得收益。'
+    offline-accumulated: '%chatPlugin% &a您的银行在您离线期间累计了 %moneySymbol%%offlineProfitAmount% 的余额，要领取它，请使用 &e/bank receive profit。'
+
+  gui:
+    amount-withdraw: '%chatPlugin% &a请输入要提取的金额或输入 "exit" 取消：'
+    amount-deposit: '%chatPlugin% &a请输入要存入的金额或输入 "exit" 取消：'
+    amount-selected: '%chatPlugin% &a选择的金额：'
+    invalid-amount: '%chatPlugin% &c无效金额。请再试一次。'
+    transaction-canceled: '%chatPlugin% &c交易已取消。'

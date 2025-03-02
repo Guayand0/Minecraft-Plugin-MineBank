@@ -1,0 +1,217 @@
+# ############################################################################################################# #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# |                                                                                                           | #
+# |                      ███╗   ███╗██╗███╗  ██╗███████╗██████╗  █████╗ ███╗  ██╗██╗  ██╗                     | #
+# |                      ████╗ ████║██║████╗ ██║██╔════╝██╔══██╗██╔══██╗████╗ ██║██║ ██╔╝                     | #
+# |                      ██╔████╔██║██║██╔██╗██║█████╗  ██████╦╝███████║██╔██╗██║█████═╝                      | #
+# |                      ██║╚██╔╝██║██║██║╚████║██╔══╝  ██╔══██╗██╔══██║██║╚████║██╔═██╗                      | #
+# |                      ██║ ╚═╝ ██║██║██║ ╚███║███████╗██████╦╝██║  ██║██║ ╚███║██║ ╚██╗                     | #
+# |                      ╚═╝     ╚═╝╚═╝╚═╝  ╚══╝╚══════╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚══╝╚═╝  ╚═╝                     | #
+# |                                                                                                           | #
+# |                    Youtube:    www.youtube.com/@davigamer1614                                             | #
+# |                    Github:     https://github.com/Guayand0/Minecraft-Plugin-MineBank                      | #
+# |                                                                                                           | #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# ############################################################################################################# #
+
+# +----------------------------------+ #
+# |                                  | #
+# |          INVENTORY GUI           | #
+# |                                  | #
+# +----------------------------------+ #
+
+# 이 파일을 수정하려면 이 페이지들을 사용해야 할 수 있습니다:
+# Minecraft 재료: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+# 인벤토리 슬롯: https://wiki.vg/images/b/bb/DoubleChest-slots.png
+# 머리 텍스처: https://minecraft-heads.com/custom-heads
+
+gui:
+
+  # 주요 인벤토리
+  main:
+
+    # 인벤토리 제목
+    name: '&4&l[&6&lMine&a&lBank&4&l]'
+
+    # 인벤토리 크기
+    size: 6 # 9*6=54 54개의 슬롯을 가진 인벤토리 생성 (6행)
+
+    # 인벤토리 위치 슬롯
+    position-slot:
+
+      # 모든 빈 인벤토리 슬롯
+      default:
+
+        # 인벤토리 슬롯에 표시된 아이템
+        # Minecraft 재료: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+        item: WHITE_STAINED_GLASS_PANE
+
+        # 아이템 표시를 비활성화하려면 양을 0으로 설정
+        amount: 1
+
+        # 사용자 정의 아이템 이름을 설정하거나 원래 아이템 이름을 사용하려면 ''로 설정
+        name: ' '
+
+        # Lore를 표시하지 않으려면 주석 처리하거나 삭제
+        lore:
+        #  - 'Lore는 표시되지 않습니다'
+
+      # 인벤토리의 10번 슬롯에 있는 아이템
+      # 인벤토리 슬롯: https://wiki.vg/images/b/bb/DoubleChest-slots.png
+      10:
+        item: EMERALD
+        amount: 1
+        name: '&a%moneySymbol%500 추가'
+        lore:
+          - '&f클릭하여 %moneySymbol%500을 &e은행에 예치'
+        # 아이템을 클릭했을 때 명령어 사용
+        command: 'bank add 500'
+        # 명령어를 사용하려면 필요한 권한
+        permission: 'minebank.use'
+
+      11:
+        item: EMERALD
+        amount: 3
+        name: '&a최대값의 절반 추가'
+        lore:
+          - '&f클릭하여 최대 &emax &f저장소 잔고의 절반을 예치'
+        command: 'bank add mid-max'
+
+      12:
+        item: EMERALD
+        amount: 5
+        name: '&a모두 추가'
+        lore:
+          - '&f클릭하여 &f모든 저장소 잔고를 예치'
+        command: 'bank add all'
+
+      19:
+        item: EMERALD
+        amount: 2
+        name: '&a%moneySymbol%2000 추가'
+        lore:
+          - '&f클릭하여 %moneySymbol%2000을 &e은행에 예치'
+        command: 'bank add 2000'
+
+      20:
+        item: EMERALD
+        amount: 4
+        name: '&a잔액의 절반 추가'
+        lore:
+          - '&f클릭하여 현재&ecurrent &f저장소 잔고의 절반을 예치'
+        command: 'bank add half-balance'
+
+      21:
+        item: EMERALD
+        amount: 6
+        name: '&a사용자 정의 금액 추가'
+        lore:
+          - '&f클릭하여 사용자 정의 금액을 &f은행에 예치'
+          - '&f거래를 취소하려면&eexit&f을 입력'
+        command: 'bank add <amount>'
+
+      14:
+        item: REDSTONE
+        amount: 1
+        name: '&c%moneySymbol%500 출금'
+        lore:
+          - '&f은행에서 %moneySymbol%500을&e 클릭하여 출금'
+        command: 'bank take 500'
+
+      15:
+        item: REDSTONE
+        amount: 3
+        name: '&c최대의 절반 출금'
+        lore:
+          - '&f클릭하여 최대&f저장소 잔액의 절반을 출금'
+        command: 'bank take mid-max'
+
+      16:
+        item: REDSTONE
+        amount: 5
+        name: '&c모두 출금'
+        lore:
+          - '&f클릭하여 모든 &f잔액을 출금'
+        command: 'bank take all'
+
+      23:
+        item: REDSTONE
+        amount: 2
+        name: '&c%moneySymbol%2000 출금'
+        lore:
+          - '&f은행에서 %moneySymbol%2000을&e 클릭하여 출금'
+        command: 'bank take 2000'
+
+      24:
+        item: REDSTONE
+        amount: 4
+        name: '&c현재 잔액의 절반 출금'
+        lore:
+          - '&f클릭하여 현재'
+          - '&f저장소 잔액의 절반을 출금'
+        command: 'bank take half-balance'
+
+      25:
+        item: REDSTONE
+        amount: 6
+        name: '&c사용자 정의 금액 출금'
+        lore:
+          - '&f클릭하여 사용자 정의 금액을&e 출금'
+          - '&f은행에서'
+          - '&f거래 취소하려면&eexit &f입력'
+        command: 'bank take <amount>'
+
+      38:
+        item: PLAYER_HEAD
+        # 머리 텍스처: https://minecraft-heads.com/custom-heads/head/50151-dollar
+        # 1.8에서 1.20.3 버전까지 사용하십시오 (링크를 열고 "For Developers: Value" 섹션을 검색하십시오)
+        # texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjg4OWNmY2JhY2JlNTk4ZThhMWNkODYxMGI0OWZjYjYyNjQ0ZThjYmE5ZDQ5MTFkMTIxMTM0NTA2ZDhlYTFiNyJ9fX0='
+        # 1.20.4 이상 버전에서 사용하십시오 (링크를 열고 "For Developers: Minecraft URL" 섹션을 검색하십시오)
+        texture: 'http://textures.minecraft.net/texture/b889cfcbacbe598e8a1cd8610b49fcb62644e8cba9d4911d121134506d8ea1b7'
+        amount: 1
+        name: '&e당신의 계좌'
+        lore:
+          - '&a이름: &f%playerBankName%'
+          - '&a잔액: &f%moneySymbol%%playerBankBalance%/%moneySymbol%%playerBankMaxBalance%'
+          - '&a레벨: &f%playerBankLevel%/%playerBankMaxLevel%'
+          - ''
+          - '&a경제: &f%moneySymbol%%playerEconomyBalance%'
+
+      40:
+        item: PLAYER_HEAD
+        # 머리 텍스처: https://minecraft-heads.com/custom-heads/head/70110-level-up
+        # 1.8에서 1.20.3 버전까지 사용하십시오 (링크를 열고 "For Developers: Value" 섹션을 검색하십시오)
+        # texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjQxNWEzNTQ2NmM3NTk5MDNhNDIzNjgyMjZmOGI0ODVhNDdiYjE2N2YwYTFlOTc4YjU1Mzg4ODEyNGE4OTA5ZCJ9fX0='
+        # 1.20.4 이상 버전에서 사용하십시오 (링크를 열고 "For Developers: Minecraft URL" 섹션을 검색하십시오)
+        texture: 'http://textures.minecraft.net/texture/6415a35466c759903a42368226f8b485a47bb167f0a1e978b553888124a8909d'
+        amount: 1
+        name: '&e레벨 업'
+        lore:
+          - '&a다음 레벨: &f%moneySymbol%%playerBankBalance%/%moneySymbol%%playerBankNextLevelCost%'
+          - '&a은행 레벨: &f%playerBankLevel%/%playerBankMaxLevel%'
+          - ''
+          - '&f클릭하여 은행 레벨을 &e업그레이드'
+          - '&f충분한 돈이 있으면'
+        command: 'bank levelup'
+
+      42:
+        item: PLAYER_HEAD
+        # 머리 텍스처: https://minecraft-heads.com/custom-heads/head/74737-gilded-blackstone-1
+        # 1.8에서 1.20.3 버전까지 사용하십시오 (링크를 열고 "For Developers: Value" 섹션을 검색하십시오)
+        #texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODZiYzE4NzcyYWNkMzQzZTZhYjIwMTAzYzRhOWU0MjExNWYyMjQ4NDI3ZWNiZDIwNjcxZDZjZDI0ZWU3ZWY4YyJ9fX0='
+        # 1.20.4 이상 버전에서 사용하십시오 (링크를 열고 "For Developers: Minecraft URL" 섹션을 검색하십시오)
+        texture: 'http://textures.minecraft.net/texture/86bc18772acd343e6ab20103c4a9e42115f2248427ecbd20671d6cd24ee7ef8c'
+        amount: 1
+        name: '&e은행 순위'
+        lore:
+          # 최대 100명의 플레이어를 추가할 수 있습니다.
+          - '&aTop %bankTopBankPosition_1%: &f%bankTopPlayerName_1% - %bankTopBankName_1% - %bankTopBankLevel_1% - %moneySymbol%%bankTopBankBalance_1%'
+          - '&aTop %bankTopBankPosition_2%: &f%bankTopPlayerName_2% - %bankTopBankName_2% - %bankTopBankLevel_1% - %moneySymbol%%bankTopBankBalance_2%'
+          - '&aTop %bankTopBankPosition_3%: &f%bankTopPlayerName_3% - %bankTopBankName_3% - %bankTopBankLevel_1% - %moneySymbol%%bankTopBankBalance_3%'
+          - ''
+          - '&6당신의 순위:'
+          - '&aTop %playerBankTop%: &b%playerName% - %playerBankName% - %playerBankLevel% - %moneySymbol%%playerBankBalance%'
+          - ''
+          - '&f클릭하여 상위 10명의 플레이어를 확인하세요'
+          - '&f가장 높은 은행 잔액을 가진'
+        command: 'bank baltop'

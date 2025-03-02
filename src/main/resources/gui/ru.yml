@@ -1,0 +1,223 @@
+# ############################################################################################################# #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# |                                                                                                           | #
+# |                      ███╗   ███╗██╗███╗  ██╗███████╗██████╗  █████╗ ███╗  ██╗██╗  ██╗                     | #
+# |                      ████╗ ████║██║████╗ ██║██╔════╝██╔══██╗██╔══██╗████╗ ██║██║ ██╔╝                     | #
+# |                      ██╔████╔██║██║██╔██╗██║█████╗  ██████╦╝███████║██╔██╗██║█████═╝                      | #
+# |                      ██║╚██╔╝██║██║██║╚████║██╔══╝  ██╔══██╗██╔══██║██║╚████║██╔═██╗                      | #
+# |                      ██║ ╚═╝ ██║██║██║ ╚███║███████╗██████╦╝██║  ██║██║ ╚███║██║ ╚██╗                     | #
+# |                      ╚═╝     ╚═╝╚═╝╚═╝  ╚══╝╚══════╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚══╝╚═╝  ╚═╝                     | #
+# |                                                                                                           | #
+# |                    Youtube:    www.youtube.com/@davigamer1614                                             | #
+# |                    Github:     https://github.com/Guayand0/Minecraft-Plugin-MineBank                      | #
+# |                                                                                                           | #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# ############################################################################################################# #
+
+# +----------------------------------+ #
+# |                                  | #
+# |          INVENTORY GUI           | #
+# |                                  | #
+# +----------------------------------+ #
+
+# Возможно, вам нужно будет использовать эти страницы для изменения этого файла:
+# Minecraft Материалы: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+# Слоты инвентаря: https://wiki.vg/images/b/bb/DoubleChest-slots.png
+# Текстуры голов: https://minecraft-heads.com/custom-heads
+
+gui:
+
+  # Основной инвентарь
+  main:
+
+    # Название инвентаря
+    name: '&4&l[&6&lMine&a&lBank&4&l]'
+
+    # Размер инвентаря
+    size: 6 # 9*6=54 Создает инвентарь с 54 слотами (6 строк)
+
+    # Позиция слота инвентаря
+    position-slot:
+
+      # Все пустые слоты инвентаря
+      default:
+
+        # Предмет, отображаемый в слоте инвентаря
+        # Minecraft Материал: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+        item: WHITE_STAINED_GLASS_PANE
+
+        # Установите количество 0, чтобы отключить отображение предмета
+        amount: 1
+
+        # Установите кастомное название предмета или оставьте пустым, чтобы использовать оригинальное имя
+        name: ' '
+
+        # Комментируйте или удаляйте lore, чтобы не отображать lore
+        lore:
+        #  - 'Lore не видно'
+
+      # Предмет в слоте 10 инвентаря
+      # Слоты инвентаря: https://wiki.vg/images/b/bb/DoubleChest-slots.png
+      10:
+        item: EMERALD
+        amount: 1
+        name: '&aДобавить %moneySymbol%500'
+        lore:
+          - '&fНажмите, чтобы &eположить %moneySymbol%500 &fв банк'
+        # Используйте команду при клике на предмет
+        command: 'bank add 500'
+        # Необходимое разрешение для использования команды
+        permission: 'minebank.use'
+
+      11:
+        item: EMERALD
+        amount: 3
+        name: '&aДобавить половину максимума'
+        lore:
+          - '&fНажмите, чтобы &eположить половину'
+          - '&emax &fбаланса хранилища'
+        command: 'bank add mid-max'
+
+      12:
+        item: EMERALD
+        amount: 5
+        name: '&aДобавить все'
+        lore:
+          - '&fНажмите, чтобы &eположить все'
+          - '&fиз баланса хранилища'
+        command: 'bank add all'
+
+      19:
+        item: EMERALD
+        amount: 2
+        name: '&aДобавить %moneySymbol%2000'
+        lore:
+          - '&fНажмите, чтобы &eположить %moneySymbol%2000 &fв банк'
+        command: 'bank add 2000'
+
+      20:
+        item: EMERALD
+        amount: 4
+        name: '&aДобавить половину баланса'
+        lore:
+          - '&fНажмите, чтобы &eположить половину'
+          - '&fтекущего &fбаланса хранения'
+        command: 'bank add half-balance'
+
+      21:
+        item: EMERALD
+        amount: 6
+        name: '&aДобавить произвольную сумму'
+        lore:
+          - '&fНажмите, чтобы &eположить произвольную сумму'
+          - '&fденег на ваш банк'
+          - '&fВведите &eexit &fдля отмены транзакции'
+        command: 'bank add <amount>'
+
+      14:
+        item: REDSTONE
+        amount: 1
+        name: '&cСнять %moneySymbol%500'
+        lore:
+          - '&fНажмите, чтобы &eснять %moneySymbol%500 &fиз банка'
+        command: 'bank take 500'
+
+      15:
+        item: REDSTONE
+        amount: 3
+        name: '&cСнять половину от максимума'
+        lore:
+          - '&fНажмите, чтобы &eснять половину'
+          - '&fмаксимального остатка на счете'
+        command: 'bank take mid-max'
+
+      16:
+        item: REDSTONE
+        amount: 5
+        name: '&cСнять все'
+        lore:
+          - '&fНажмите, чтобы &eснять все'
+          - '&fс баланса'
+        command: 'bank take all'
+
+      23:
+        item: REDSTONE
+        amount: 2
+        name: '&cСнять %moneySymbol%2000'
+        lore:
+          - '&fНажмите, чтобы &eснять %moneySymbol%2000 &fиз банка'
+        command: 'bank take 2000'
+
+      24:
+        item: REDSTONE
+        amount: 4
+        name: '&cСнять половину от баланса'
+        lore:
+          - '&fНажмите, чтобы &eснять половину'
+          - '&fтекущего остатка на счете'
+        command: 'bank take half-balance'
+
+      25:
+        item: REDSTONE
+        amount: 6
+        name: '&cСнять настраиваемую сумму'
+        lore:
+          - '&fНажмите, чтобы &eснять настраиваемую сумму'
+          - '&fс вашего счета'
+          - '&fВведите &eexit &fдля отмены транзакции'
+        command: 'bank take <amount>'
+
+      38:
+        item: PLAYER_HEAD
+        # Текстуры голов: https://minecraft-heads.com/custom-heads/head/50151-dollar
+        # Используйте это для версий от 1.8 до 1.20.3 включительно (откройте ссылку и найдите в разделе "For Developers: Value")
+        # texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjg4OWNmY2JhY2JlNTk4ZThhMWNkODYxMGI0OWZjYjYyNjQ0ZThjYmE5ZDQ5MTFkMTIxMTM0NTA2ZDhlYTFiNyJ9fX0='
+        # Используйте это для версий от 1.20.4 и выше (откройте ссылку и найдите в разделе "For Developers: Minecraft URL")
+        texture: 'http://textures.minecraft.net/texture/b889cfcbacbe598e8a1cd8610b49fcb62644e8cba9d4911d121134506d8ea1b7'
+        amount: 1
+        name: '&eВаш аккаунт'
+        lore:
+          - '&aИмя: &f%playerBankName%'
+          - '&aБаланс: &f%moneySymbol%%playerBankBalance%/%moneySymbol%%playerBankMaxBalance%'
+          - '&aУровень: &f%playerBankLevel%/%playerBankMaxLevel%'
+          - ''
+          - '&aЭкономика: &f%moneySymbol%%playerEconomyBalance%'
+
+      40:
+        item: PLAYER_HEAD
+        # Текстуры голов: https://minecraft-heads.com/custom-heads/head/70110-level-up
+        # Используйте это для версий от 1.8 до 1.20.3 включительно (откройте ссылку и найдите в разделе "For Developers: Value")
+        # texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjQxNWEzNTQ2NmM3NTk5MDNhNDIzNjgyMjZmOGI0ODVhNDdiYjE2N2YwYTFlOTc4YjU1Mzg4ODEyNGE4OTA5ZCJ9fX0='
+        # Используйте это для версий от 1.20.4 и выше (откройте ссылку и найдите в разделе "For Developers: Minecraft URL")
+        texture: 'http://textures.minecraft.net/texture/6415a35466c759903a42368226f8b485a47bb167f0a1e978b553888124a8909d'
+        amount: 1
+        name: '&eУровень увеличен'
+        lore:
+          - '&aСледующий уровень: &f%moneySymbol%%playerBankBalance%/%moneySymbol%%playerBankNextLevelCost%'
+          - '&aУровень банка: &f%playerBankLevel%/%playerBankMaxLevel%'
+          - ''
+          - '&fНажмите, чтобы &eповысить уровень &fвашего банка'
+          - '&fесли у вас достаточно денег'
+        command: 'bank levelup'
+
+      42:
+        item: PLAYER_HEAD
+        # Текстуры голов: https://minecraft-heads.com/custom-heads/head/74737-gilded-blackstone-1
+        # Используйте это для версий от 1.8 до 1.20.3 включительно (откройте ссылку и найдите в разделе "For Developers: Value")
+        #texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODZiYzE4NzcyYWNkMzQzZTZhYjIwMTAzYzRhOWU0MjExNWYyMjQ4NDI3ZWNiZDIwNjcxZDZjZDI0ZWU3ZWY4YyJ9fX0='
+        # Используйте это для версий от 1.20.4 и выше (откройте ссылку и найдите в разделе "For Developers: Minecraft URL")
+        texture: 'http://textures.minecraft.net/texture/86bc18772acd343e6ab20103c4a9e42115f2248427ecbd20671d6cd24ee7ef8c'
+        amount: 1
+        name: '&eТоп банка'
+        lore:
+          # Вы можете добавить до 100 игроков
+          - '&aТоп %bankTopBankPosition_1%: &f%bankTopPlayerName_1% - %bankTopBankName_1% - %bankTopBankLevel_1% - %moneySymbol%%bankTopBankBalance_1%'
+          - '&aТоп %bankTopBankPosition_2%: &f%bankTopPlayerName_2% - %bankTopBankName_2% - %bankTopBankLevel_1% - %moneySymbol%%bankTopBankBalance_2%'
+          - '&aТоп %bankTopBankPosition_3%: &f%bankTopPlayerName_3% - %bankTopBankName_3% - %bankTopBankLevel_1% - %moneySymbol%%bankTopBankBalance_3%'
+          - ''
+          - '&6Ваша позиция:'
+          - '&aТоп %playerBankTop%: &b%playerName% - %playerBankName% - %playerBankLevel% - %moneySymbol%%playerBankBalance%'
+          - ''
+          - '&fНажмите, чтобы увидеть топ 10 игроков'
+          - '&fс наибольшим банковским балансом'
+        command: 'bank baltop'
