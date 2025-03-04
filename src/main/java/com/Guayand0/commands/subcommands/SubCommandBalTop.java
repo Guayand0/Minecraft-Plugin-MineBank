@@ -40,13 +40,13 @@ public class SubCommandBalTop implements CommandExecutor {
                 try {
                     amount = Integer.parseInt(args[1]);
                 } catch (NumberFormatException e) {
-                    bankTopFailure(player);
+                    bankTopFailureMessage(player);
                     return true;
                 }
             }
 
-            bankTopTitle(player);
-            bankTopEntry(player, amount);
+            bankTopTitleMessage(player); // Mensaje
+            bankTopEntryMessage(player, amount); // Mensaje
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -56,19 +56,19 @@ public class SubCommandBalTop implements CommandExecutor {
         return true;
     }
 
-    private void bankTopFailure(Player player) {
+    private void bankTopFailureMessage(Player player) {
         for (String message : languageManager.getAllMessage("bank.top.baltop-failure")) {
             player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));
         }
     }
 
-    private void bankTopTitle(Player player) {
+    private void bankTopTitleMessage(Player player) {
         for (String message : languageManager.getAllMessage("bank.top.title")) {
             player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));
         }
     }
 
-    private void bankTopEntry(Player player, int amount) throws IOException {
+    private void bankTopEntryMessage(Player player, int amount) throws IOException {
         List<List<String>> topBanks = BU.getTopPlayerBanks(plugin, amount);
         int position = 1;
         for (List<String> bankInfo : topBanks) {

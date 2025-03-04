@@ -13,6 +13,7 @@ import java.nio.file.Files;
 public class FileManager {
 
     private final MineBank plugin;
+    private File lotteryDataFile;
     private File banksFile;
     private File playerDataFile;
     private File interestsDataFile;
@@ -28,6 +29,18 @@ public class FileManager {
 
     private void loadDataFiles() {
         File dataFolder = plugin.getDataFolder();
+
+        // -------- //
+
+//        File lotteryFolder = new File(dataFolder, "lottery");
+//
+//        if (!lotteryFolder.exists()) {
+//            lotteryFolder.mkdirs();
+//        }
+//
+//        lotteryDataFile = new File(lotteryFolder, "lottery_data.json");
+//
+//        createFileIfNotExists(lotteryDataFile, "lottery/lottery_data.json");
 
         // -------- //
 
@@ -71,6 +84,10 @@ public class FileManager {
 
     public File getInterestsDataFile() {
         return interestsDataFile;
+    }
+
+    public File getLotteryDataFile() {
+        return lotteryDataFile;
     }
 
     public void updatePlayerInfo(JsonObject updatedBank, String playerName) {

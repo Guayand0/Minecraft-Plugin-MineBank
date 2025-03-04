@@ -4,13 +4,11 @@ import com.Guayand0.MineBank;
 import com.Guayand0.utils.BankUtils;
 import com.Guayand0.utils.ExceptionManager;
 import com.Guayand0.utils.MessageUtils;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -26,6 +24,7 @@ public class BanksConverter {
         this.plugin = plugin;
     }
 
+    // 4.x.x a 5.0.1
     public void convertYamlToJson() {
         try {
             File yamlFile = new File(plugin.getDataFolder(), "config.yml");
@@ -102,5 +101,86 @@ public class BanksConverter {
     private String capitalizeFirstLetter(String str) {
         if (str == null || str.isEmpty()) return "";
         return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
+    }
+
+    // 5.0.1 a 5.1.1
+    public void convertJsonToJsonLeveled() {
+        File jsonFile = new File(plugin.getDataFolder(), "bank/banks.json");
+        File backupFile = new File(plugin.getDataFolder(), "bank/old-banks.json");
+        jsonFile.getParentFile().mkdirs();
+
+        if (!jsonFile.exists()) return;
+
+        try {
+            // Read the original JSON file
+            String content = new String(Files.readAllBytes(jsonFile.toPath()));
+            Gson gson = new Gson();
+            JsonObject originalData = gson.fromJson(content, JsonObject.class);
+            JsonObject convertedData = new JsonObject();
+
+            boolean hasLevel = true;
+
+            for (String key : originalData.keySet()) {
+                JsonArray levelsArray = originalData.getAsJsonArray(key);
+
+                for (JsonElement element : levelsArray) {
+                    JsonObject obj = element.getAsJsonObject();
+
+                    if (obj.has("level")) {
+                        hasLevel = false;
+                    } else if (obj.has("levels")) {
+                        hasLevel = true;
+                        break;  // Si encontramos "levels", no es necesario continuar
+                    }
+                }
+            }
+
+            if (hasLevel) return;
+
+            // Create a backup
+            Files.copy(jsonFile.toPath(), backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Bukkit.getConsoleSender().sendMessage(MU.getColoredReplacePluginPlaceholdersText(plugin.prefix + " &eBackup of the banks.json file to old-banks.json", plugin.placeholders));
+
+            for (String key : originalData.keySet()) {
+                JsonArray levelsArray = originalData.getAsJsonArray(key);
+                JsonObject newFormat = new JsonObject();
+                JsonObject levels = new JsonObject();
+
+                for (int i = 0; i < levelsArray.size(); i++) {
+                    JsonObject levelData = levelsArray.get(i).getAsJsonObject();
+                    int level = levelData.get("level").getAsInt();
+                    int maxBalance = levelData.get("max_balance").getAsInt();
+                    int upgradeCost = levelData.get("upgrade_cost").getAsInt();
+
+                    JsonObject newLevelData = new JsonObject();
+                    newLevelData.addProperty("max_balance", maxBalance);
+                    newLevelData.addProperty("upgrade_cost", upgradeCost);
+                    levels.add(String.valueOf(level), newLevelData);
+                }
+
+                newFormat.add("levels", levels);
+                JsonArray newArray = new JsonArray();
+                newArray.add(newFormat);
+                convertedData.add(key, newArray);
+            }
+
+            // Save the new JSON file
+            try (FileWriter writer = new FileWriter(jsonFile)) {
+                Gson gsonPretty = new GsonBuilder().setPrettyPrinting().create();
+                writer.write(gsonPretty.toJson(convertedData));
+                Bukkit.getConsoleSender().sendMessage(MU.getColoredReplacePluginPlaceholdersText(plugin.prefix + " &eBank data successfully converted to new format, updated banks.json", plugin.placeholders));
+            }
+
+        } catch (IOException e) {
+            Bukkit.getConsoleSender().sendMessage(MU.getColoredReplacePluginPlaceholdersText(plugin.prefix + " &cError during conversion: " + e.getMessage(), plugin.placeholders));
+            if (BankUtils.getSaveException(plugin)) {
+                Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + ExceptionManager.saveInLog(e, plugin)));
+            }
+        } catch (Exception e) {
+            Bukkit.getConsoleSender().sendMessage(MU.getColoredReplacePluginPlaceholdersText(plugin.prefix + " &cAn unexpected error occurred during JSON conversion", plugin.placeholders));
+            if (BankUtils.getSaveException(plugin)) {
+                Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + ExceptionManager.saveInLog(e, plugin)));
+            }
+        }
     }
 }

@@ -37,6 +37,7 @@ public class BankInventoryEvent implements Listener {
     private final LanguageManager languageManager;
 
     private final MessageUtils MU = new MessageUtils();
+    private final BankUtils BU = new BankUtils();
     private final InventoryUtils IU = new InventoryUtils();
 
     private Inventory bankInventory;
@@ -53,11 +54,12 @@ public class BankInventoryEvent implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
 
         // Tarea periódica para actualizar inventarios
-        Bukkit.getScheduler().runTaskTimer(plugin, this::updateInventories, 0L, 40L); // Cada 2 segundos (40 ticks)
+        int interval = BU.getUpdateGUITicks(plugin); // Cantidad de ticks para actualizar inventario
+        Bukkit.getScheduler().runTaskTimer(plugin, this::updateInventories, interval, interval);
     }
 
     // Tarea periódica para actualizar inventarios
-    private void updateInventories() {
+    public void updateInventories() {
         for (Player player : updatingPlayers) if (player.isOnline()) updateBankInventory(player);
     }
 

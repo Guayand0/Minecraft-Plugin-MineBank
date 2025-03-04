@@ -1,12 +1,14 @@
 package com.Guayand0.commands.subcommands;
 
+import com.Guayand0.Data.BankData;
+import com.Guayand0.Data.BankManager;
+import com.Guayand0.Data.Player.JSON.SetPlayerBankData;
+import com.Guayand0.Data.Player.PlayerBankData;
 import com.Guayand0.MineBank;
-import com.Guayand0.managers.FileManager;
 import com.Guayand0.managers.LanguageManager;
 import com.Guayand0.utils.BankUtils;
 import com.Guayand0.utils.ExceptionManager;
 import com.Guayand0.utils.MessageUtils;
-import com.google.gson.JsonObject;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,61 +19,74 @@ public class SubCommandLevelUp implements CommandExecutor {
 
     private final MineBank plugin;
     private final LanguageManager languageManager;
-    private final FileManager fileManager;
 
     private final MessageUtils MU = new MessageUtils();
-    private final BankUtils BU = new BankUtils();
+    private final BankManager BM = new BankManager();
+    private final SetPlayerBankData SPBD = new SetPlayerBankData();
 
-    private int bankMaxBalanceByLevel = -1;
-    private int bankUpgradeLevelCost = -1;
-    private int playerBankLevel = -1;
+    private String bankName = "NULL";
+    private int bankBalance = -1;
+    private int bankLevel = -1;
+    private int offlineProfitAccrued = -1;
+    private int offlineProfitTimes = -1;
+    private int bankMaxBalance = -1;
+    private int bankMaxLevel = -1;
+    private int bankLevelUpgradeCost = -1;
 
     public SubCommandLevelUp(MineBank plugin) {
         this.plugin = plugin;
         this.languageManager = plugin.getLanguageManager();
-        this.fileManager = plugin.getFileManager();
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
         Player player = (Player) sender;
+        String playerName = player.getName();
 
         try {
-
-            String playerName = player.getName();
-
-            // Obtener solo el banco del jugador una vez
-            JsonObject bank = BU.getBankDataOfPlayerName(plugin, playerName);
-
-            int playerBankBalance = BU.getPlayerBankBalance(bank);
-            playerBankLevel = BU.getPlayerBankLevel(bank);
-            bankMaxBalanceByLevel = BU.getBankMaxBalanceByLevel(plugin, playerName);
-            bankUpgradeLevelCost = BU.getBankUpgradeCostByLevel(plugin, playerName);
-            int bankMaxLevel = BU.getBankMaxLevel(plugin, playerName);
+            // Obtener datos del banco del jugador y maximos de nivel y balance
+            BankData bankData = BM.getBankData(plugin, playerName);
+            if (bankData != null) {
+                bankName = bankData.getBankName();
+                bankLevel = bankData.getBankLevel();
+                bankBalance = bankData.getBankBalance();
+                offlineProfitAccrued = bankData.getOfflineProfitAccrued();
+                offlineProfitTimes = bankData.getOfflineProfitTimes();
+                bankMaxLevel = bankData.getBankMaxLevel();
+                bankMaxBalance = bankData.getBankMaxBalance();
+                bankLevelUpgradeCost = bankData.getBankLevelUpgradeCost();
+            }
 
             // Si el jugador ya está en el último nivel
-            if (playerBankLevel == bankMaxLevel) {
-                playerBankAlreadyMaxLevel(player);
+            if (bankLevel == bankMaxLevel) {
+                playerBankAlreadyMaxLevelMessage(player); // Mensaje
                 return true;
             }
 
             // Si el jugador no tiene suficiente dinero
-            if (playerBankBalance < bankUpgradeLevelCost) {
-                playerBankNextLevelNotBalance(player); // Mensaje
+            if (bankBalance < bankLevelUpgradeCost) {
+                playerBankNextLevelNotBalanceMessage(player); // Mensaje
                 return true;
             }
 
-            // Retirar el dinero del banco
-            BU.setPlayerBankBalance(bank, playerBankBalance - bankUpgradeLevelCost);
+            bankBalance = bankBalance - bankLevelUpgradeCost;
+            bankLevel = bankLevel + 1;
+            // Establecer nuevos valores de banco
+            PlayerBankData newBankData = new PlayerBankData(bankName, bankLevel, bankBalance, offlineProfitAccrued, offlineProfitTimes);
 
-            // Establecer nuevo nivel del banco
-            BU.setPlayerBankLevel(bank, playerBankLevel + 1);
+            boolean success = SPBD.setPlayerBankData(plugin, playerName, newBankData);
+            if (success) {
+                // Obtener el nuevo maximo de balance
+                bankData = BM.getBankData(plugin, playerName);
+                if (bankData != null) {
+                    bankMaxBalance = bankData.getBankMaxBalance();
+                }
 
-            // Actualizar solo datos del banco
-            fileManager.updatePlayerInfo(bank, player.getName());
-
-            levelupSuccess(player); // Mensaje
+                levelupSuccessMessage(player); // Mensaje
+            } else {
+                Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + " &cCan't update player bank data for " + playerName));
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -81,24 +96,23 @@ public class SubCommandLevelUp implements CommandExecutor {
         return true;
     }
 
-
-    private void playerBankNextLevelNotBalance(Player player) {
-        plugin.placeholders.put("%playerbanknextlevelcost%", String.valueOf(bankUpgradeLevelCost));
+    private void playerBankNextLevelNotBalanceMessage(Player player) {
+        plugin.placeholders.put("%playerbanknextlevelcost%", String.valueOf(bankLevelUpgradeCost));
 
         for (String message : languageManager.getAllMessage("bank.levelup.not-enough-bank-balance")) {
             player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));
         }
     }
 
-    private void playerBankAlreadyMaxLevel(Player player) {
+    private void playerBankAlreadyMaxLevelMessage(Player player) {
         for (String message : languageManager.getAllMessage("bank.levelup.already-max-level")) {
             player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));
         }
     }
 
-    private void levelupSuccess(Player player) {
-        plugin.placeholders.put("%playerbanklevel%", String.valueOf(playerBankLevel));
-        plugin.placeholders.put("%playerbankmaxbalance%", String.valueOf(bankMaxBalanceByLevel));
+    private void levelupSuccessMessage(Player player) {
+        plugin.placeholders.put("%playerbanklevel%", String.valueOf(bankLevel));
+        plugin.placeholders.put("%playerbankmaxbalance%", String.valueOf(bankMaxBalance));
 
         for (String message : languageManager.getAllMessage("bank.levelup.levelup-success")) {
             player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));

@@ -1,5 +1,7 @@
 package com.Guayand0.api;
 
+import com.Guayand0.Data.BankData;
+import com.Guayand0.Data.BankManager;
 import com.Guayand0.MineBank;
 import com.Guayand0.utils.BankUtils;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -12,6 +14,7 @@ public class PlaceholderAPIMineBank extends PlaceholderExpansion {
     // We get an instance of the plugin later.
     private final MineBank plugin;
     private final BankUtils BU = new BankUtils();
+    private final BankManager BM = new BankManager();
 
     public PlaceholderAPIMineBank(MineBank plugin) {
         this.plugin = plugin;
@@ -55,7 +58,9 @@ public class PlaceholderAPIMineBank extends PlaceholderExpansion {
         // %minebank_player_bank_name%
         if (identifier.equals("player_bank_name")) {
             try {
-                return BU.getPlayerBankName(BU.getBankDataOfPlayerName(plugin, player.getName())); // Retorna el nombre del banco
+                // Obtener datos del banco del jugador y maximos de nivel y balance
+                BankData bankData = BM.getBankData(plugin, player.getName());
+                return bankData.getBankName(); // Retorna el nombre del banco
             } catch (Exception e) {
                 return "NULL";
             }
@@ -64,7 +69,8 @@ public class PlaceholderAPIMineBank extends PlaceholderExpansion {
         // %minebank_player_bank_level%
         if (identifier.equals("player_bank_level")) {
             try {
-                return String.valueOf(BU.getPlayerBankLevel(BU.getBankDataOfPlayerName(plugin, player.getName()))); // Retorna el nivel del banco
+                BankData bankData = BM.getBankData(plugin, player.getName());
+                return String.valueOf(bankData.getBankLevel()); // Retorna el nivel del banco
             } catch (Exception e) {
                 return "NULL";
             }
@@ -73,7 +79,8 @@ public class PlaceholderAPIMineBank extends PlaceholderExpansion {
         // %minebank_player_bank_balance%
         if (identifier.equals("player_bank_balance")) {
             try {
-                return String.valueOf(BU.getPlayerBankBalance(BU.getBankDataOfPlayerName(plugin, player.getName()))); // Retorna el dinero del banco
+                BankData bankData = BM.getBankData(plugin, player.getName());
+                return String.valueOf(bankData.getBankBalance()); // Retorna el dinero del banco
             } catch (Exception e) {
                 return "NULL";
             }
@@ -82,7 +89,8 @@ public class PlaceholderAPIMineBank extends PlaceholderExpansion {
         // %minebank_player_bank_next_level_cost%
         if (identifier.equals("player_bank_next_level_cost")) {
             try {
-                return String.valueOf(BU.getBankUpgradeCostByLevel(plugin, player.getName())); // Retorna el precio del siguiente nivel
+                BankData bankData = BM.getBankData(plugin, player.getName());
+                return String.valueOf(bankData.getBankLevelUpgradeCost()); // Retorna el precio del siguiente nivel
             } catch (Exception e) {
                 return "NULL";
             }
@@ -91,7 +99,8 @@ public class PlaceholderAPIMineBank extends PlaceholderExpansion {
         // %minebank_player_bank_max_level%
         if (identifier.equals("player_bank_max_level")) {
             try {
-                return String.valueOf(BU.getBankMaxLevel(plugin, player.getName())); // Retorna el nivel maximo del banco
+                BankData bankData = BM.getBankData(plugin, player.getName());
+                return String.valueOf(bankData.getBankMaxLevel()); // Retorna el nivel maximo del banco
             } catch (Exception e) {
                 return "NULL";
             }
@@ -100,7 +109,28 @@ public class PlaceholderAPIMineBank extends PlaceholderExpansion {
         // %minebank_player_bank_max_balance%
         if (identifier.equals("player_bank_max_balance")) {
             try {
-                return String.valueOf(BU.getBankMaxBalanceByLevel(plugin, player.getName())); // Retorna el dinero maximo del banco
+                BankData bankData = BM.getBankData(plugin, player.getName());
+                return String.valueOf(bankData.getBankMaxBalance()); // Retorna el dinero maximo del banco
+            } catch (Exception e) {
+                return "NULL";
+            }
+        }
+
+        // %minebank_player_bank_offline_profit_accrued%
+        if (identifier.equals("player_bank_offline_profit_accrued")) {
+            try {
+                BankData bankData = BM.getBankData(plugin, player.getName());
+                return String.valueOf(bankData.getOfflineProfitAccrued()); // Retorna el beneficio offline acumulado
+            } catch (Exception e) {
+                return "NULL";
+            }
+        }
+
+        // %minebank_player_bank_offline_profit_times%
+        if (identifier.equals("player_bank_offline_profit_times")) {
+            try {
+                BankData bankData = BM.getBankData(plugin, player.getName());
+                return String.valueOf(bankData.getOfflineProfitTimes()); // Retorna la cantidad de veces obtenidas el veneficio offline
             } catch (Exception e) {
                 return "NULL";
             }
@@ -109,7 +139,7 @@ public class PlaceholderAPIMineBank extends PlaceholderExpansion {
         // %minebank_player_bank_top_position%
         if (identifier.equals("player_bank_top_position")) {
             try {
-                return String.valueOf(BU.getPlayerBankTop(plugin, player)); // Retorna la posicion del top del jugador
+                return String.valueOf(BU.getPlayerBankTop(plugin, player)); // Retorna la posición del top del jugador
             } catch (Exception e) {
                 return "NULL";
             }
@@ -118,12 +148,11 @@ public class PlaceholderAPIMineBank extends PlaceholderExpansion {
         // %minebank_player_economy_balance%
         if (identifier.equals("player_economy_balance")) {
             try {
-                return String.valueOf(BU.getPlayerBalance(player, plugin.getEconomy())); // Retorna el dinero de economia
+                return String.valueOf(BU.getPlayerBalance(player, plugin.getEconomy())); // Retorna el dinero de economía
             } catch (Exception e) {
                 return "NULL";
             }
         }
-
 
 // ---------------------------------------------------- TARGET ---------------------------------------------------- //
 

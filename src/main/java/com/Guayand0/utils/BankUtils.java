@@ -103,46 +103,8 @@ public class BankUtils {
 
     // ------------------------- PLAYER_DATA.JSON ------------------------- //
 
-    public String getPlayerBankName(JsonObject player_obj) {
-        return player_obj.get("name").getAsString();
-    }
-
-    public void setPlayerBankName(JsonObject player_obj, String name) {
-        player_obj.addProperty("name", name);
-    }
-
-    public int getPlayerBankLevel(JsonObject player_obj) {
-        return player_obj.get("level").getAsInt();
-    }
-
-    public void setPlayerBankLevel(JsonObject player_obj, int level) {
-        player_obj.addProperty("level", level);
-    }
-
-    public int getPlayerBankBalance(JsonObject player_obj) {
-        return player_obj.get("balance").getAsInt();
-    }
-
-    public void setPlayerBankBalance(JsonObject player_obj, int balance) {
-        player_obj.addProperty("balance", balance);
-    }
-
-
-
     public int getPlayerOfflineAccruedProfit(JsonObject player_obj) {
         return player_obj.get("offline_accrued_profit").getAsInt();
-    }
-
-    public void setPlayerOfflineAccruedProfit(JsonObject player_obj, int balance) {
-        player_obj.addProperty("offline_accrued_profit", balance);
-    }
-
-    public int getPlayerOfflineProfitTimes(JsonObject player_obj) {
-        return player_obj.get("offline_profit_times").getAsInt();
-    }
-
-    public void setPlayerOfflineProfitTimes(JsonObject player_obj, int times) {
-        player_obj.addProperty("offline_profit_times", times);
     }
 
 
@@ -166,61 +128,6 @@ public class BankUtils {
     }
 
     // ------------------------- BANKS.JSON ------------------------- //
-
-    public int getBankMaxBalanceByLevel(MineBank plugin, String playerName) throws IOException {
-        // Obtener la información del jugador
-        JsonObject playerBank = getBankDataOfPlayerName(plugin, playerName);
-        String playerBankName = playerBank.get("name").getAsString();
-        int playerBankLevel = playerBank.get("level").getAsInt();
-
-        // Obtener la información de los bancos
-        JsonObject banksData = getBankData(plugin);
-        JsonArray bankLevels = banksData.getAsJsonArray(playerBankName);
-
-        for (JsonElement element : bankLevels) {
-            JsonObject bankInfo = element.getAsJsonObject();
-            if (bankInfo.get("level").getAsInt() == playerBankLevel) {
-                return bankInfo.get("max_balance").getAsInt();
-            }
-        }
-        return -1; // Si no encuentra el max_balance para el nivel del banco
-    }
-
-    public int getBankUpgradeCostByLevel(MineBank plugin, String playerName) throws IOException {
-        JsonObject playerBank = getBankDataOfPlayerName(plugin, playerName);
-        String playerBankName = playerBank.get("name").getAsString();
-        int playerBankLevel = playerBank.get("level").getAsInt();
-
-        // Obtener la información de los bancos
-        JsonObject banksData = getBankData(plugin);
-        JsonArray bankLevels = banksData.getAsJsonArray(playerBankName);
-
-        for (JsonElement element : bankLevels) {
-            JsonObject bankInfo = element.getAsJsonObject();
-            if (bankInfo.get("level").getAsInt() == playerBankLevel) {
-                if (bankInfo.has("upgrade_cost")) {
-                    return bankInfo.get("upgrade_cost").getAsInt();
-                }
-            }
-        }
-        return -1; // Si no encuentra el upgrade_cost para el nivel del banco
-    }
-
-    public int getBankMaxLevel(MineBank plugin, String playerName) throws IOException {
-        JsonObject playerBank = getBankDataOfPlayerName(plugin, playerName);
-        String playerBankName = playerBank.get("name").getAsString();
-
-        JsonObject banksData = getBankData(plugin);
-        JsonArray bankLevels = banksData.getAsJsonArray(playerBankName);
-
-        for (JsonElement element : bankLevels) {
-            JsonObject bankInfo = element.getAsJsonObject();
-            if (bankInfo.has("final_level") && bankInfo.get("final_level").getAsBoolean()) {
-                return bankInfo.get("level").getAsInt();
-            }
-        }
-        return -1; // Si no encuentra un nivel final
-    }
 
     public List<String> getBankNames(MineBank plugin) throws IOException {
         // Obtener los datos de los bancos
@@ -288,7 +195,6 @@ public class BankUtils {
     public String getBankDataType(MineBank plugin) {
         return plugin.getConfig().getString("bank.data.type", "JSON");
     }
-
 
     public String getMoneySymbol(MineBank plugin) {
         return plugin.getConfig().getString("bank.money.symbol", "$");
@@ -372,6 +278,11 @@ public class BankUtils {
         return plugin.getConfig().getBoolean("bank.interest.multiply-by-bank-level", false);
     }
 
+
+    // Plugin GUI
+    public int getUpdateGUITicks(MineBank plugin) {
+        return plugin.getConfig().getInt("gui.update-time", 40);
+    }
 
 
     // Plugin exceptions

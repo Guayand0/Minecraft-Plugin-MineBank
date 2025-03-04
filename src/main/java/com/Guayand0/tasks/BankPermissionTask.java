@@ -1,11 +1,12 @@
 package com.Guayand0.tasks;
 
+import com.Guayand0.Data.Player.JSON.GetPlayerBankData;
+import com.Guayand0.Data.Player.JSON.SetPlayerBankData;
+import com.Guayand0.Data.Player.PlayerBankData;
 import com.Guayand0.MineBank;
-import com.Guayand0.managers.FileManager;
 import com.Guayand0.utils.BankUtils;
 import com.Guayand0.utils.ExceptionManager;
 import com.Guayand0.utils.MessageUtils;
-import com.google.gson.JsonObject;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -16,14 +17,14 @@ import java.util.List;
 public class BankPermissionTask extends BukkitRunnable {
 
     private final MineBank plugin;
-    private final FileManager fileManager;
 
     private final BankUtils BU = new BankUtils();
     private final MessageUtils MU = new MessageUtils();
+    private final GetPlayerBankData GPBD = new GetPlayerBankData();
+    private final SetPlayerBankData SPBD = new SetPlayerBankData();
 
     public BankPermissionTask(MineBank plugin) {
         this.plugin = plugin;
-        this.fileManager = plugin.getFileManager();
     }
 
     @Override
@@ -40,10 +41,22 @@ public class BankPermissionTask extends BukkitRunnable {
 
                 String playerName = player.getName();
 
-                // Obtener solo el banco del jugador una vez
-                JsonObject bank = BU.getBankDataOfPlayerName(plugin, playerName);
+                PlayerBankData playerBankData = GPBD.getPlayerBankData(plugin, playerName);
+                String bankName = "NULL";
+                int bankBalance = -1;
+                int bankLevel = -1;
+                int offlineProfitAccrued = -1;
+                int offlineProfitTimes = -1;
 
-                String playerBankName = BU.getPlayerBankName(bank);
+                // Obtener datos del banco: nombre, nivel, dinero, beneficio offline
+                if (playerBankData != null) {
+                    bankName = playerBankData.getName();
+                    bankBalance = playerBankData.getBalance();
+                    bankLevel = playerBankData.getLevel();
+                    offlineProfitAccrued = playerBankData.getOfflineAccruedProfit();
+                    offlineProfitTimes = playerBankData.getOfflineProfitTimes();
+                }
+
                 List<String> bankNames = BU.getBankNames(plugin);
                 boolean adminLastBank = BU.getBankAdminShouldHaveLastBank(plugin);
 
@@ -55,13 +68,16 @@ public class BankPermissionTask extends BukkitRunnable {
                 else rightBank = getBankFromPermissions(player); // Buscar un permiso de banco
 
                 // Si el banco no coincide con su permiso o condición, cambiar el banco
-                if (rightBank != null && !rightBank.equals(playerBankName)) {
+                if (rightBank != null && !rightBank.equals(bankName)) {
 
-                    // Establecer nuevo banco
-                    BU.setPlayerBankName(bank, rightBank);
+                    bankName = rightBank;
+                    // Establecer nuevos valores de banco
+                    PlayerBankData newBankData = new PlayerBankData(bankName, bankLevel, bankBalance, offlineProfitAccrued, offlineProfitTimes);
 
-                    // Actualizar solo datos del banco
-                    fileManager.updatePlayerInfo(bank, playerName);
+                    boolean success = SPBD.setPlayerBankData(plugin, playerName, newBankData);
+                    if (!success) {
+                        Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + " &cCan't update player bank data for " + playerName));
+                    }
                 }
             }
 

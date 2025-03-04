@@ -54,7 +54,7 @@ public class MessageUtils {
     public String replacePlaceholdersText(String message, Map<String, String> placeholders) {
         for (Map.Entry<String, String> entry : placeholders.entrySet()) {
             if (entry.getValue() == null) {
-                Bukkit.getConsoleSender().sendMessage(getColoredText("&cAdvertencia: Placeholder con clave " + entry.getKey() + " tiene un valor null"));
+                Bukkit.getConsoleSender().sendMessage(getColoredText("&cWARNING: Placeholder with key " + entry.getKey() + " is null"));
             }
             String replacement = entry.getValue() != null ? entry.getValue() : "";
 

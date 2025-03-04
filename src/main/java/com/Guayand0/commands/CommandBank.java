@@ -120,6 +120,8 @@ public class CommandBank implements CommandExecutor {
                     return subCommandHelp.onCommand(player, command, label, args);
                 case "receive":
                     return subCommandReceive.onCommand(player, command, label, args);
+                /*case "lottery":
+                    return subCommandLottery.onCommand(player, command, label, args);*/
                 default:
                     bankUsage(player); // Mensaje
                     break;

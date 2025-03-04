@@ -1,12 +1,14 @@
 package com.Guayand0.commands.subcommands;
 
+import com.Guayand0.Data.BankData;
+import com.Guayand0.Data.BankManager;
+import com.Guayand0.Data.Player.JSON.SetPlayerBankData;
+import com.Guayand0.Data.Player.PlayerBankData;
 import com.Guayand0.MineBank;
-import com.Guayand0.managers.FileManager;
 import com.Guayand0.managers.LanguageManager;
 import com.Guayand0.utils.BankUtils;
 import com.Guayand0.utils.ExceptionManager;
 import com.Guayand0.utils.MessageUtils;
-import com.google.gson.JsonObject;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,77 +19,78 @@ public class SubCommandReceive implements CommandExecutor {
 
     private final MineBank plugin;
     private final LanguageManager languageManager;
-    private final FileManager fileManager;
 
     private final MessageUtils MU = new MessageUtils();
-    private final BankUtils BU = new BankUtils();
+    private final BankManager BM = new BankManager();
+    private final SetPlayerBankData SPBD = new SetPlayerBankData();
 
-    private int bankMaxBalanceByLevel = -1;
-    private int originalPlayerOfflineAccruedProfit = -1;
+    private String bankName = "NULL";
+    private int bankBalance = -1;
+    private int bankLevel = -1;
+    private int offlineProfitAccrued = -1;
+    private int bankMaxBalance = -1;
 
     public SubCommandReceive(MineBank plugin) {
         this.plugin = plugin;
         this.languageManager = plugin.getLanguageManager();
-        this.fileManager = plugin.getFileManager();
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
         Player player = (Player) sender;
+        String playerName = player.getName();
 
         // Si el comando tiene menos de 2 argumentos
         if (args.length < 2) {
-            bankReceiveUsage(player); // Mensaje
+            bankReceiveUsageMessage(player); // Mensaje
             return true;
         }
 
         try {
+            // Obtener datos del banco del jugador y maximos de nivel y balance
+            BankData bankData = BM.getBankData(plugin, playerName);
+            if (bankData != null) {
+                bankName = bankData.getBankName();
+                bankLevel = bankData.getBankLevel();
+                bankBalance = bankData.getBankBalance();
+                offlineProfitAccrued = bankData.getOfflineProfitAccrued();
+                bankMaxBalance = bankData.getBankMaxBalance();
+            }
 
-            String playerName = player.getName();
+            String arg = args[1];
 
-            // Obtener solo el banco del jugador una vez
-            JsonObject bank = BU.getBankDataOfPlayerName(plugin, playerName);
+            if (arg.equalsIgnoreCase("profit")) {
 
-            int playerBankBalance = BU.getPlayerBankBalance(bank);
-            bankMaxBalanceByLevel = BU.getBankMaxBalanceByLevel(plugin, playerName);
-            int playerOfflineAccruedProfit = BU.getPlayerOfflineAccruedProfit(bank);
-            int bankMaxBalanceByLevel = BU.getBankMaxBalanceByLevel(plugin, playerName);
-
-            String type = args[1];
-
-            if (type.equalsIgnoreCase("profit")) {
-
-                if (playerOfflineAccruedProfit <= 0) {
-                    bankReceiveOfflineNotProfit(player); // Mensaje
+                if (offlineProfitAccrued <= 0) {
+                    bankReceiveOfflineNotProfitMessage(player); // Mensaje
                     return true;
                 }
 
-                int playerBankSpace = bankMaxBalanceByLevel - playerBankBalance;
-                originalPlayerOfflineAccruedProfit = playerOfflineAccruedProfit;
+                int playerBankSpace = bankMaxBalance - bankBalance;
 
-                if (playerBankSpace >= playerOfflineAccruedProfit) {
-
-                    // Restablecer la cantidad de beneficios acumulados
-                    BU.setPlayerOfflineAccruedProfit(bank, 0);
-                    BU.setPlayerOfflineProfitTimes(bank, 0);
-
-                    // Establecer nuevo balance del banco
-                    BU.setPlayerBankBalance(bank, playerBankBalance + playerOfflineAccruedProfit);
-
-                    // Actualizar solo datos del banco
-                    fileManager.updatePlayerInfo(bank, playerName);
-
-                    bankReceiveOfflineSuccess(player); // Mensaje
-
-                } else {
-                    bankReceiveExceed(player); // Mensaje
+                if (playerBankSpace < offlineProfitAccrued) {
+                    bankReceiveExceedMessage(player); // Mensaje
+                    return true;
                 }
-            //} else if (type.equalsIgnoreCase("lottery")) {
+
+                bankBalance = bankBalance + offlineProfitAccrued;
+                // Establecer nuevos valores de banco
+                PlayerBankData newBankData = new PlayerBankData(bankName, bankLevel, bankBalance, 0, 0);
+
+                boolean success = SPBD.setPlayerBankData(plugin, playerName, newBankData);
+                if (success) {
+                    bankReceiveOfflineSuccessMessage(player); // Mensaje
+                } else {
+                    Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + " &cCan't update player bank data for " + playerName));
+                }
+
+            //} else if (arg.equalsIgnoreCase("lottery")) {
 
             } else {
-                bankReceiveUsage(player); // Mensaje
+                bankReceiveUsageMessage(player); // Mensaje
             }
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -97,29 +100,29 @@ public class SubCommandReceive implements CommandExecutor {
         return true;
     }
 
-    private void bankReceiveUsage(Player player) {
+    private void bankReceiveUsageMessage(Player player) {
         for (String message : languageManager.getAllMessage("bank.receive-usage")) {
             player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));
         }
     }
 
-    private void bankReceiveOfflineSuccess(Player player) {
-        plugin.placeholders.put("%offlineprofitamount%", String.valueOf(originalPlayerOfflineAccruedProfit));
+    private void bankReceiveOfflineSuccessMessage(Player player) {
+        plugin.placeholders.put("%offlineprofitamount%", String.valueOf(offlineProfitAccrued));
 
         for (String message : languageManager.getAllMessage("bank.receive.offline-received-success")) {
             player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));
         }
     }
 
-    private void bankReceiveExceed(Player player) {
-        plugin.placeholders.put("%playerbankmaxbalance%", String.valueOf(bankMaxBalanceByLevel));
+    private void bankReceiveExceedMessage(Player player) {
+        plugin.placeholders.put("%playerbankmaxbalance%", String.valueOf(bankMaxBalance));
 
         for (String message : languageManager.getAllMessage("bank.receive.receive-exceeds")) {
             player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));
         }
     }
 
-    private void bankReceiveOfflineNotProfit(Player player) {
+    private void bankReceiveOfflineNotProfitMessage(Player player) {
         for (String message : languageManager.getAllMessage("bank.receive.offline-not-profit")) {
             player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));
         }

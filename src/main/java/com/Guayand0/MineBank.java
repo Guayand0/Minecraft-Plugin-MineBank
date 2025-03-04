@@ -1,13 +1,21 @@
 package com.Guayand0;
 
-import com.Guayand0.api.*;
+import com.Guayand0.Data.Bank.BankLevelData;
+import com.Guayand0.Data.Bank.JSON.GetBankLevelData;
+import com.Guayand0.Data.BankData;
+import com.Guayand0.Data.BankManager;
+import com.Guayand0.Data.Player.JSON.GetPlayerBankData;
+import com.Guayand0.Data.Player.PlayerBankData;
+import com.Guayand0.api.PlaceholderAPIMineBank;
 import com.Guayand0.commands.*;
-import com.Guayand0.converters.*;
+import com.Guayand0.converters.BanksConverter;
+import com.Guayand0.converters.GuiFolderFilesConverter;
+import com.Guayand0.converters.MessagesFolderFilesConverter;
+import com.Guayand0.converters.PlayerBankDataConverter;
 import com.Guayand0.events.*;
 import com.Guayand0.managers.*;
 import com.Guayand0.tasks.*;
 import com.Guayand0.utils.*;
-import com.google.gson.JsonObject;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -33,12 +41,13 @@ public class MineBank extends JavaPlugin {
     public final Map<String, String> placeholders = new HashMap<>();
     public final Map<String, Map<String, String>> playerPlaceholders = new HashMap<>(); // Actualizar los datos de cada jugador en el gui
 
-    public final static int spigotID = 119147;
-    public final static int bstatsID = 23185;
+    public final static int spigotID = 111;
+    public final static int bstatsID = 111;
 
     private final MessageUtils MU = new MessageUtils();
     private final UpdateChecker UC = new UpdateChecker();
     private final BankUtils BU = new BankUtils();
+    private final BankManager BM = new BankManager();
 
     private LanguageManager languageManager;
     private FileManager fileManager;
@@ -84,12 +93,12 @@ public class MineBank extends JavaPlugin {
         bankInventoryEvent = new BankInventoryEvent(this);
 
         Bukkit.getConsoleSender().sendMessage(MU.getColoredText("&7<------------------------------------>"));
-
-        // Al actualizar de la 4.x.x a la 5.x.x
-        new PlayerBankDataConverter(this).convertYamlToJson();
-        new BanksConverter(this).convertYamlToJson();
-        new GuiFolderFilesConverter(this).convertGuiFolder();
-        new MessagesFolderFilesConverter(this).convertMessagesFolder();
+        
+        new PlayerBankDataConverter(this).convertYamlToJson(); // 4.x.x a 5.x.x
+        new BanksConverter(this).convertYamlToJson(); // 4.x.x a 5.x.x
+        new GuiFolderFilesConverter(this).convertGuiFolder(); // 4.x.x a 5.x.x
+        new MessagesFolderFilesConverter(this).convertMessagesFolder(); // 4.x.x a 5.x.x
+        new BanksConverter(this).convertJsonToJsonLeveled(); // 5.0.1 a 5.1.1
 
         if (setupEconomy()) {
             Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + " &fVault found and economy manager hooked successfully."));
@@ -185,26 +194,44 @@ public class MineBank extends JavaPlugin {
 
     // Registrar/Actualizar placeholders de inventario a cada jugador
     public void updatePlaceholdersTask() {
+        int interval = BU.getUpdateGUITicks(this); // Cantidad de ticks para actualizar inventario
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             try {
                 for (Player player : Bukkit.getOnlinePlayers()) {
 
                     String playerName = player.getName();
 
-                    // Obtener datos del banco del jugador
-                    JsonObject bank = BU.getBankDataOfPlayerName(this, playerName);
+                    String bankName = "NULL";
+                    int bankBalance = -1;
+                    int bankLevel = -1;
+                    int offlineProfitAccrued = -1;
+                    int bankMaxBalance = -1;
+                    int bankLevelUpgradeCost = -1;
+                    int bankMaxLevel = -1;
+
+                    // Obtener datos del banco del jugador y maximos de nivel y balance
+                    BankData bankData = BM.getBankData(this, playerName);
+                    if (bankData != null) {
+                        bankName = bankData.getBankName();
+                        bankLevel = bankData.getBankLevel();
+                        bankBalance = bankData.getBankBalance();
+                        offlineProfitAccrued = bankData.getOfflineProfitAccrued();
+                        bankMaxLevel = bankData.getBankMaxLevel();
+                        bankMaxBalance = bankData.getBankMaxBalance();
+                        bankLevelUpgradeCost = bankData.getBankLevelUpgradeCost();
+                    }
 
                     // Crear un mapa de placeholders para cada jugador
                     Map<String, String> placeholders = new HashMap<>();
                     placeholders.put("%playername%", playerName);
-                    placeholders.put("%playerbankname%", BU.getPlayerBankName(bank));
-                    placeholders.put("%playerbankbalance%", String.valueOf(BU.getPlayerBankBalance(bank)));
-                    placeholders.put("%playerbanklevel%", String.valueOf(BU.getPlayerBankLevel(bank)));
+                    placeholders.put("%playerbankname%", bankName);
+                    placeholders.put("%playerbankbalance%", String.valueOf(bankBalance));
+                    placeholders.put("%playerbanklevel%", String.valueOf(bankLevel));
                     placeholders.put("%playerbanktop%", String.valueOf(BU.getPlayerBankTop(this, player)));
-                    placeholders.put("%playerofflineaccruedprofit%", String.valueOf(BU.getPlayerOfflineAccruedProfit(bank)));
-                    placeholders.put("%playerbankmaxbalance%", String.valueOf(BU.getBankMaxBalanceByLevel(this, playerName)));
-                    placeholders.put("%playerbanknextlevelcost%", String.valueOf(BU.getBankUpgradeCostByLevel(this, playerName)));
-                    placeholders.put("%playerbankmaxlevel%", String.valueOf(BU.getBankMaxLevel(this, playerName)));
+                    placeholders.put("%playerofflineaccruedprofit%", String.valueOf(offlineProfitAccrued));
+                    placeholders.put("%playerbankmaxbalance%", String.valueOf(bankMaxBalance));
+                    placeholders.put("%playerbanknextlevelcost%", String.valueOf(bankLevelUpgradeCost));
+                    placeholders.put("%playerbankmaxlevel%", String.valueOf(bankMaxLevel));
                     placeholders.put("%playereconomybalance%", String.valueOf(BU.getPlayerBalance(player, economy)));
 
                     placeholders.put("%moneysymbol%", "\\" + BU.getMoneySymbol(this));
@@ -227,7 +254,7 @@ public class MineBank extends JavaPlugin {
                 }
             } catch (Exception ignored) {}
 
-        }, 0, 20L);
+        }, interval, interval);
     }
 
     // Resolver el placeholder para %pluginHooksList%
@@ -312,7 +339,6 @@ public class MineBank extends JavaPlugin {
 
         // Obtener el intervalo de tiempo desde la configuración y convertirlo en ticks
         long interval = BU.getProfitIntervalInSeconds(this) * 20L;
-
         // Si es -1 esta desactivado
         if (interval < 0) {
             return;

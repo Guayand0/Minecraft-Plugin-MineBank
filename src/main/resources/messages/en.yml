@@ -117,12 +117,18 @@ bank:
       - '%chatPlugin% &e&lYour bank data:'
       - '&6&l>> &eName: &a%playerBankName%'
       - '&6&l>> &eLevel: &a%playerBankLevel%&e/&a%playerBankMaxLevel%'
+      - '&6&l>> &eLevel upgrade cost: &a%moneySymbol%%playerbanklevelupgradecost%'
       - '&6&l>> &eBalance: &a%moneySymbol%%playerBankBalance%&e/&a%moneySymbol%%playerBankMaxBalance%'
+      - '&6&l>> &eOffline profit accrued: &a%moneySymbol%%playerbankofflineprofitaccrued%'
+      - '&6&l>> &eOffline profit times: &a%playerbankofflineprofittimes%'
     target-bank-data:
       - '%chatPlugin% &e&l%targetPlayerName%`s bank data:'
       - '&6&l>> &eName: &a%targetBankName%'
       - '&6&l>> &eLevel: &a%targetBankLevel%&e/&a%targetBankMaxLevel%'
+      - '&6&l>> &eLevel upgrade cost: &a%moneySymbol%%targetbanklevelupgradecost%'
       - '&6&l>> &eBalance: &a%moneySymbol%%targetBankBalance%&e/&a%moneySymbol%%targetBankMaxBalance%'
+      - '&6&l>> &eOffline profit accrued: &a%moneySymbol%%targetbankofflineprofitaccrued%'
+      - '&6&l>> &eOffline profit times: &a%targetbankofflineprofittimes%'
 
   add:
     deposit-success: '%chatPlugin% &aYou have deposited %moneySymbol%%amount% into your bank.'

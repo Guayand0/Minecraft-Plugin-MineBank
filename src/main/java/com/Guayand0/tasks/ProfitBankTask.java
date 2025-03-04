@@ -1,12 +1,14 @@
 package com.Guayand0.tasks;
 
+import com.Guayand0.Data.BankData;
+import com.Guayand0.Data.BankManager;
+import com.Guayand0.Data.Player.JSON.SetPlayerBankData;
+import com.Guayand0.Data.Player.PlayerBankData;
 import com.Guayand0.MineBank;
-import com.Guayand0.managers.FileManager;
 import com.Guayand0.managers.LanguageManager;
 import com.Guayand0.utils.BankUtils;
 import com.Guayand0.utils.ExceptionManager;
 import com.Guayand0.utils.MessageUtils;
-import com.google.gson.JsonObject;
 import org.bukkit.entity.Player;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -18,11 +20,18 @@ public class ProfitBankTask extends BukkitRunnable {
 
     private final MineBank plugin;
     private final LanguageManager languageManager;
-    private final FileManager fileManager;
 
     private final MessageUtils MU = new MessageUtils();
     private final BankUtils BU = new BankUtils();
+    private final BankManager BM = new BankManager();
+    private final SetPlayerBankData SPBD = new SetPlayerBankData();
 
+    private String bankName = "NULL";
+    private int bankBalance = -1;
+    private int bankLevel = -1;
+    private int offlineProfitAccrued = -1;
+    private int offlineProfitTimes = -1;
+    private int bankMaxBalance = -1;
     private int amountRoundedProfit = -1;
     private double profitPercentage = -1;
     private int minBankBalanceToApplyProfit = -1;
@@ -30,7 +39,6 @@ public class ProfitBankTask extends BukkitRunnable {
     public ProfitBankTask(MineBank plugin) {
         this.plugin = plugin;
         this.languageManager = plugin.getLanguageManager();
-        this.fileManager = plugin.getFileManager();
     }
 
     @Override
@@ -50,14 +58,18 @@ public class ProfitBankTask extends BukkitRunnable {
         List<String> bankPlayerNames = BU.getPlayerNameOfBank(plugin);
 
         for (String playerName : bankPlayerNames) {
-            
-            // Obtener solo el banco del jugador una vez
-            JsonObject bank = BU.getBankDataOfPlayerName(plugin, playerName);
 
-            int playerBankBalance = BU.getPlayerBankBalance(bank);
-            int playerOfflineAccruedProfit = BU.getPlayerOfflineAccruedProfit(bank);
-            int playerOfflineProfitTimes = BU.getPlayerOfflineProfitTimes(bank);
-            int bankMaxBalanceByLevel = BU.getBankMaxBalanceByLevel(plugin, playerName);
+            // Obtener datos del banco del jugador y maximos de nivel y balance
+            BankData bankData = BM.getBankData(plugin, playerName);
+            if (bankData != null) {
+                bankName = bankData.getBankName();
+                bankLevel = bankData.getBankLevel();
+                bankBalance = bankData.getBankBalance();
+                offlineProfitAccrued = bankData.getOfflineProfitAccrued();
+                offlineProfitTimes = bankData.getOfflineProfitTimes();
+                bankMaxBalance = bankData.getBankMaxBalance();
+            }
+
             minBankBalanceToApplyProfit = BU.getProfitMinBankBalanceToReceive(plugin);
             double profitKeepInBankPercentage = BU.getProfitKeepInBankPercentage(plugin);
             boolean profitMultiplyByBankLevel = BU.getProfitMultiplyByBankLevel(plugin);
@@ -70,19 +82,19 @@ public class ProfitBankTask extends BukkitRunnable {
             try {
 
                 // Si el jugador no tiene dinero o si tiene exceso de dinero
-                if (playerBankBalance <= 0 || playerBankBalance > bankMaxBalanceByLevel) return;
+                if (bankBalance <= 0 || bankBalance > bankMaxBalance) return;
 
                 // Si el jugador esta online establecerlo como player
                 if (isPlayerOnline) player = Bukkit.getPlayerExact(playerName);
 
                 // Si el jugador tiene suficiente dinero para ganar beneficio
-                if (playerBankBalance >= minBankBalanceToApplyProfit) {
+                if (bankBalance >= minBankBalanceToApplyProfit) {
 
                     // Si multiplicar beneficio por nivel está activado
-                    if (profitMultiplyByBankLevel) profitPercentage = profitKeepInBankPercentage * BU.getPlayerBankLevel(bank);
+                    if (profitMultiplyByBankLevel) profitPercentage = profitKeepInBankPercentage * bankLevel;
                     else profitPercentage = profitKeepInBankPercentage;
 
-                    double profit = Math.floor(playerBankBalance * profitPercentage / 100.0);
+                    double profit = Math.floor(bankBalance * profitPercentage / 100.0);
 
                     amountRoundedProfit = (int) profit;
 
@@ -90,31 +102,36 @@ public class ProfitBankTask extends BukkitRunnable {
                     if (!isPlayerOnline) {
 
                         // Si la opcion esta desactivada o el jugador ha llegado al maximo de la opcion
-                        if (timesProfitsOffline <= 0 || playerOfflineProfitTimes >= timesProfitsOffline) return;
+                        if (timesProfitsOffline <= 0 || offlineProfitTimes >= timesProfitsOffline) return;
 
-                        // Sumar el profit y las veces que se han sumado
-                        BU.setPlayerOfflineAccruedProfit(bank, playerOfflineAccruedProfit + amountRoundedProfit);
-                        BU.setPlayerOfflineProfitTimes(bank, playerOfflineProfitTimes + 1);
+                        offlineProfitAccrued = offlineProfitAccrued + amountRoundedProfit;
+                        offlineProfitTimes = offlineProfitTimes + 1;
+                        // Establecer nuevos valores de banco
+                        PlayerBankData newBankData = new PlayerBankData(bankName, bankLevel, bankBalance, offlineProfitAccrued, offlineProfitTimes);
 
-                        // Actualizar solo datos del banco
-                        fileManager.updatePlayerInfo(bank, playerName);
+                        boolean success = SPBD.setPlayerBankData(plugin, playerName, newBankData);
+                        if (!success) {
+                            Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + " &cCan't update player bank data for " + playerName));
+                        }
+
                         return;
                     }
 
                     // Si el jugador supera el maximo de almacenamiento de su nuvel de banco
-                    if (playerBankBalance + amountRoundedProfit > bankMaxBalanceByLevel) {
-                        assert player != null;
+                    if (bankBalance + amountRoundedProfit > bankMaxBalance) {
                         maxStorageProfitMessage(player); // Message
+                        return;
+                    }
 
-                    } else {
-                        // Establecer nuevo balance del banco
-                        BU.setPlayerBankBalance(bank, playerBankBalance + amountRoundedProfit);
+                    bankBalance = bankBalance + amountRoundedProfit;
+                    // Establecer nuevos valores de banco
+                    PlayerBankData newBankData = new PlayerBankData(bankName, bankLevel, bankBalance, offlineProfitAccrued, offlineProfitTimes);
 
-                        // Actualizar solo datos del banco
-                        fileManager.updatePlayerInfo(bank, playerName);
-
-                        assert player != null;
+                    boolean success = SPBD.setPlayerBankData(plugin, playerName, newBankData);
+                    if (success) {
                         receivedProfitMessage(player); // Mensaje
+                    } else {
+                        Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + " &cCan't update player bank data for " + playerName));
                     }
 
                 } else {

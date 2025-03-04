@@ -42,6 +42,7 @@ public class TabComplete implements TabCompleter {
 
             if (args.length == 1) {
                 completions.addAll(Arrays.asList("help", "add", "deposit", "take", "withdraw", "top", "baltop", "balancetop", "data", "levelup", "receive"));
+                //completions.addAll(Arrays.asList("help", "add", "deposit", "take", "withdraw", "top", "baltop", "balancetop", "data", "levelup", "receive", "lottery"));
 
                 if (hasAdminPermission) {
                     completions.add("set");
@@ -70,11 +71,16 @@ public class TabComplete implements TabCompleter {
 
                     case "receive":
                         completions.addAll(Arrays.asList("profit"));
+                        //completions.addAll(Arrays.asList("profit", "lottery"));
                         break;
 
                     case "data":
                         try { completions.addAll(BU.getPlayerNameOfBank(plugin)); } catch (Exception e) { e.printStackTrace(); }
                         break;
+
+                    /*case "lottery":
+                        completions.addAll(Arrays.asList("participate", "check", "time"));
+                        break;*/
 
                     case "set":
 

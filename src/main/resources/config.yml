@@ -112,7 +112,7 @@ bank:
   profit:
 
     # Interval in seconds to receive profit (set -1 to disable profit)
-    interval-in-seconds: 300
+    interval-in-seconds: 300 # (300 seconds = 5 minutes)
 
     # If set to true, players will receive the message if the bank balance is less than min-bank-balance-to-receive
     not-enough-balance-to-receive-message: true
@@ -140,6 +140,17 @@ bank:
 
     # If set to true, the withdraw-percentage will be multiplied by the player bank level
     multiply-by-bank-level: true
+
+# +----------------------------------+ #
+# |                                  | #
+# |       INVENTORY GUI CONFIG       | #
+# |                                  | #
+# +----------------------------------+ #
+gui:
+
+  # Interval in ticks to update Inventory GUI
+  # Modifying this requires a server restart for the changes to take effect
+  update-time: 40 # (40 ticks = 2 seconds)
 
 # +----------------------------------+ #
 # |                                  | #

@@ -1,12 +1,14 @@
 package com.Guayand0.commands.subcommands;
 
+import com.Guayand0.Data.BankData;
+import com.Guayand0.Data.BankManager;
+import com.Guayand0.Data.Player.JSON.SetPlayerBankData;
+import com.Guayand0.Data.Player.PlayerBankData;
 import com.Guayand0.MineBank;
-import com.Guayand0.managers.FileManager;
 import com.Guayand0.managers.LanguageManager;
 import com.Guayand0.utils.BankUtils;
 import com.Guayand0.utils.ExceptionManager;
 import com.Guayand0.utils.MessageUtils;
-import com.google.gson.JsonObject;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,83 +19,98 @@ public class SubCommandSet implements CommandExecutor {
 
     private final MineBank plugin;
     private final LanguageManager languageManager;
-    private final FileManager fileManager;
 
     private final MessageUtils MU = new MessageUtils();
-    private final BankUtils BU = new BankUtils();
+    private final BankManager BM = new BankManager();
+    private final SetPlayerBankData SPBD = new SetPlayerBankData();
 
-    int amount = 0;
+    int amount = -1;
+    private String bankName = "NULL";
+    private int bankBalance = -1;
+    private int bankLevel = -1;
+    private int offlineProfitAccrued = -1;
+    private int offlineProfitTimes = -1;
+    private int bankMaxBalance = -1;
+    private int bankMaxLevel = -1;
+    private String targetPlayerName;
 
     public SubCommandSet(MineBank plugin) {
         this.plugin = plugin;
         this.languageManager = plugin.getLanguageManager();
-        this.fileManager = plugin.getFileManager();
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
         Player player = (Player) sender;
+        String playerName = player.getName();
 
-        // Si el comando tiene menos de 2 argumentos
+        // Si el comando tiene menos de 4 argumentos
         if (args.length < 4) {
-            bankSetUsage(player); // Mensaje
+            bankSetUsageMessage(player); // Mensaje
             return true;
         }
 
         try {
 
-            String playerName = player.getName();
-
-            // Obtener solo el banco del jugador una vez
-            JsonObject bank = BU.getBankDataOfPlayerName(plugin, playerName);
-
-            int bankMaxBalanceByLevel = BU.getBankMaxBalanceByLevel(plugin, playerName);
-            int bankMaxLevel = BU.getBankMaxLevel(plugin, playerName);
-            
-            String targetPlayerName = args[1];
+            targetPlayerName = args[1];
             String bankLevelOrBalance = args[2];
             String amountString = args[3];
 
-            if (bankLevelOrBalance.equalsIgnoreCase("bal") || bankLevelOrBalance.equalsIgnoreCase("balance")) {
+            // Obtener datos del banco del jugador y maximos de nivel y balance
+            BankData bankData = BM.getBankData(plugin, playerName);
+            if (bankData != null) {
+                bankName = bankData.getBankName();
+                bankLevel = bankData.getBankLevel();
+                bankBalance = bankData.getBankBalance();
+                offlineProfitAccrued = bankData.getOfflineProfitAccrued();
+                offlineProfitTimes = bankData.getOfflineProfitTimes();
+                bankMaxLevel = bankData.getBankMaxLevel();
+                bankMaxBalance = bankData.getBankMaxBalance();
+            }
+
+            if (bankLevelOrBalance.equalsIgnoreCase("balance")) {
 
                 // Mitad del maximo de almacenamiento de banco
                 if (amountString.equalsIgnoreCase("mid-max")) {
-                    amount = bankMaxBalanceByLevel / 2;
+                    amount = bankMaxBalance / 2;
 
                     // Total del maximo de almacenamiento de banco
                 } else if (amountString.equalsIgnoreCase("max")) {
-                    amount = bankMaxBalanceByLevel;
+                    amount = bankMaxBalance;
 
                     // Si no se usa ninguno de esos se obtiene un valor y se comprueba que sea número válido
                 } else {
 
+                    // Validar que <amount> sea un número
                     try {
                         amount = Integer.parseInt(amountString);
-
-                        if (amount > bankMaxBalanceByLevel) {
-                            bankSetMaxBalance(player, String.valueOf(bankMaxBalanceByLevel)); // Mensaje
-                            return true;
-                        }
-
-                        if (amount < 0) {
-                            bankSetAmountFailure(player); // Mensaje
-                            return true;
-                        }
-
                     } catch (NumberFormatException e) {
-                        bankSetAmountFailure(player); // Mensaje
+                        bankSetAmountFailureMessage(player); // Mensaje
+                        return true;
+                    }
+
+                    if (amount > bankMaxBalance) {
+                        bankSetMaxBalanceMessage(player); // Mensaje
+                        return true;
+                    }
+
+                    if (amount < 0) {
+                        bankSetAmountFailureMessage(player); // Mensaje
                         return true;
                     }
                 }
-                
-                // Establecer nuevo balance del banco
-                BU.setPlayerBankBalance(bank, amount);
 
-                // Actualizar solo datos del banco
-                fileManager.updatePlayerInfo(bank, targetPlayerName);
+                bankBalance = amount;
+                // Establecer nuevos valores de banco
+                PlayerBankData newBankData = new PlayerBankData(bankName, bankLevel, bankBalance, offlineProfitAccrued, offlineProfitTimes);
 
-                bankSetBalaceSuccess(player, targetPlayerName, String.valueOf(amount)); // Mensaje
+                boolean success = SPBD.setPlayerBankData(plugin, targetPlayerName, newBankData);
+                if (success) {
+                    bankSetBalaceSuccessMessage(player); // Mensaje
+                } else {
+                    Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + " &cCan't update player bank data for " + playerName));
+                }
 
             } else if (bankLevelOrBalance.equalsIgnoreCase("level")) {
 
@@ -107,35 +124,39 @@ public class SubCommandSet implements CommandExecutor {
 
                     // Si no se usa ninguno de esos se obtiene un valor y se comprueba que sea número válido
                 } else {
+
+                    // Validar que <amount> sea un número
                     try {
                         amount = Integer.parseInt(amountString);
-
-                        if (amount > bankMaxLevel) {
-                            bankSetMaxLevel(player, String.valueOf(bankMaxLevel)); // Mensaje
-                            return true;
-                        }
-
-                        if (amount < 0) {
-                            bankSetAmountFailure(player); // Mensaje
-                            return true;
-                        }
-
                     } catch (NumberFormatException e) {
-                        bankSetAmountFailure(player); // Mensaje
+                        bankSetAmountFailureMessage(player); // Mensaje
+                        return true;
+                    }
+
+                    if (amount > bankMaxLevel) {
+                        bankSetMaxLevelMessage(player); // Mensaje
+                        return true;
+                    }
+
+                    if (amount < 0) {
+                        bankSetAmountFailureMessage(player); // Mensaje
                         return true;
                     }
                 }
 
-                // Establecer nuevo balance del banco
-                BU.setPlayerBankLevel(bank, amount);
+                bankLevel = amount;
+                // Establecer nuevos valores de banco
+                PlayerBankData newBankData = new PlayerBankData(bankName, bankLevel, bankBalance, offlineProfitAccrued, offlineProfitTimes);
 
-                // Actualizar solo datos del banco
-                fileManager.updatePlayerInfo(bank, targetPlayerName);
-
-                bankSetLevelSuccess(player, targetPlayerName, String.valueOf(amount)); // Mensaje
+                boolean success = SPBD.setPlayerBankData(plugin, targetPlayerName, newBankData);
+                if (success) {
+                    bankSetLevelSuccessMessage(player); // Mensaje
+                } else {
+                    Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + " &cCan't update player bank data for " + playerName));
+                }
 
             } else {
-                bankSetUsage(player);  // Mensaje
+                bankSetUsageMessage(player);  // Mensaje
             }
 
         } catch (Exception e) {
@@ -146,53 +167,53 @@ public class SubCommandSet implements CommandExecutor {
         return true;
     }
 
-    private void bankSetUsage(Player player) {
+    private void bankSetUsageMessage(Player player) {
         for (String message : languageManager.getAllMessage("bank.set-usage")) {
             player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));
         }
     }
 
-    private void bankSetBalaceSuccess(Player player, String targetPlayerName, String amountString) {
+    private void bankSetBalaceSuccessMessage(Player player) {
         plugin.placeholders.put("%targetplayername%", targetPlayerName);
-        plugin.placeholders.put("%amount%", amountString);
+        plugin.placeholders.put("%amount%", String.valueOf(amount));
 
         for (String message : languageManager.getAllMessage("bank.set.set-balance-success")) {
             player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));
         }
     }
 
-    private void bankSetLevelSuccess(Player player, String targetPlayerName, String amountString) {
+    private void bankSetLevelSuccessMessage(Player player) {
         plugin.placeholders.put("%targetplayername%", targetPlayerName);
-        plugin.placeholders.put("%amount%", amountString);
+        plugin.placeholders.put("%amount%", String.valueOf(amount));
 
         for (String message : languageManager.getAllMessage("bank.set.set-level-success")) {
             player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));
         }
     }
 
-    private void bankSetMaxBalance(Player player, String maxBalanceString) {
-        plugin.placeholders.put("%targetbankmaxbalance%", maxBalanceString);
+    private void bankSetMaxBalanceMessage(Player player) {
+        plugin.placeholders.put("%targetbankmaxbalance%", String.valueOf(bankMaxBalance));
 
         for (String message : languageManager.getAllMessage("bank.set.max-balance")) {
             player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));
         }
     }
 
-    private void bankSetMaxLevel(Player player, String maxLevelString) {
-        plugin.placeholders.put("%targetbankmaxlevel%", maxLevelString);
+    private void bankSetMaxLevelMessage(Player player) {
+        plugin.placeholders.put("%targetbankmaxlevel%", String.valueOf(bankMaxLevel));
 
         for (String message : languageManager.getAllMessage("bank.set.max-level")) {
             player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));
         }
     }
 
-    private void bankSetAmountFailure(Player player) {
+    private void bankSetAmountFailureMessage(Player player) {
         for (String message : languageManager.getAllMessage("bank.set.set-amount-failure")) {
             player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));
         }
     }
 
-    private void bankTargetPlayerNotFound(Player player, String targetPlayerName) {
+    private void bankTargetPlayerNotFoundMessage(Player player, String targetPlayerName) {
         plugin.placeholders.put("%targetplayername%", targetPlayerName);
 
         for (String message : languageManager.getAllMessage("bank.set.target-player-not-found")) {
