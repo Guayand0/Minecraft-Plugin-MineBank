@@ -1,11 +1,7 @@
 package com.Guayand0;
 
-import com.Guayand0.Data.Bank.BankLevelData;
-import com.Guayand0.Data.Bank.JSON.GetBankLevelData;
 import com.Guayand0.Data.BankData;
 import com.Guayand0.Data.BankManager;
-import com.Guayand0.Data.Player.JSON.GetPlayerBankData;
-import com.Guayand0.Data.Player.PlayerBankData;
 import com.Guayand0.api.PlaceholderAPIMineBank;
 import com.Guayand0.commands.*;
 import com.Guayand0.converters.BanksConverter;
@@ -41,8 +37,8 @@ public class MineBank extends JavaPlugin {
     public final Map<String, String> placeholders = new HashMap<>();
     public final Map<String, Map<String, String>> playerPlaceholders = new HashMap<>(); // Actualizar los datos de cada jugador en el gui
 
-    public final static int spigotID = 111;
-    public final static int bstatsID = 111;
+    public final static int spigotID = 119147;
+    public final static int bstatsID = 23185;
 
     private final MessageUtils MU = new MessageUtils();
     private final UpdateChecker UC = new UpdateChecker();
@@ -227,7 +223,7 @@ public class MineBank extends JavaPlugin {
                     placeholders.put("%playerbankname%", bankName);
                     placeholders.put("%playerbankbalance%", String.valueOf(bankBalance));
                     placeholders.put("%playerbanklevel%", String.valueOf(bankLevel));
-                    placeholders.put("%playerbanktop%", String.valueOf(BU.getPlayerBankTop(this, player)));
+                    placeholders.put("%playerbanktop%", String.valueOf(BU.getPlayerBankTop(this, playerName)));
                     placeholders.put("%playerofflineaccruedprofit%", String.valueOf(offlineProfitAccrued));
                     placeholders.put("%playerbankmaxbalance%", String.valueOf(bankMaxBalance));
                     placeholders.put("%playerbanknextlevelcost%", String.valueOf(bankLevelUpgradeCost));

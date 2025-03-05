@@ -5,6 +5,7 @@ import com.Guayand0.Data.BankManager;
 import com.Guayand0.MineBank;
 import com.Guayand0.utils.BankUtils;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -34,7 +35,7 @@ public class PlaceholderAPIMineBank extends PlaceholderExpansion {
     }
     @Override
     public String getIdentifier() {
-        return plugin.pluginName; // %minebank_XXXXX%
+        return plugin.pluginName;
     }
     @Override
     public String getVersion(){
@@ -44,9 +45,7 @@ public class PlaceholderAPIMineBank extends PlaceholderExpansion {
     @Override
     public String onPlaceholderRequest(Player player, String identifier) {
 
-        if (player == null) {
-            return "";
-        }
+        if (player == null) return "";
 
 // ----------------------------------------------------- USER ----------------------------------------------------- //
 
@@ -139,7 +138,7 @@ public class PlaceholderAPIMineBank extends PlaceholderExpansion {
         // %minebank_player_bank_top_position%
         if (identifier.equals("player_bank_top_position")) {
             try {
-                return String.valueOf(BU.getPlayerBankTop(plugin, player)); // Retorna la posición del top del jugador
+                return String.valueOf(BU.getPlayerBankTop(plugin, player.getName())); // Retorna la posición del top del jugador
             } catch (Exception e) {
                 return "NULL";
             }
@@ -156,7 +155,138 @@ public class PlaceholderAPIMineBank extends PlaceholderExpansion {
 
 // ---------------------------------------------------- TARGET ---------------------------------------------------- //
 
+        // %minebank_player_name_<target>%
+        if (identifier.startsWith("player_name_")) {
+            try {
+                String targetPlayerName = identifier.substring(12); // Extrae el nombre del target
 
+                // Verifica si el jugador está en la lista de jugadores del banco
+                if (BU.getPlayerNameOfBank(plugin).contains(targetPlayerName)) {
+                    return targetPlayerName; // Retorna el nombre del jugador si existe
+                } else {
+                    return "NULL"; // Retorna NULL si no está en la lista
+                }
+            } catch (Exception e) {
+                return "NULL";
+            }
+        }
+
+        // %minebank_player_bank_name_<target>%
+        if (identifier.startsWith("player_bank_name_")) {
+            try {
+                String targetPlayerName = identifier.substring(17);
+                BankData bankData = BM.getBankData(plugin, targetPlayerName);
+                return bankData.getBankName();
+            } catch (Exception e) {
+                return "NULL";
+            }
+        }
+
+        // %minebank_player_bank_level_<player>%
+        if (identifier.startsWith("player_bank_level_")) {
+            try {
+                String targetPlayerName = identifier.substring(18);
+                BankData bankData = BM.getBankData(plugin, targetPlayerName);
+                return String.valueOf(bankData.getBankLevel());
+            } catch (Exception e) {
+                return "NULL";
+            }
+        }
+
+        // %minebank_player_bank_balance_<player>%
+        if (identifier.startsWith("player_bank_balance_")) {
+            try {
+                String targetPlayerName = identifier.substring(20);
+                // Obtener datos del banco del jugador y maximos de nivel y balance
+                BankData bankData = BM.getBankData(plugin, targetPlayerName);
+                return String.valueOf(bankData.getBankBalance());
+            } catch (Exception e) {
+                return "NULL";
+            }
+        }
+
+        // %minebank_player_bank_next_level_cost_<player>%
+        if (identifier.startsWith("player_bank_next_level_cost_")) {
+            try {
+                String targetPlayerName = identifier.substring(28);
+                // Obtener datos del banco del jugador y maximos de nivel y balance
+                BankData bankData = BM.getBankData(plugin, targetPlayerName);
+                return String.valueOf(bankData.getBankLevelUpgradeCost());
+            } catch (Exception e) {
+                return "NULL";
+            }
+        }
+        // %minebank_player_bank_max_level_<player>%
+        if (identifier.startsWith("player_bank_max_level_")) {
+            try {
+                String targetPlayerName = identifier.substring(22);
+                // Obtener datos del banco del jugador y maximos de nivel y balance
+                BankData bankData = BM.getBankData(plugin, targetPlayerName);
+                return String.valueOf(bankData.getBankMaxLevel());
+            } catch (Exception e) {
+                return "NULL";
+            }
+        }
+
+        // %minebank_player_bank_max_balance_<player>%
+        if (identifier.startsWith("player_bank_max_balance_")) {
+            try {
+                String targetPlayerName = identifier.substring(24);
+                // Obtener datos del banco del jugador y maximos de nivel y balance
+                BankData bankData = BM.getBankData(plugin, targetPlayerName);
+                return String.valueOf(bankData.getBankMaxBalance());
+            } catch (Exception e) {
+                return "NULL";
+            }
+        }
+
+        // %minebank_player_bank_offline_profit_accrued_<player>%
+        if (identifier.startsWith("player_bank_offline_profit_accrued_")) {
+            try {
+                String targetPlayerName = identifier.substring(35);
+                // Obtener datos del banco del jugador y maximos de nivel y balance
+                BankData bankData = BM.getBankData(plugin, targetPlayerName);
+                return String.valueOf(bankData.getOfflineProfitAccrued());
+            } catch (Exception e) {
+                return "NULL";
+            }
+        }
+
+        // %minebank_player_bank_offline_profit_times_<player>%
+        if (identifier.startsWith("player_bank_offline_profit_times_")) {
+            try {
+                String targetPlayerName = identifier.substring(33);
+                // Obtener datos del banco del jugador y maximos de nivel y balance
+                BankData bankData = BM.getBankData(plugin, targetPlayerName);
+                return String.valueOf(bankData.getOfflineProfitTimes());
+            } catch (Exception e) {
+                return "NULL";
+            }
+        }
+
+        // %minebank_player_bank_top_position_<player>%
+        if (identifier.startsWith("player_bank_top_position_")) {
+            try {
+                String targetPlayerName = identifier.substring(25);
+                return String.valueOf(BU.getPlayerBankTop(plugin, targetPlayerName));
+            } catch (Exception e) {
+                return "NULL";
+            }
+        }
+
+        // %minebank_player_economy_balance_<player>%
+        if (identifier.startsWith("player_economy_balance_")) {
+            try {
+                String targetPlayerName = identifier.substring(23);
+                Player targetPlayer = Bukkit.getPlayerExact(targetPlayerName);
+                if (targetPlayer != null && targetPlayer.isOnline()) {
+                    return String.valueOf(BU.getPlayerBalance(targetPlayer, plugin.getEconomy()));
+                }
+                return "NOT_ONLINE";
+            } catch (Exception e) {
+                return "NULL";
+            }
+        }
 
 // ----------------------------------------------------- TOP ------------------------------------------------------ //
 

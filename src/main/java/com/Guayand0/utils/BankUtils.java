@@ -109,16 +109,16 @@ public class BankUtils {
 
 
 
-    public int getPlayerBankTop(MineBank plugin, Player player) throws IOException {
+    public int getPlayerBankTop(MineBank plugin, String playerName) throws IOException {
         // Llamamos a getTopPlayerBanks para obtener el top de los bancos
         List<List<String>> topBanks = getTopPlayerBanks(plugin, Integer.MAX_VALUE);
 
         // Recorremos el topBanks para encontrar la posición del jugador
         for (int i = 0; i < topBanks.size(); i++) {
             List<String> bankInfo = topBanks.get(i);
-            String playerName = bankInfo.get(0); // Nombre del jugador
+            String bankPlayerName = bankInfo.get(0); // Nombre del jugador
 
-            if (playerName.equals(player.getName())) {
+            if (bankPlayerName.equals(playerName)) {
                 return i + 1; // Posición en el top (empezamos desde 1, no 0)
             }
         }
