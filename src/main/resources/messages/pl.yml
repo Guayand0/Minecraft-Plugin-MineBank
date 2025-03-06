@@ -1,0 +1,182 @@
+# ############################################################################################################# #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# |                                                                                                           | #
+# |                      ███╗   ███╗██╗███╗  ██╗███████╗██████╗  █████╗ ███╗  ██╗██╗  ██╗                     | #
+# |                      ████╗ ████║██║████╗ ██║██╔════╝██╔══██╗██╔══██╗████╗ ██║██║ ██╔╝                     | #
+# |                      ██╔████╔██║██║██╔██╗██║█████╗  ██████╦╝███████║██╔██╗██║█████═╝                      | #
+# |                      ██║╚██╔╝██║██║██║╚████║██╔══╝  ██╔══██╗██╔══██║██║╚████║██╔═██╗                      | #
+# |                      ██║ ╚═╝ ██║██║██║ ╚███║███████╗██████╦╝██║  ██║██║ ╚███║██║ ╚██╗                     | #
+# |                      ╚═╝     ╚═╝╚═╝╚═╝  ╚══╝╚══════╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚══╝╚═╝  ╚═╝                     | #
+# |                                                                                                           | #
+# |                    Youtube:    www.youtube.com/@davigamer1614                                             | #
+# |                    Github:     https://github.com/Guayand0/Minecraft-Plugin-MineBank                      | #
+# |                                                                                                           | #
+# +-----------------------------------------------------------------------------------------------------------+ #
+# ############################################################################################################# #
+
+# +----------------------------------+ #
+# |                                  | #
+# |             MESSAGES             | #
+# |                                  | #
+# +----------------------------------+ #
+
+messages:
+
+  # Command /minebank help
+  help:
+    - '&b<-----------------&aKOMENDY ADMINISTRATORA MINEBANK&b----------------->'
+    - '&e/minebank help &7- Wyświetla liste pomocy'
+    - '&e/minebank reload &7- Reloading configu'
+    - '&e/minebank info &7- Wyświetla informacje o pluginie'
+    - '&e/minebank permissions &7- Wyświetla uprawnienia z pluginu'
+    - '&7Aliasy komend: &eminebank&7, &emb'
+    - '&e/bank help &7- Wyświetla liste komend banku'
+    - '&e/bank set <nick> balance <ilość> &7- Ustawia daną ilość pieniędzy graczowi na koncie bankowym'
+    - '&e/bank set <nick> balance mid-max &7- Ustawia połowe maksymalnej ilości pieniędzy na koncie bankowym'
+    - '&e/bank set <nick> balance max &7- Ustawia maksymalną ilość pieniędzy graczowi na koncie bankowym'
+    - '&e/bank set <nick> level <ilość> &7- Ustawia graczowi podany poziom banku'
+    - '&e/bank set <nick> level mid-max &7- Ustawia połowe maksymalnego poziomu'
+    - '&e/bank set <nick> level max &7- Ustawia maksymalny poziom banku graczowi'
+    - '&e/bank add <nick> <ilość> &7- Dodaje podaną ilość pieniędzy na konto bankowe gracza'
+    - '&e/bank take <nick> <ilość> &7- Zabiera podaną ilość pieniędzy z konta bankowego gracza'
+
+  # Command /minebank reload
+  reload: '%plugin% &aSukces! Plugin został przeładowany'
+
+  # Command /minebank info
+  info:
+    - '&b&l--> --> %plugin% &e&lInfo &b&l<-- <--'
+    - '&6&l>> &eWersja pluginu: &b%version%'
+    - '&6&l>> &eDatabase: &b%dataStorage%'
+    - '&b&l····· &aPlugin Hooks &b&l·····'
+    - '%pluginHooksList%'
+
+  # Command /minebank permissions
+  permissions:
+    - '&b<-----------------&aUPRAWNIENIA MINEBANK&b----------------->'
+    - '&eminebank.admin &7- Dostęp do wszystkich komend'
+    - '&eminebank.updatechecker &7- Otrzymywanie wiadomości o nowej wersji'
+    - '&eminebank.bank.use &7- Dostęp do używania komendy &e/bank'
+
+  command-no-argument: '%plugin% &cBłędne użycie komendy &7Użyj &e/minebank help &7,aby wyświetlic liste pomocy'
+
+  no-perm: '%chatPlugin% &cBrak wymaganych uprawnień!'
+
+  console-error: '%plugin% &cKomenda tylko dla graczy'
+
+config:
+
+  # If in the configuration the key "config.update-checker: true"
+  # This message will be displayed in chat only for OP players, or
+  # players with the "minebank.updatechecker" or "minebank.admin" permission
+  update-checker:
+    - '&b&l--> --> %plugin% &e&lUpdate Checker &b&l<-- <--'
+    - '&bJest dostępna nowa wersja pluginu. &f(&e%latestVersion%&f).'
+    - '&bLink: &f%link%'
+    - '&bSome updates may require you to change some things manually.'
+    - '&bRead changelog: &f%link%/updates'
+
+  # If in the configuration the key "config.bank-allowed: false"
+  # This message will be displayed in the chat when using any bank command
+  bank-disabled: '%chatPlugin% &cFunkcja banku jest chwilowo wyłączona'
+
+bank:
+
+  # Command /bank help
+  help:
+    - '&b<-----------------&aMINEBANK&b----------------->'
+    - '&e/bank &7- Otwiera menu banku'
+    - '&e/bank help &7- Wyświetla liste pomocy'
+    - '&e/bank data &7- Wyświetla dane personalne konta bankowego &(nazwa, poziom i kwota)'
+    - '&e/bank data [nick] &7- Wyświetla dane personalne danego gracza bank data of player like name, level and balance'
+    - '&e/bank add <nick> &7- Wpłaca daną kwote na konto bankowe'
+    - '&e/bank add half-balance &7- Wpłaca połowe kwoty na konto bankowe'
+    - '&e/bank add all &7- Wpłaca wszystkie pieniądze na konto bankowe &7(&club daną kwote dopóki nie osiągniesz &llimitu poziomu banku&7)'
+    - '&e/bank add mid-max &7- Wpłaca połowe maksymalnego salda bankowego &7(&bjeżeli masz &e20.000 &bpołowa to 10.000&7)'
+    - '&e/bank take <ilość> &7- Wypłaca daną kwote z konta bankowego'
+    - '&e/bank take half-balance &7- Wypłaca połowe pieniędzy z konta bankowego half of your current bank balance'
+    - '&e/bank take all &7- Wypłaca wszystkie pieniądze z konta bankowego'
+    - '&e/bank take mid-max &7- Wypłaca połowe maksymalnego salda bankowego'
+    - '&7(&bjeżeli w banku masz &e10.000 &bwypłacisz &e5.000&7)'
+    #Withdraw half of your max bank balance
+    - '&e/bank levelup &7- Awansuje na wyższy level poziomu bankowego '
+    - '&8(&ewyższy poziom pozwala na przechowywanie większej ilości pieniędzy&8)'
+    - '&e/bank top &7- Wyświetla TOP 10 Najbogatszych graczy'
+    - '&e/bank top [ilość] &7- Wyświetla podaną ilość Najbogatszych graczy w topce'
+    - '&e/bank receive profit &7- Odbierz pieniądze podczas trybu offline'
+
+  general-usage: '%chatPlugin% &eUżyj &7▪︎ &e/bank {help/data/add/take/levelup/top/receive/set}'
+  data-usage: '%chatPlugin% &eUżyj &7▪︎ &e/bank data [nick]'
+  add-usage: '%chatPlugin% &eUżyj &7▪︎ &e/bank {add/deposit} {<ilość>/half-balance/all/mid-max}'
+  take-usage: '%chatPlugin% &eUżyj &7▪︎ &e/bank {take/withdraw} {<ilość>/half-balance/all/mid-max}'
+  levelup-usage: '%chatPlugin% &eUżyj &7▪︎ &e/bank levelup'
+  baltop-usage: '%chatPlugin% &eUżyj &7▪︎ &e/bank {top/baltop/balancetop} [ilość]'
+  set-usage: '%chatPlugin% &eUżyj &7▪︎ &e/bank set <player> {balance/level} {<ilość>/mid-max/max}'
+  receive-usage: '%chatPlugin% &eUżyj &7▪︎ &e/bank receive profit'
+
+  data:
+    player-bank-data:
+      - '%chatPlugin% &e&lDane personalne'
+      - '&6&l>> &eName: &a%playerBankName%'
+      - '&6&l>> &ePoziom banku: &a%playerBankLevel%&e/&a%playerBankMaxLevel%'
+      - '&6&l>> &eStan konta: &a%moneySymbol%%playerBankBalance%&e/&a%moneySymbol%%playerBankMaxBalance%'
+    target-bank-data:
+      - '%chatPlugin% &e&lDane gracza &b&l%targetPlayerName%'
+      - '&6&l>> &eName: &a%targetBankName%'
+      - '&6&l>> &ePoziom banku: &a%targetBankLevel%&e/&a%targetBankMaxLevel%'
+      - '&6&l>> &eStan konta: &a%moneySymbol%%targetBankBalance%&e/&a%moneySymbol%%targetBankMaxBalance%'
+  add:
+    deposit-success: '%chatPlugin% &aWpłaciłeś %moneySymbol%%amount% na konto bankowe'
+    deposit-exceeds: '%chatPlugin% &cNie możesz przechowywać więcej niz %moneySymbol%%playerBankMaxBalance% na obecnym poziomie banku'
+    deposit-failure: '%chatPlugin% &cKwota musi być dodatnia i liczbą całkowitą'
+    not-enough-bank-balance: '%chatPlugin% &cNie masz wystarczająco pieniędzy!'
+    target-deposit-success: '%chatPlugin% &aWpłaciłeś %moneySymbol%%amount% na konto bankowe %targetPlayerName%'
+    target-deposit-exceeds: '%chatPlugin% &cGracz %targetPlayerName% nie może przechowyeać więcej niż %moneySymbol%%targetBankMaxBalance%'
+    target-deposit-failure: '%chatPlugin% &cKwota musi być dodatnia i liczbą całkowitą'
+
+  take:
+    withdraw-success: '%chatPlugin% &aWypłaciłeś %moneySymbol%%amountReceived% z banku. &8(&eOdsetki banku &b%interestPercentage%%&8)'
+    withdraw-exceeds: '%chatPlugin% &cNie możesz wypłacić tej kwoty z powodu odsetek.'
+    withdraw-failure: '%chatPlugin% &cKwota musi być liczbą dodatnią i całkowitą'
+    not-enough-bank-balance: '%chatPlugin% &cNa Twoim koncie nie ma wystarczającej ilości pieniędzy, aby wypłacić tę kwotę'
+    target-withdraw-success: '%chatPlugin% &aWypłaciłeś %moneySymbol%%amount% z konta bankowego gracza %targetPlayerName%'
+    target-withdraw-failure: '%chatPlugin% &cKwota musi być liczbą dodatnią i całkowitą'
+    target-not-enough-bank-balance: '%chatPlugin% &cGracz &e%targetPlayerName% &cnie ma wystarczającej ilości pieniędzy ,aby wypłacić tę kwotę'
+
+  levelup:
+    levelup-success: '%chatPlugin% &aZakupiono nowy %playerBankLevel% poziom bankowy. Nowy limit pieniędzy w banku to %moneySymbol%%playerBankMaxBalance%'
+    already-max-level: '%chatPlugin% &cMasz już maksymalny poziom bankowy'
+    not-enough-bank-balance: '%chatPlugin% &cNie masz wystarczającej ilości pieniędzy ,aby zakupić balance in the bank to level up, you need %moneySymbol%%playerBankNextLevelCost%'
+
+  top:
+    title: '%chatPlugin% &eTop najbogatszych graczy:'
+    entry: '&aTop %topBankPosition%: &f%topPlayerName% - %topBankName% - %topBankLevel% - %moneySymbol%%topBankBalance%'
+    baltop-failure: '%chatPlugin% &cKwota musi być liczbą dodatnią i całkowitą'
+
+  receive:
+    offline-received-success: '%chatPlugin% &aOtrzymałeś %moneySymbol%%offlineProfitAmount% w ramach świadczeń offline'
+    receive-exceeds: '%chatPlugin% &cNie możesz przechowywać więcej niż %moneySymbol%%playerBankMaxBalance% na twoim obecnym poziomie bankowym'
+    offline-not-profit: '%chatPlugin% &cNie posiadasz żadnych korzyści offline do odebrania'
+
+  set:
+    set-balance-success: '%chatPlugin% &aUstawiono kwote konta bankowego gracza %targetPlayerName% na %moneySymbol%%amount%'
+    max-balance: '%chatPlugin% &cKwota nie może być większa niż %moneySymbol%%targetBankMaxBalance%'
+    set-level-success: '%chatPlugin% &aUstawiono poziom bankowy gracza %targetPlayerName% na %amount%'
+    max-level: '%chatPlugin% &cPoziom bankowy nie może być większy niż %targetBankMaxLevel%'
+    set-amount-failure: '%chatPlugin% &cKwota musi być liczbą dodatnią i całkowitą'
+    target-player-not-found: '%chatPlugin% &cGracz %targetPlayerName% nie został znaleziony'
+
+  profit:
+    received: '%chatPlugin% &aOtrzymałeś %moneySymbol%%keepInBankProfit% za przechowywanie pieniędzy w banku! Korzyści banku: %profitPercentage%%'
+    min-storage: '%chatPlugin% &cPotrzebujesz minimum %moneySymbol%%minBankBalanceToReceiveProfit% w banku ,aby otrzymywać korzyści'
+    max-storage: '%chatPlugin% &cYou need to withdraw money from the bank to continue earning benefits.'
+    offline-accumulated: '%chatPlugin% &aTwój bank zgromadził %moneySymbol%%offlineProfitAmount%, gdy byłeś offline, aby je odebrać użyj &e/bank receive profit'
+
+  gui:
+    amount-withdraw: '%chatPlugin% &aWprowadź kwote do wypłaty lub wpisz "exit" ,aby anulować:'
+    amount-deposit: '%chatPlugin% &aWprowadź kwote wpłaty lub wpisz "exit" ,aby anulować:'
+    amount-selected: '%chatPlugin% &aWybrana kwota:'
+    invalid-amount: '%chatPlugin% &cBłędna kwota! Spróbuj jeszcze raz.'
+    transaction-canceled: '%chatPlugin% &cTransakcja anulowana'
+
+# Tłumaczenie - Kajtek7123

@@ -1,14 +1,14 @@
-package com.Guayand0.Data.Player.JSON;
+package com.Guayand0.data.player.JSON;
 
 import com.Guayand0.MineBank;
-import com.Guayand0.Data.Player.PlayerBankData;
+import com.Guayand0.data.player.PlayerBankData;
 import com.google.gson.*;
 
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class SetPlayerBankData {
+public class JSONSetPlayerBankData {
 
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 

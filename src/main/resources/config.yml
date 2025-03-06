@@ -26,9 +26,9 @@ config:
   # the .yml file with the translations and the language via GitHub
   # https://github.com/Guayand0/Minecraft-Plugin-MineBank/issues
 
-  # Available default languages: en, es, fr, pt, it, ge, ru, ja, ko, zhcn
+  # Available default languages: en, es, fr, pt, it, ge, ru, ja, ko, zhcn, pl
   # English - en.yml    # Portuguese - pt.yml   # Russian - ru.yml    # Simplified Chinese - zhcn.yml
-  # Spanish - es.yml    # Italian - it.yml      # Japanese - ja.yml
+  # Spanish - es.yml    # Italian - it.yml      # Japanese - ja.yml   # Polish - pl.yml
   # French - fr.yml     # German - ge.yml       # Korean - ko.yml
 
   # Language of all chat messages

@@ -1,6 +1,9 @@
 package com.Guayand0.events;
 
+import com.Guayand0.data.BankData;
+import com.Guayand0.data.player.JSON.JSONGetPlayerData;
 import com.Guayand0.MineBank;
+import com.Guayand0.data.config.GetConfigData;
 import com.Guayand0.managers.FileManager;
 import com.Guayand0.managers.LanguageManager;
 import com.Guayand0.utils.BankUtils;
@@ -26,8 +29,10 @@ public class OnPlayerJoin implements Listener {
 
     private final MessageUtils MU = new MessageUtils();
     private final BankUtils BU = new BankUtils();
+    private final JSONGetPlayerData BM = new JSONGetPlayerData();
+    private final GetConfigData GCD = new GetConfigData();
 
-    private int playerOfflineAccruedProfit = -1;
+    private int offlineProfitAccrued = -1;
 
     public OnPlayerJoin(MineBank plugin) {
         this.plugin = plugin;
@@ -78,14 +83,16 @@ public class OnPlayerJoin implements Listener {
 
             String playerName = player.getName();
 
-            // Obtener solo el banco del jugador una vez
-            JsonObject bank = BU.getBankDataOfPlayerName(plugin, playerName);
+            boolean bankUseAllowed = GCD.getBankAllowed(plugin);
 
-            boolean bankUseAllowed = BU.getBankAllowed(plugin);
-            playerOfflineAccruedProfit = BU.getPlayerOfflineAccruedProfit(bank);
+            // Obtener datos del banco del jugador y maximos de nivel y balance
+            BankData bankData = BM.getPlayerBankData(plugin, playerName);
+            if (bankData != null) {
+                offlineProfitAccrued = bankData.getOfflineProfitAccrued();
+            }
 
             // Si el banco esta activado y el jugador tiene beneficios acumulados
-            if (bankUseAllowed && playerOfflineAccruedProfit > 0) {
+            if (bankUseAllowed && offlineProfitAccrued > 0) {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
@@ -119,9 +126,9 @@ public class OnPlayerJoin implements Listener {
         else {
             JsonObject bank = bankArray.get(0).getAsJsonObject();
             // Agregar valores predeterminados si faltan
-            if (!bank.has("name")) bank.addProperty("name", BU.getBankStartBankName(plugin));
-            if (!bank.has("level")) bank.addProperty("level", BU.getBankStartLevel(plugin));
-            if (!bank.has("balance")) bank.addProperty("balance", BU.getBankStartBalance(plugin));
+            if (!bank.has("name")) bank.addProperty("name", GCD.getBankStartBankName(plugin));
+            if (!bank.has("level")) bank.addProperty("level", GCD.getBankStartLevel(plugin));
+            if (!bank.has("balance")) bank.addProperty("balance", GCD.getBankStartBalance(plugin));
             if (!bank.has("offline_accrued_profit")) bank.addProperty("offline_accrued_profit", 0);
             if (!bank.has("offline_profit_times")) bank.addProperty("offline_profit_times", 0);
         }
@@ -142,16 +149,16 @@ public class OnPlayerJoin implements Listener {
 
     private JsonObject setDefaultBank() {
         JsonObject bank = new JsonObject();
-        bank.addProperty("name", BU.getBankStartBankName(plugin));
-        bank.addProperty("level", BU.getBankStartLevel(plugin));
-        bank.addProperty("balance", BU.getBankStartBalance(plugin));
+        bank.addProperty("name", GCD.getBankStartBankName(plugin));
+        bank.addProperty("level", GCD.getBankStartLevel(plugin));
+        bank.addProperty("balance", GCD.getBankStartBalance(plugin));
         bank.addProperty("offline_accrued_profit", 0);
         bank.addProperty("offline_profit_times", 0);
         return bank;
     }
 
     private void bankProfitOfflineAccumulatedMessage(Player player) {
-        plugin.placeholders.put("%offlineprofitamount%", String.valueOf(playerOfflineAccruedProfit));
+        plugin.placeholders.put("%offlineprofitamount%", String.valueOf(offlineProfitAccrued));
 
         for (String message : languageManager.getAllMessage("bank.profit.offline-accumulated")) {
             player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));

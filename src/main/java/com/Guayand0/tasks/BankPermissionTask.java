@@ -1,8 +1,11 @@
 package com.Guayand0.tasks;
 
-import com.Guayand0.Data.Player.JSON.GetPlayerBankData;
-import com.Guayand0.Data.Player.JSON.SetPlayerBankData;
-import com.Guayand0.Data.Player.PlayerBankData;
+import com.Guayand0.data.BankData;
+import com.Guayand0.data.player.JSON.JSONGetPlayerData;
+import com.Guayand0.data.bank.JSON.JSONGetBankNames;
+import com.Guayand0.data.config.GetConfigData;
+import com.Guayand0.data.player.JSON.JSONSetPlayerBankData;
+import com.Guayand0.data.player.PlayerBankData;
 import com.Guayand0.MineBank;
 import com.Guayand0.utils.BankUtils;
 import com.Guayand0.utils.ExceptionManager;
@@ -18,10 +21,11 @@ public class BankPermissionTask extends BukkitRunnable {
 
     private final MineBank plugin;
 
-    private final BankUtils BU = new BankUtils();
+    private final JSONGetPlayerData BM = new JSONGetPlayerData();
     private final MessageUtils MU = new MessageUtils();
-    private final GetPlayerBankData GPBD = new GetPlayerBankData();
-    private final SetPlayerBankData SPBD = new SetPlayerBankData();
+    private final JSONSetPlayerBankData SPBD = new JSONSetPlayerBankData();
+    private final GetConfigData GCD = new GetConfigData();
+    private final JSONGetBankNames GBN = new JSONGetBankNames();
 
     public BankPermissionTask(MineBank plugin) {
         this.plugin = plugin;
@@ -41,24 +45,24 @@ public class BankPermissionTask extends BukkitRunnable {
 
                 String playerName = player.getName();
 
-                PlayerBankData playerBankData = GPBD.getPlayerBankData(plugin, playerName);
+                BankData bankData = BM.getPlayerBankData(plugin, playerName);
                 String bankName = "NULL";
                 int bankBalance = -1;
                 int bankLevel = -1;
                 int offlineProfitAccrued = -1;
                 int offlineProfitTimes = -1;
 
-                // Obtener datos del banco: nombre, nivel, dinero, beneficio offline
-                if (playerBankData != null) {
-                    bankName = playerBankData.getName();
-                    bankBalance = playerBankData.getBalance();
-                    bankLevel = playerBankData.getLevel();
-                    offlineProfitAccrued = playerBankData.getOfflineAccruedProfit();
-                    offlineProfitTimes = playerBankData.getOfflineProfitTimes();
+                // Obtener datos del banco si existen
+                if (bankData != null) {
+                    bankName = bankData.getBankName();
+                    bankBalance = bankData.getBankBalance();
+                    bankLevel = bankData.getBankLevel();
+                    offlineProfitAccrued = bankData.getOfflineProfitAccrued();
+                    offlineProfitTimes = bankData.getOfflineProfitTimes();
                 }
 
-                List<String> bankNames = BU.getBankNames(plugin);
-                boolean adminLastBank = BU.getBankAdminShouldHaveLastBank(plugin);
+                List<String> bankNames = GBN.getBankNames(plugin);
+                boolean adminLastBank = GCD.getBankAdminShouldHaveLastBank(plugin);
 
                 // Banco que el jugador deberia tener
                 String rightBank;
@@ -90,7 +94,7 @@ public class BankPermissionTask extends BukkitRunnable {
     // Obtener el banco correcto basado en los permisos del jugador
     private String getBankFromPermissions(Player player) throws IOException {
 
-        List<String> bankNames = BU.getBankNames(plugin);
+        List<String> bankNames = GBN.getBankNames(plugin);
         String selectedBank = null;
 
         // Iterar sobre los bancos en orden

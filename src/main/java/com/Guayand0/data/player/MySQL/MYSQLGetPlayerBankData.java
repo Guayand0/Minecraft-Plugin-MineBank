@@ -1,9 +1,9 @@
-package com.Guayand0.Data.Bank.MySQL;
+package com.Guayand0.data.player.MySQL;
 
 import java.sql.*;
 import java.util.*;
 
-public class MySQLBankDataLoader {
+public class MYSQLGetPlayerBankData {
 
     // Datos de la base de datos
     private final String host;
@@ -12,7 +12,7 @@ public class MySQLBankDataLoader {
     private final String user;
     private final String password;
 
-    public MySQLBankDataLoader(String host, int port, String database, String user, String password) {
+    public MYSQLGetPlayerBankData(String host, int port, String database, String user, String password) {
         this.host = host;
         this.port = port;
         this.database = database;
@@ -39,7 +39,7 @@ public class MySQLBankDataLoader {
      * @throws SQLException Si ocurre un error en la consulta SQL
      */
     public Map<String, Object> getBankDataOfPlayerName(String playerName) throws SQLException {
-        String query = "SELECT level, max_balance, upgrade_cost, final_level FROM bank_data WHERE player_name = ?";
+        String query = "SELECT name, level, max_balance, upgrade_cost, final_level FROM player_data WHERE player_name = ?";
 
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
@@ -48,6 +48,7 @@ public class MySQLBankDataLoader {
 
             if (resultSet.next()) {
                 Map<String, Object> bankData = new HashMap<>();
+                bankData.put("name", resultSet.getInt("name"));
                 bankData.put("level", resultSet.getInt("level"));
                 bankData.put("max_balance", resultSet.getInt("max_balance"));
                 bankData.put("upgrade_cost", resultSet.getInt("upgrade_cost"));

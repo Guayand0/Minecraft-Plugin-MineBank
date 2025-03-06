@@ -1,6 +1,8 @@
 package com.Guayand0.utils;
 
 import com.Guayand0.MineBank;
+import com.Guayand0.data.config.GetConfigData;
+import com.Guayand0.data.player.JSON.JSONGetPlayerNames;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -16,6 +18,8 @@ public class TabComplete implements TabCompleter {
 
     private final MineBank plugin;
     private final BankUtils BU = new BankUtils();
+    private final GetConfigData GCD = new GetConfigData();
+    private final JSONGetPlayerNames GPN = new JSONGetPlayerNames();
 
     public TabComplete(MineBank plugin) {
         this.plugin = plugin;
@@ -59,7 +63,7 @@ public class TabComplete implements TabCompleter {
 
                         // si es admin permite modificar el dinero de un jugador
                         if (hasAdminPermission) {
-                            try { completions.addAll(BU.getPlayerNameOfBank(plugin)); } catch (Exception e) { e.printStackTrace(); }
+                            try { completions.addAll(GPN.getAllRegisteredPlayerName(plugin)); } catch (Exception e) { e.printStackTrace(); }
                         }
                         break;
 
@@ -75,7 +79,7 @@ public class TabComplete implements TabCompleter {
                         break;
 
                     case "data":
-                        try { completions.addAll(BU.getPlayerNameOfBank(plugin)); } catch (Exception e) { e.printStackTrace(); }
+                        try { completions.addAll(GPN.getAllRegisteredPlayerName(plugin)); } catch (Exception e) { e.printStackTrace(); }
                         break;
 
                     /*case "lottery":
@@ -84,11 +88,11 @@ public class TabComplete implements TabCompleter {
 
                     case "set":
 
-                        boolean setOfflinePlayersTabCompleter = BU.getBankSetTabCompleterOfflinePlayers(plugin);
+                        boolean setOfflinePlayersTabCompleter = GCD.getBankSetTabCompleterOfflinePlayers(plugin);
 
                         // Añadir lista de todos los jugadores que hay en banco si está activado desde la config
                         if (setOfflinePlayersTabCompleter) {
-                            try { completions.addAll(BU.getPlayerNameOfBank(plugin)); } catch (Exception e) { e.printStackTrace(); }
+                            try { completions.addAll(GPN.getAllRegisteredPlayerName(plugin)); } catch (Exception e) { e.printStackTrace(); }
                         } else {
                             // Añadir lista de jugadores conectados
                             completions.addAll(Bukkit.getOnlinePlayers().stream().map(Player::getName).sorted().collect(Collectors.toList()));

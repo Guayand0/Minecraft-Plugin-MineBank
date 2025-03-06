@@ -1,9 +1,12 @@
 package com.Guayand0.commands.subcommands;
 
-import com.Guayand0.Data.BankData;
-import com.Guayand0.Data.BankManager;
-import com.Guayand0.Data.Player.JSON.SetPlayerBankData;
-import com.Guayand0.Data.Player.PlayerBankData;
+import com.Guayand0.data.BankData;
+import com.Guayand0.data.interest.JSON.JSONGetInterestData;
+import com.Guayand0.data.player.JSON.JSONGetPlayerData;
+import com.Guayand0.data.config.GetConfigData;
+import com.Guayand0.data.player.JSON.JSONGetPlayerNames;
+import com.Guayand0.data.player.JSON.JSONSetPlayerBankData;
+import com.Guayand0.data.player.PlayerBankData;
 import com.Guayand0.MineBank;
 import com.Guayand0.managers.FileManager;
 import com.Guayand0.managers.LanguageManager;
@@ -27,8 +30,11 @@ public class SubCommandTake implements CommandExecutor {
 
     private final MessageUtils MU = new MessageUtils();
     private final BankUtils BU = new BankUtils();
-    private final BankManager BM = new BankManager();
-    private final SetPlayerBankData SPBD = new SetPlayerBankData();
+    private final JSONGetPlayerData BM = new JSONGetPlayerData();
+    private final JSONSetPlayerBankData SPBD = new JSONSetPlayerBankData();
+    private final JSONGetPlayerNames GPN = new JSONGetPlayerNames();
+    private final GetConfigData GCD = new GetConfigData();
+    private final JSONGetInterestData GID = new JSONGetInterestData();
 
     private final Economy economy;
 
@@ -63,17 +69,15 @@ public class SubCommandTake implements CommandExecutor {
         }
 
         try {
-
-
             BankData bankData;
 
-            List<String> playerNames = BU.getPlayerNameOfBank(plugin);
+            List<String> playerNames = GPN.getAllRegisteredPlayerName(plugin);
             targetPlayerName = args[1];
 
             if (playerNames.contains(args[1])) {
 
                 // Obtener datos del banco del jugador y maximos de nivel y balance
-                bankData = BM.getBankData(plugin, targetPlayerName);
+                bankData = BM.getPlayerBankData(plugin, targetPlayerName);
                 if (bankData != null) {
                     bankName = bankData.getBankName();
                     bankLevel = bankData.getBankLevel();
@@ -128,7 +132,7 @@ public class SubCommandTake implements CommandExecutor {
             } else {
 
                 // Obtener datos del banco del jugador y maximos de nivel y balance
-                bankData = BM.getBankData(plugin, playerName);
+                bankData = BM.getPlayerBankData(plugin, playerName);
                 if (bankData != null) {
                     bankName = bankData.getBankName();
                     bankLevel = bankData.getBankLevel();
@@ -138,10 +142,10 @@ public class SubCommandTake implements CommandExecutor {
                     bankMaxBalance = bankData.getBankMaxBalance();
                 }
 
-                int accruedInterestData = BU.getAccruedInterestData(plugin);
-                int minBankBalanceToApplyInterest = BU.getInterestMinBankBalanceToApply(plugin);
-                double withdrawInterestPercentage = BU.getInterestWithdrawPercentage(plugin);
-                boolean interestMultiplyByBankLevel = BU.getInterestMultiplyByBankLevel(plugin);
+                int accruedInterestData = GID.getAccruedInterestData(plugin);
+                int minBankBalanceToApplyInterest = GCD.getInterestMinBankBalanceToApply(plugin);
+                double withdrawInterestPercentage = GCD.getInterestWithdrawPercentage(plugin);
+                boolean interestMultiplyByBankLevel = GCD.getInterestMultiplyByBankLevel(plugin);
 
                 // Caso: /bank take {half-balance/all/mid-max} (sin <player>)
                 String amountString = args[1];
@@ -226,7 +230,6 @@ public class SubCommandTake implements CommandExecutor {
                     Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + " &cCan't update player bank data for " + playerName));
                 }
             }
-
         } catch (Exception e) {
             e.printStackTrace();
             if (BankUtils.getSaveException(plugin)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + ExceptionManager.saveInLog(e, plugin)));

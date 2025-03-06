@@ -1,9 +1,9 @@
 package com.Guayand0.commands.subcommands;
 
-import com.Guayand0.Data.BankData;
-import com.Guayand0.Data.BankManager;
-import com.Guayand0.Data.Player.JSON.SetPlayerBankData;
-import com.Guayand0.Data.Player.PlayerBankData;
+import com.Guayand0.data.BankData;
+import com.Guayand0.data.player.JSON.JSONGetPlayerData;
+import com.Guayand0.data.player.JSON.JSONSetPlayerBankData;
+import com.Guayand0.data.player.PlayerBankData;
 import com.Guayand0.MineBank;
 import com.Guayand0.managers.LanguageManager;
 import com.Guayand0.utils.BankUtils;
@@ -21,8 +21,8 @@ public class SubCommandLevelUp implements CommandExecutor {
     private final LanguageManager languageManager;
 
     private final MessageUtils MU = new MessageUtils();
-    private final BankManager BM = new BankManager();
-    private final SetPlayerBankData SPBD = new SetPlayerBankData();
+    private final JSONGetPlayerData BM = new JSONGetPlayerData();
+    private final JSONSetPlayerBankData SPBD = new JSONSetPlayerBankData();
 
     private String bankName = "NULL";
     private int bankBalance = -1;
@@ -46,7 +46,7 @@ public class SubCommandLevelUp implements CommandExecutor {
 
         try {
             // Obtener datos del banco del jugador y maximos de nivel y balance
-            BankData bankData = BM.getBankData(plugin, playerName);
+            BankData bankData = BM.getPlayerBankData(plugin, playerName);
             if (bankData != null) {
                 bankName = bankData.getBankName();
                 bankLevel = bankData.getBankLevel();
@@ -78,7 +78,7 @@ public class SubCommandLevelUp implements CommandExecutor {
             boolean success = SPBD.setPlayerBankData(plugin, playerName, newBankData);
             if (success) {
                 // Obtener el nuevo maximo de balance
-                bankData = BM.getBankData(plugin, playerName);
+                bankData = BM.getPlayerBankData(plugin, playerName);
                 if (bankData != null) {
                     bankMaxBalance = bankData.getBankMaxBalance();
                 }

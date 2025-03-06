@@ -1,6 +1,7 @@
 package com.Guayand0.commands.subcommands;
 
 import com.Guayand0.MineBank;
+import com.Guayand0.data.player.JSON.JSONGetPlayerTopData;
 import com.Guayand0.managers.LanguageManager;
 import com.Guayand0.utils.BankUtils;
 import com.Guayand0.utils.ExceptionManager;
@@ -20,7 +21,7 @@ public class SubCommandBalTop implements CommandExecutor {
     private final LanguageManager languageManager;
 
     private final MessageUtils MU = new MessageUtils();
-    private final BankUtils BU = new BankUtils();
+    private final JSONGetPlayerTopData GPTD = new JSONGetPlayerTopData();
 
     public SubCommandBalTop(MineBank plugin) {
         this.plugin = plugin;
@@ -69,7 +70,7 @@ public class SubCommandBalTop implements CommandExecutor {
     }
 
     private void bankTopEntryMessage(Player player, int amount) throws IOException {
-        List<List<String>> topBanks = BU.getTopPlayerBanks(plugin, amount);
+        List<List<String>> topBanks = GPTD.getTopPlayerBanks(plugin, amount);
         int position = 1;
         for (List<String> bankInfo : topBanks) {
             plugin.placeholders.put("%topbankposition%", String.valueOf(position));

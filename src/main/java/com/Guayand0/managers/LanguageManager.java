@@ -30,7 +30,7 @@ public class LanguageManager {
         File langDir = new File(plugin.getDataFolder(), "messages");
         if (!langDir.exists()) langDir.mkdirs();
 
-        String[] defaultLangFiles = {"en.yml", "es.yml", "fr.yml", "ge.yml", "it.yml", "ja.yml", "ko.yml", "pt.yml", "ru.yml", "zhcn.yml"};
+        String[] defaultLangFiles = {"en.yml", "es.yml", "fr.yml", "ge.yml", "it.yml", "ja.yml", "ko.yml", "pt.yml", "ru.yml", "zhcn.yml", "pl.yml"};
         for (String fileName : defaultLangFiles) {
             File outFile = new File(langDir, fileName);
             if (!outFile.exists()) {
@@ -79,7 +79,7 @@ public class LanguageManager {
         File guiDir = new File(plugin.getDataFolder(), "gui");
         if (!guiDir.exists()) guiDir.mkdirs();
 
-        String[] defaultGuiFiles = {"en.yml", "es.yml", "fr.yml", "ge.yml", "it.yml", "ja.yml", "ko.yml", "pt.yml", "ru.yml", "zhcn.yml"};
+        String[] defaultGuiFiles = {"en.yml", "es.yml", "fr.yml", "ge.yml", "it.yml", "ja.yml", "ko.yml", "pt.yml", "ru.yml", "zhcn.yml", "pl.yml"};
         for (String fileName : defaultGuiFiles) {
             File outFile = new File(guiDir, fileName);
             if (!outFile.exists()) {

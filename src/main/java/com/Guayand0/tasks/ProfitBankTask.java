@@ -1,9 +1,11 @@
 package com.Guayand0.tasks;
 
-import com.Guayand0.Data.BankData;
-import com.Guayand0.Data.BankManager;
-import com.Guayand0.Data.Player.JSON.SetPlayerBankData;
-import com.Guayand0.Data.Player.PlayerBankData;
+import com.Guayand0.data.BankData;
+import com.Guayand0.data.player.JSON.JSONGetPlayerData;
+import com.Guayand0.data.config.GetConfigData;
+import com.Guayand0.data.player.JSON.JSONGetPlayerNames;
+import com.Guayand0.data.player.JSON.JSONSetPlayerBankData;
+import com.Guayand0.data.player.PlayerBankData;
 import com.Guayand0.MineBank;
 import com.Guayand0.managers.LanguageManager;
 import com.Guayand0.utils.BankUtils;
@@ -23,8 +25,10 @@ public class ProfitBankTask extends BukkitRunnable {
 
     private final MessageUtils MU = new MessageUtils();
     private final BankUtils BU = new BankUtils();
-    private final BankManager BM = new BankManager();
-    private final SetPlayerBankData SPBD = new SetPlayerBankData();
+    private final JSONGetPlayerData BM = new JSONGetPlayerData();
+    private final JSONSetPlayerBankData SPBD = new JSONSetPlayerBankData();
+    private final GetConfigData GCD = new GetConfigData();
+    private final JSONGetPlayerNames GPN = new JSONGetPlayerNames();
 
     private String bankName = "NULL";
     private int bankBalance = -1;
@@ -43,7 +47,7 @@ public class ProfitBankTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        if (BU.getBankAllowed(plugin)) {
+        if (GCD.getBankAllowed(plugin)) {
             try {
                 executeBankTask();
             } catch (Exception e) {
@@ -55,12 +59,12 @@ public class ProfitBankTask extends BukkitRunnable {
 
     private void executeBankTask() throws IOException {
         
-        List<String> bankPlayerNames = BU.getPlayerNameOfBank(plugin);
+        List<String> bankPlayerNames = GPN.getAllRegisteredPlayerName(plugin);
 
         for (String playerName : bankPlayerNames) {
 
             // Obtener datos del banco del jugador y maximos de nivel y balance
-            BankData bankData = BM.getBankData(plugin, playerName);
+            BankData bankData = BM.getPlayerBankData(plugin, playerName);
             if (bankData != null) {
                 bankName = bankData.getBankName();
                 bankLevel = bankData.getBankLevel();
@@ -70,11 +74,11 @@ public class ProfitBankTask extends BukkitRunnable {
                 bankMaxBalance = bankData.getBankMaxBalance();
             }
 
-            minBankBalanceToApplyProfit = BU.getProfitMinBankBalanceToReceive(plugin);
-            double profitKeepInBankPercentage = BU.getProfitKeepInBankPercentage(plugin);
-            boolean profitMultiplyByBankLevel = BU.getProfitMultiplyByBankLevel(plugin);
-            boolean notBalanceProfitMessage = BU.getProfitNotEnoughBalanceToReveiveMessage(plugin);
-            int timesProfitsOffline = BU.getTimesProfitsOffline(plugin);
+            minBankBalanceToApplyProfit = GCD.getProfitMinBankBalanceToReceive(plugin);
+            double profitKeepInBankPercentage = GCD.getProfitKeepInBankPercentage(plugin);
+            boolean profitMultiplyByBankLevel = GCD.getProfitMultiplyByBankLevel(plugin);
+            boolean notBalanceProfitMessage = GCD.getProfitNotEnoughBalanceToReveiveMessage(plugin);
+            int timesProfitsOffline = GCD.getTimesProfitsOffline(plugin);
             boolean isPlayerOnline = BU.isPlayerOnline(playerName);
 
             Player player = null;

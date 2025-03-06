@@ -1,8 +1,9 @@
 package com.Guayand0.commands.subcommands;
 
-import com.Guayand0.Data.BankData;
-import com.Guayand0.Data.BankManager;
+import com.Guayand0.data.BankData;
+import com.Guayand0.data.player.JSON.JSONGetPlayerData;
 import com.Guayand0.MineBank;
+import com.Guayand0.data.player.JSON.JSONGetPlayerNames;
 import com.Guayand0.managers.LanguageManager;
 import com.Guayand0.utils.BankUtils;
 import com.Guayand0.utils.ExceptionManager;
@@ -19,8 +20,8 @@ public class SubCommandData implements CommandExecutor {
     private final LanguageManager languageManager;
 
     private final MessageUtils MU = new MessageUtils();
-    private final BankUtils BU = new BankUtils();
-    private final BankManager BM = new BankManager();
+    private final JSONGetPlayerData BM = new JSONGetPlayerData();
+    private final JSONGetPlayerNames GPN = new JSONGetPlayerNames();
 
     private String bankName = "NULL";
     private int bankBalance = -1;
@@ -52,15 +53,15 @@ public class SubCommandData implements CommandExecutor {
                 targetPlayerName = args[1];
 
                 // Si targetPlayerName está en la lista del banco
-                if (BU.getPlayerNameOfBank(plugin).contains(targetPlayerName)) {
-                    bankData = BM.getBankData(plugin, targetPlayerName);
+                if (GPN.getAllRegisteredPlayerName(plugin).contains(targetPlayerName)) {
+                    bankData = BM.getPlayerBankData(plugin, targetPlayerName);
                 } else {
                     // Si no está en la lista, obtener los datos del banco para el jugador actual
-                    bankData = BM.getBankData(plugin, playerName);
+                    bankData = BM.getPlayerBankData(plugin, playerName);
                 }
             } else {
                 targetPlayerName = null;
-                bankData = BM.getBankData(plugin, playerName);
+                bankData = BM.getPlayerBankData(plugin, playerName);
             }
 
             // Obtener datos del banco del jugador y maximos de nivel y balance
@@ -76,7 +77,7 @@ public class SubCommandData implements CommandExecutor {
             }
 
             if (targetPlayerName != null) {
-                if (BU.getPlayerNameOfBank(plugin).contains(targetPlayerName)) {
+                if (GPN.getAllRegisteredPlayerName(plugin).contains(targetPlayerName)) {
                     targetBankDataMessage(player); // Mensaje
                 } else {
                     playerBankDataMessage(player); // Mensaje

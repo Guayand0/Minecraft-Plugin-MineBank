@@ -2,6 +2,7 @@ package com.Guayand0.commands;
 
 import com.Guayand0.MineBank;
 import com.Guayand0.commands.subcommands.*;
+import com.Guayand0.data.config.GetConfigData;
 import com.Guayand0.events.BankInventoryEvent;
 import com.Guayand0.managers.LanguageManager;
 import com.Guayand0.utils.BankUtils;
@@ -20,7 +21,7 @@ public class CommandBank implements CommandExecutor {
     private final BankInventoryEvent bankInventoryEvent;
 
     private final MessageUtils MU = new MessageUtils();
-    private final BankUtils BU = new BankUtils();
+    private final GetConfigData GCD = new GetConfigData();
 
     private final SubCommandAdd subCommandAdd;
     private final SubCommandTake subCommandTake;
@@ -62,7 +63,7 @@ public class CommandBank implements CommandExecutor {
 
         try {
 
-            boolean bankUseAllowed = BU.getBankAllowed(plugin);
+            boolean bankUseAllowed = GCD.getBankAllowed(plugin);
 
             // Si el banco no está activado no hacer nada
             if (!bankUseAllowed) {

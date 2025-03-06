@@ -1,13 +1,17 @@
 package com.Guayand0;
 
-import com.Guayand0.Data.BankData;
-import com.Guayand0.Data.BankManager;
+import com.Guayand0.data.bank.JSON.JSONGetBankNames;
+import com.Guayand0.data.bank.JSON.JSONGetBankTopPosition;
+import com.Guayand0.data.BankData;
+import com.Guayand0.data.player.JSON.JSONGetPlayerData;
 import com.Guayand0.api.PlaceholderAPIMineBank;
 import com.Guayand0.commands.*;
 import com.Guayand0.converters.BanksConverter;
 import com.Guayand0.converters.GuiFolderFilesConverter;
 import com.Guayand0.converters.MessagesFolderFilesConverter;
 import com.Guayand0.converters.PlayerBankDataConverter;
+import com.Guayand0.data.config.GetConfigData;
+import com.Guayand0.data.player.JSON.JSONGetPlayerTopData;
 import com.Guayand0.events.*;
 import com.Guayand0.managers.*;
 import com.Guayand0.tasks.*;
@@ -43,7 +47,11 @@ public class MineBank extends JavaPlugin {
     private final MessageUtils MU = new MessageUtils();
     private final UpdateChecker UC = new UpdateChecker();
     private final BankUtils BU = new BankUtils();
-    private final BankManager BM = new BankManager();
+    private final JSONGetPlayerData BM = new JSONGetPlayerData();
+    private final JSONGetBankTopPosition GBTP = new JSONGetBankTopPosition();
+    private final JSONGetPlayerTopData GPTD = new JSONGetPlayerTopData();
+    private final GetConfigData GCD = new GetConfigData();
+    private final JSONGetBankNames GBN = new JSONGetBankNames();
 
     private LanguageManager languageManager;
     private FileManager fileManager;
@@ -128,11 +136,10 @@ public class MineBank extends JavaPlugin {
 
         saveDefaultConfig();
         getLastVersion();
-        registrarPluginPlaceholders();
 
+        registrarPluginPlaceholders();
         registrarComandos();
         registrarEventos();
-        updatePlaceholdersTask();
 
         new Metrics(this, bstatsID);// Bstats
 
@@ -167,18 +174,18 @@ public class MineBank extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new BankInventoryEvent(this), this);
     }
 
-    // Registrar los placeholders del plugin
+    // Registrar los placeholders del plugin para los mensajes
     public void registrarPluginPlaceholders() {
         placeholders.clear();
 
         placeholders.put("%plugin%", prefix);
-        placeholders.put("%chatplugin%", BU.getChatPrefix(this));
+        placeholders.put("%chatplugin%", GCD.getChatPrefix(this));
         placeholders.put("%version%", currentVersion);
         placeholders.put("%latestversion%", lastVersion);
         placeholders.put("%link%", "https://www.spigotmc.org/resources/" + spigotID);
         placeholders.put("%author%", "Guayand0");
-        placeholders.put("%moneysymbol%", "\\" + BU.getMoneySymbol(this));
-        placeholders.put("%datastorage%", BU.getBankDataType(this));
+        placeholders.put("%moneysymbol%", "\\" + GCD.getMoneySymbol(this));
+        placeholders.put("%datastorage%", GCD.getBankDataType(this));
 
         // Lista de plugins conectados con MineBank
         pluginHooksList.clear();
@@ -186,15 +193,17 @@ public class MineBank extends JavaPlugin {
         if (Bukkit.getPluginManager().getPlugin("Essentials") != null) { pluginHooksList.add("Essentials"); }
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) { pluginHooksList.add("PlaceholderAPI"); }
         placeholders.put("%pluginhookslist%", resolvePluginHooksListPlaceholder());
+
+        // Placeholders de datos de jugadores
+        updatePlaceholdersTask();
     }
 
-    // Registrar/Actualizar placeholders de inventario a cada jugador
+    // Registrar/Actualizar los placeholders del plugin para los mensajes y el inventario a cada jugador
     public void updatePlaceholdersTask() {
-        int interval = BU.getUpdateGUITicks(this); // Cantidad de ticks para actualizar inventario
+        int interval = GCD.getUpdateGUITicks(this); // Cantidad de ticks para actualizar inventario
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             try {
                 for (Player player : Bukkit.getOnlinePlayers()) {
-
                     String playerName = player.getName();
 
                     String bankName = "NULL";
@@ -206,7 +215,7 @@ public class MineBank extends JavaPlugin {
                     int bankMaxLevel = -1;
 
                     // Obtener datos del banco del jugador y maximos de nivel y balance
-                    BankData bankData = BM.getBankData(this, playerName);
+                    BankData bankData = BM.getPlayerBankData(this, playerName);
                     if (bankData != null) {
                         bankName = bankData.getBankName();
                         bankLevel = bankData.getBankLevel();
@@ -218,22 +227,19 @@ public class MineBank extends JavaPlugin {
                     }
 
                     // Crear un mapa de placeholders para cada jugador
-                    Map<String, String> placeholders = new HashMap<>();
                     placeholders.put("%playername%", playerName);
                     placeholders.put("%playerbankname%", bankName);
                     placeholders.put("%playerbankbalance%", String.valueOf(bankBalance));
                     placeholders.put("%playerbanklevel%", String.valueOf(bankLevel));
-                    placeholders.put("%playerbanktop%", String.valueOf(BU.getPlayerBankTop(this, playerName)));
+                    placeholders.put("%playerbanktop%", String.valueOf(GBTP.getPlayerBankTopPosition(this, playerName)));
                     placeholders.put("%playerofflineaccruedprofit%", String.valueOf(offlineProfitAccrued));
                     placeholders.put("%playerbankmaxbalance%", String.valueOf(bankMaxBalance));
                     placeholders.put("%playerbanknextlevelcost%", String.valueOf(bankLevelUpgradeCost));
                     placeholders.put("%playerbankmaxlevel%", String.valueOf(bankMaxLevel));
                     placeholders.put("%playereconomybalance%", String.valueOf(BU.getPlayerBalance(player, economy)));
 
-                    placeholders.put("%moneysymbol%", "\\" + BU.getMoneySymbol(this));
-
                     // Aplicar reemplazo de top placeholders
-                    List<List<String>> topBanks = BU.getTopPlayerBanks(this, 100);
+                    List<List<String>> topBanks = GPTD.getTopPlayerBanks(this, 100);
                     int position = 1;
 
                     for (List<String> bankInfo : topBanks) {
@@ -324,7 +330,7 @@ public class MineBank extends JavaPlugin {
     private void scheduleBankProfitTask() {
 
         // Si el banco está desactivado
-        if (!BU.getBankAllowed(this)) {
+        if (!GCD.getBankAllowed(this)) {
             return;
         }
 
@@ -334,7 +340,7 @@ public class MineBank extends JavaPlugin {
         }
 
         // Obtener el intervalo de tiempo desde la configuración y convertirlo en ticks
-        long interval = BU.getProfitIntervalInSeconds(this) * 20L;
+        long interval = GCD.getProfitIntervalInSeconds(this) * 20L;
         // Si es -1 esta desactivado
         if (interval < 0) {
             return;
@@ -372,7 +378,7 @@ public class MineBank extends JavaPlugin {
         try {
 
             // Crea un permiso con en nombre de cada banco
-            for (String bankName : BU.getBankNames(this)) {
+            for (String bankName : GBN.getBankNames(this)) {
 
                 // Crear el nombre del permiso dinámicamente
                 String permissionName = "minebank.bank." + bankName.toLowerCase();

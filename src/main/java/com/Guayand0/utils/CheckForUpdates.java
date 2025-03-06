@@ -1,6 +1,7 @@
 package com.Guayand0.utils;
 
 import com.Guayand0.MineBank;
+import com.Guayand0.data.config.GetConfigData;
 import com.Guayand0.managers.LanguageManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -9,8 +10,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.List;
-
 public class CheckForUpdates implements Listener {
 
     private final MineBank plugin;
@@ -18,7 +17,7 @@ public class CheckForUpdates implements Listener {
 
     private final UpdateChecker UC = new UpdateChecker();
     private final MessageUtils MU = new MessageUtils();
-    private final BankUtils BU = new BankUtils();
+    private final GetConfigData GCD = new GetConfigData();
 
     public CheckForUpdates(MineBank plugin) {
         this.plugin = plugin;
@@ -31,7 +30,7 @@ public class CheckForUpdates implements Listener {
 
             Player player = event.getPlayer();
             if (!plugin.updateCheckerWork) plugin.comprobarActualizaciones();
-            boolean updateCheckerAllowed = BU.getUpdateCheckerAllowed(plugin);
+            boolean updateCheckerAllowed = GCD.getUpdateCheckerAllowed(plugin);
 
             // Si el mensaje esta activado y hay nueva version
             if (updateCheckerAllowed && newVersionAvailable()) {

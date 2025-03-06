@@ -1,6 +1,7 @@
 package com.Guayand0.events;
 
 import com.Guayand0.MineBank;
+import com.Guayand0.data.config.GetConfigData;
 import com.Guayand0.managers.LanguageManager;
 import com.Guayand0.utils.BankUtils;
 import com.Guayand0.utils.ExceptionManager;
@@ -37,8 +38,8 @@ public class BankInventoryEvent implements Listener {
     private final LanguageManager languageManager;
 
     private final MessageUtils MU = new MessageUtils();
-    private final BankUtils BU = new BankUtils();
     private final InventoryUtils IU = new InventoryUtils();
+    private final GetConfigData GCD = new GetConfigData();
 
     private Inventory bankInventory;
     private final Map<Player, Inventory> playerInventories; // Mapa para guardar el inventario abierto de cada jugador
@@ -54,7 +55,7 @@ public class BankInventoryEvent implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
 
         // Tarea periódica para actualizar inventarios
-        int interval = BU.getUpdateGUITicks(plugin); // Cantidad de ticks para actualizar inventario
+        int interval = GCD.getUpdateGUITicks(plugin); // Cantidad de ticks para actualizar inventario
         Bukkit.getScheduler().runTaskTimer(plugin, this::updateInventories, interval, interval);
     }
 

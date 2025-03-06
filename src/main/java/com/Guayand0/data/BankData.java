@@ -1,4 +1,4 @@
-package com.Guayand0.Data;
+package com.Guayand0.data;
 
 public class BankData {
     private final String bankName;
