@@ -1,26 +1,27 @@
 package com.Guayand0.managers;
 
 import com.Guayand0.MineBank;
-import com.Guayand0.utils.BankUtils;
-import com.Guayand0.utils.ExceptionManager;
-import com.Guayand0.utils.MessageUtils;
-import com.google.gson.*;
+import com.Guayand0.zlib.*;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.util.HashSet;
+import java.util.Set;
 
 public class FileManager {
 
     private final MineBank plugin;
-    private File lotteryDataFile;
-    private File banksFile;
-    private File playerDataFile;
-    private File interestsDataFile;
 
+    public File banksFile;
+    public File interestsDataFile;
+
+    private final GetValues GV = new GetValues();
     private final MessageUtils MU = new MessageUtils();
-
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private final ExceptionManager EM = new ExceptionManager();
 
     public FileManager(MineBank plugin) {
         this.plugin = plugin;
@@ -28,35 +29,78 @@ public class FileManager {
     }
 
     private void loadDataFiles() {
-        File dataFolder = plugin.getDataFolder();
 
-        // -------- //
+        File pluginFolder = plugin.getDataFolder();
 
-//        File lotteryFolder = new File(dataFolder, "lottery");
-//
-//        if (!lotteryFolder.exists()) {
-//            lotteryFolder.mkdirs();
-//        }
-//
-//        lotteryDataFile = new File(lotteryFolder, "lottery_data.json");
-//
-//        createFileIfNotExists(lotteryDataFile, "lottery/lottery_data.json");
+        File playerDataFolder = new File(pluginFolder, "data/player_data");
+        if (!playerDataFolder.exists()) playerDataFolder.mkdirs();
 
-        // -------- //
+        File dataFolder = new File(pluginFolder, "data");
+        File bankDataFolder = new File(pluginFolder, "data/bank_data");
+        if (!bankDataFolder.exists()) bankDataFolder.mkdirs();
 
-        File bankFolder = new File(dataFolder, "bank");
+        // Crear interests_data.json
+        interestsDataFile = new File(dataFolder, "interests_data.json");
+        createFileIfNotExists(interestsDataFile, "data/interests_data.json");
 
-        if (!bankFolder.exists()) {
-            bankFolder.mkdirs();
+        // Crear banks.yml
+        banksFile = new File(dataFolder, "banks.yml");
+        createFileIfNotExists(banksFile, "data/banks.yml");
+
+        // Cargar banks.yml
+        File banksYml = new File(dataFolder, "banks.yml");
+        FileConfiguration banksConfig = YamlConfiguration.loadConfiguration(banksYml);
+
+        // Crear bank-priority si no existe
+        ConfigurationSection section = banksConfig.getConfigurationSection("bank-priority");
+        if (section == null) {
+            section = banksConfig.createSection("bank-priority");
+            section.set("1", "User");
+            section.set("2", "Vip");
+            section.set("3", "Mod");
+
+            try {
+                banksConfig.save(banksFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            Bukkit.getConsoleSender().sendMessage(
+                    MU.getColoredText(plugin.prefix + " &e`bank-priority` created by default in banks.yml file")
+            );
         }
 
-        playerDataFile = new File(bankFolder, "player_data.json");
-        banksFile = new File(bankFolder, "banks.json");
-        interestsDataFile = new File(bankFolder, "interests_data.json");
+        // Bancos permitidos
+        Set<String> allowedBanks = new HashSet<>();
+        allowedBanks.add("User");
+        allowedBanks.add("Vip");
+        allowedBanks.add("Mod");
 
-        createFileIfNotExists(playerDataFile, "bank/player_data.json");
-        createFileIfNotExists(banksFile, "bank/banks.json");
-        createFileIfNotExists(interestsDataFile, "bank/interests_data.json");
+        int expectedKey = 1;
+
+        while (true) {
+            String key = String.valueOf(expectedKey);
+
+            // Si falta número → se corta todo
+            if (!section.contains(key)) break;
+
+            String bankName = section.getString(key);
+            if (bankName == null || bankName.isEmpty()) {
+                expectedKey++;
+                continue;
+            }
+
+            // Si no permitido → ignorar pero NO cortar
+            if (!allowedBanks.contains(bankName)) {
+                expectedKey++;
+                continue;
+            }
+
+            File bankFile = new File(bankDataFolder, bankName + ".json");
+            createFileIfNotExists(bankFile, "data/bank_data/" + bankName + ".json");
+
+            expectedKey++;
+        }
     }
 
     private void createFileIfNotExists(File file, String resourcePath) {
@@ -69,80 +113,8 @@ public class FileManager {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                if (BankUtils.getSaveException(plugin)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + ExceptionManager.saveInLog(e, plugin)));
+                if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));
             }
-        }
-    }
-
-    public File getBanksFile() {
-        return banksFile;
-    }
-
-    public File getPlayerDataFile() {
-        return playerDataFile;
-    }
-
-    public File getInterestsDataFile() {
-        return interestsDataFile;
-    }
-
-    public File getLotteryDataFile() {
-        return lotteryDataFile;
-    }
-
-    public void updatePlayerInfo(JsonObject updatedBank, String playerName) {
-        try (Reader reader = new FileReader(playerDataFile)) {
-            // Leer el JSON actual
-            JsonObject data = gson.fromJson(reader, JsonObject.class);
-            JsonArray players = data.getAsJsonArray("player");
-
-            for (JsonElement playerElement : players) {
-                JsonObject playerObj = playerElement.getAsJsonObject();
-                if (playerObj.get("name").getAsString().equals(playerName)) {
-                    // Obtener la lista de bancos del jugador
-                    JsonArray bankArray = playerObj.getAsJsonArray("bank");
-                    if (bankArray.size() > 0) {
-                        JsonObject bank = bankArray.get(0).getAsJsonObject();
-
-                        // Solo actualiza los valores sin reemplazar la estructura
-                        if (updatedBank.has("name")) bank.addProperty("name", updatedBank.get("name").getAsString());
-                        if (updatedBank.has("level")) bank.addProperty("level", updatedBank.get("level").getAsInt());
-                        if (updatedBank.has("balance")) bank.addProperty("balance", updatedBank.get("balance").getAsInt());
-                        if (updatedBank.has("offline_accrued_profit")) bank.addProperty("offline_accrued_profit", updatedBank.get("offline_accrued_profit").getAsInt());
-                        if (updatedBank.has("offline_profit_times")) bank.addProperty("offline_profit_times", updatedBank.get("offline_profit_times").getAsInt());
-                    }
-                    break;
-                }
-            }
-
-            // Guardar el archivo con los cambios
-            try (Writer writer = new FileWriter(playerDataFile)) {
-                gson.toJson(data, writer);
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            if (BankUtils.getSaveException(plugin)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + ExceptionManager.saveInLog(e, plugin)));
-        }
-    }
-
-    public void updateInterestsData(int newAccruedInterest) {
-        try (Reader reader = new FileReader(interestsDataFile)) {
-
-            // Leer el JSON actual
-            JsonObject data = gson.fromJson(reader, JsonObject.class);
-
-            // Actualizar el valor de "accrued_interest"
-            data.addProperty("accrued_interest", newAccruedInterest);
-
-            // Guardar el archivo con los cambios
-            try (Writer writer = new FileWriter(interestsDataFile)) {
-                gson.toJson(data, writer);
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            if (BankUtils.getSaveException(plugin)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + ExceptionManager.saveInLog(e, plugin)));
         }
     }
 }

@@ -1,43 +1,37 @@
 package com.Guayand0.events;
 
-import com.Guayand0.data.BankData;
-import com.Guayand0.data.player.JSON.JSONGetPlayerData;
 import com.Guayand0.MineBank;
-import com.Guayand0.data.config.GetConfigData;
-import com.Guayand0.managers.FileManager;
-import com.Guayand0.managers.LanguageManager;
-import com.Guayand0.utils.BankUtils;
-import com.Guayand0.utils.ExceptionManager;
-import com.Guayand0.utils.MessageUtils;
-import com.google.gson.*;
+import com.Guayand0.data.DataStorage;
+import com.Guayand0.data.bank.BankData;
+import com.Guayand0.data.player.PlayerData;
+import com.Guayand0.utils.SendMessage;
+import com.Guayand0.zlib.ExceptionManager;
+import com.Guayand0.zlib.GetValues;
+import com.Guayand0.zlib.MessageUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.*;
-import java.util.*;
+import java.util.Map;
 
 public class OnPlayerJoin implements Listener {
 
     private final MineBank plugin;
-    private final LanguageManager languageManager;
-    private final FileManager fileManager;
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private final SendMessage sendMessage;
+    private final DataStorage dataStorage;
 
+    private final GetValues GV = new GetValues();
     private final MessageUtils MU = new MessageUtils();
-    private final BankUtils BU = new BankUtils();
-    private final JSONGetPlayerData BM = new JSONGetPlayerData();
-    private final GetConfigData GCD = new GetConfigData();
-
-    private int offlineProfitAccrued = -1;
+    private final ExceptionManager EM = new ExceptionManager();
 
     public OnPlayerJoin(MineBank plugin) {
         this.plugin = plugin;
-        this.languageManager = plugin.getLanguageManager();
-        this.fileManager = plugin.getFileManager();
+        this.sendMessage = plugin.getSendMessage();
+        this.dataStorage = plugin.getStorage();
     }
 
     @EventHandler
@@ -45,123 +39,63 @@ public class OnPlayerJoin implements Listener {
         Player player = event.getPlayer();
 
         try {
-            File file = fileManager.getPlayerDataFile(); // Obtener el archivo de datos de los jugadores
+            PlayerData playerData = dataStorage.loadPlayerData(player.getUniqueId());
 
-            JsonObject playerDataObject;
-
-            // Si el archivo no existe o está vacío, crear la estructura base
-            if (file.exists()) {
-                if (file.length() > 0) {
-                    try (FileReader reader = new FileReader(file)) {
-                        playerDataObject = JsonParser.parseReader(reader).getAsJsonObject();
-                    }
-                } else {
-                    // Si el archivo está vacío, escribir la estructura base
-                    playerDataObject = new JsonObject();
-                    playerDataObject.add("player", new JsonArray());
-                    try (FileWriter writer = new FileWriter(file)) {
-                        gson.toJson(playerDataObject, writer);
-                    }
-                }
-            } else {
-                playerDataObject = new JsonObject();
-                playerDataObject.add("player", new JsonArray());
+            if (playerData == null) {
+                playerData = PlayerData.defaultData(plugin);
+                dataStorage.savePlayerData(player.getUniqueId(), playerData);
             }
 
-            JsonArray playersArray = playerDataObject.getAsJsonArray("player");
-            Optional<JsonObject> existingPlayer = findPlayer(playersArray, player.getName());
-
-            if (existingPlayer.isPresent()) {
-                updatePlayerData(existingPlayer.get(), player);
-            } else {
-                JsonObject newPlayerData = createNewPlayerData(player);
-                playersArray.add(newPlayerData);
-            }
-
-            // Escribir de nuevo el archivo con los datos actualizados
-            try (FileWriter writer = new FileWriter(file)) { gson.toJson(playerDataObject, writer); }
-
-            String playerName = player.getName();
-
-            boolean bankUseAllowed = GCD.getBankAllowed(plugin);
-
-            // Obtener datos del banco del jugador y maximos de nivel y balance
-            BankData bankData = BM.getPlayerBankData(plugin, playerName);
-            if (bankData != null) {
-                offlineProfitAccrued = bankData.getOfflineProfitAccrued();
-            }
-
+            boolean bankUseAllowed = GV.getBoolean(plugin, "config.bank-allowed", true);
+            int offlineProfitAccrued = playerData.getBank().getOffline().getAccrued_profit();
             // Si el banco esta activado y el jugador tiene beneficios acumulados
             if (bankUseAllowed && offlineProfitAccrued > 0) {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
-                        bankProfitOfflineAccumulatedMessage(player); // Mensaje
+                        plugin.placeholders.put("%offlineprofitamount%", String.valueOf(offlineProfitAccrued));
+                        sendMessage.send((CommandSender) player, "bank.profit.offline-accumulated", null); // Mensaje
                     }
                 }.runTaskLater(plugin, 10); // Ejecuta la tarea después de 10 ticks (0.5 segundos)
             }
 
+            recalculateBankLevel(player);
+
         } catch (Exception e) {
             e.printStackTrace();
-            if (BankUtils.getSaveException(plugin)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + ExceptionManager.saveInLog(e, plugin)));
+            if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));
         }
     }
 
-    private Optional<JsonObject> findPlayer(JsonArray playersArray, String playerName) {
-        for (JsonElement element : playersArray) {
-            JsonObject playerData = element.getAsJsonObject();
-            if (playerData.has("name") && playerData.get("name").getAsString().equals(playerName))
-                return Optional.of(playerData);
-        }
-        return Optional.empty();
-    }
+    private void recalculateBankLevel(Player player) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                try {
+                    PlayerData data = dataStorage.loadPlayerData(player.getUniqueId());
+                    if (data == null) return;
 
-    private void updatePlayerData(JsonObject playerData, Player player) {
-        if (!playerData.has("name")) playerData.addProperty("name", player.getName());
-        if (!playerData.has("UUID")) playerData.addProperty("UUID", player.getUniqueId().toString());
+                    String bankName = data.getBank().getName();
+                    int currentLevel = data.getBank().getLevel();
 
-        // Asegurarse de que el banco siempre tenga los valores iniciales
-        JsonArray bankArray = playerData.has("bank") ? playerData.getAsJsonArray("bank") : new JsonArray();
-        if (bankArray.isEmpty()) bankArray.add(setDefaultBank());
-        else {
-            JsonObject bank = bankArray.get(0).getAsJsonObject();
-            // Agregar valores predeterminados si faltan
-            if (!bank.has("name")) bank.addProperty("name", GCD.getBankStartBankName(plugin));
-            if (!bank.has("level")) bank.addProperty("level", GCD.getBankStartLevel(plugin));
-            if (!bank.has("balance")) bank.addProperty("balance", GCD.getBankStartBalance(plugin));
-            if (!bank.has("offline_accrued_profit")) bank.addProperty("offline_accrued_profit", 0);
-            if (!bank.has("offline_profit_times")) bank.addProperty("offline_profit_times", 0);
-        }
-        playerData.add("bank", bankArray);
-    }
+                    // Cargar datos del banco
+                    Map<String, BankData> bankDataMap = dataStorage.loadBankData(bankName);
+                    BankData bankData = bankDataMap.get(bankName);
+                    if (bankData == null) return;
 
-    private JsonObject createNewPlayerData(Player player) {
-        JsonObject playerData = new JsonObject();
-        playerData.addProperty("name", player.getName());
-        playerData.addProperty("UUID", player.getUniqueId().toString());
+                    int maxLevel = bankData.getLevels().size();
 
-        JsonArray bankArray = new JsonArray();
-        bankArray.add(setDefaultBank());
-        playerData.add("bank", bankArray);
+                    // Ajustar nivel si es mayor al permitido
+                    if (currentLevel > maxLevel) {
+                        data.getBank().setLevel(maxLevel);
+                        dataStorage.savePlayerData(player.getUniqueId(), data);
+                    }
 
-        return playerData;
-    }
-
-    private JsonObject setDefaultBank() {
-        JsonObject bank = new JsonObject();
-        bank.addProperty("name", GCD.getBankStartBankName(plugin));
-        bank.addProperty("level", GCD.getBankStartLevel(plugin));
-        bank.addProperty("balance", GCD.getBankStartBalance(plugin));
-        bank.addProperty("offline_accrued_profit", 0);
-        bank.addProperty("offline_profit_times", 0);
-        return bank;
-    }
-
-    private void bankProfitOfflineAccumulatedMessage(Player player) {
-        plugin.placeholders.put("%offlineprofitamount%", String.valueOf(offlineProfitAccrued));
-
-        for (String message : languageManager.getAllMessage("bank.profit.offline-accumulated")) {
-            player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));
-        }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));
+                }
+            }
+        }.runTaskLater(plugin, 10); // Ejecuta la tarea después de 10 ticks (0.5 segundos)
     }
 }

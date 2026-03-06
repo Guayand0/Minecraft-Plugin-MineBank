@@ -65,9 +65,11 @@ gui:
         lore:
           - '&fHaz clic para &edepositar %moneySymbol%500 &fen el banco'
         # Usar el comando al hacer clic sobre el item
-        command: 'bank add 500'
+        command:
+          - '<player> bank add 500'
         # Permiso requerido para usar el comando
-        permission: 'minebank.use'
+        permission:
+          - 'minebank.use'
 
       11:
         item: EMERALD
@@ -76,7 +78,8 @@ gui:
         lore:
           - '&fHaz clic para &edepositar la mitad del'
           - '&edinero máximo &fdel banco'
-        command: 'bank add mid-max'
+        command:
+          - '<player> bank add mid-max'
 
       12:
         item: EMERALD
@@ -85,7 +88,8 @@ gui:
         lore:
           - '&fHaz clic para &edepositar todo &fel'
           - '&fdinero que quepa en el banco'
-        command: 'bank add all'
+        command:
+          - '<player> bank add all'
 
       19:
         item: EMERALD
@@ -93,7 +97,8 @@ gui:
         name: '&aAñadir %moneySymbol%2000'
         lore:
           - '&fHaz clic para &edepositar %moneySymbol%2000 &fen el banco'
-        command: 'bank add 2000'
+        command:
+          - '<player> bank add 2000'
 
       20:
         item: EMERALD
@@ -102,7 +107,8 @@ gui:
         lore:
           - '&fHaz clic para &edepositar la mitad del'
           - '&edinero actual &fdel banco'
-        command: 'bank add half-balance'
+        command:
+          - '<player> bank add half-balance'
 
       21:
         item: EMERALD
@@ -112,7 +118,8 @@ gui:
           - '&fHaz clic para &edepositar una cantidad'
           - '&ede dinero personalizada &fen el banco'
           - '&fEscribe &e"exit" &fpara cancelar la transacción'
-        command: 'bank add <amount>'
+        command:
+          - '<player> bank add <amount>'
 
       14:
         item: REDSTONE
@@ -120,7 +127,8 @@ gui:
         name: '&aRetirar %moneySymbol%500'
         lore:
           - '&fHaz clic para &eretirar %moneySymbol%500 &fdel banco'
-        command: 'bank take 500'
+        command:
+          - '<player> bank take 500'
 
       15:
         item: REDSTONE
@@ -129,7 +137,8 @@ gui:
         lore:
           - '&fHaz clic para &eretirar la mitad del'
           - '&edinero máximo &fdel banco'
-        command: 'bank take mid-max'
+        command:
+          - '<player> bank take mid-max'
 
       16:
         item: REDSTONE
@@ -138,7 +147,8 @@ gui:
         lore:
           - '&fHaz clic para &eretirar todo &fel'
           - '&fdinero del banco'
-        command: 'bank take all'
+        command:
+          - '<player> bank take all'
 
       23:
         item: REDSTONE
@@ -146,7 +156,8 @@ gui:
         name: '&aRetirar %moneySymbol%2000'
         lore:
           - '&fHaz clic para &eretirar %moneySymbol%2000 &fen el banco'
-        command: 'bank take 2000'
+        command:
+          - '<player> bank take 2000'
 
       24:
         item: REDSTONE
@@ -155,7 +166,8 @@ gui:
         lore:
           - '&fHaz clic para &eretirar la mitad del'
           - '&edinero actual &fdel banco'
-        command: 'bank take half-balance'
+        command:
+          - '<player> bank take half-balance'
 
       25:
         item: REDSTONE
@@ -165,25 +177,34 @@ gui:
           - '&fHaz clic para &eretirar una cantidad'
           - '&ede dinero personalizada &fdel banco'
           - '&fEscribe &e"exit" &fpara cancelar la transacción'
-        command: 'bank take <amount>'
+        command:
+          - '<player> bank take <amount>'
 
-      38:
+      37:
         item: PLAYER_HEAD
-        # Textura de la cabeza: https://minecraft-heads.com/custom-heads/head/50151-dollar
-        # Usa esto para versiones entre la 1.8 and 1.20.3 incluidas (Abre el link y busca en la sección "For Developers: Value")
-        #texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjg4OWNmY2JhY2JlNTk4ZThhMWNkODYxMGI0OWZjYjYyNjQ0ZThjYmE5ZDQ5MTFkMTIxMTM0NTA2ZDhlYTFiNyJ9fX0='
-        # Usa esto para versiones entre la 1.20.4 y superiores incluidas (Abre el link y busca en la sección "For Developers: Minecraft URL")
-        texture: 'http://textures.minecraft.net/texture/b889cfcbacbe598e8a1cd8610b49fcb62644e8cba9d4911d121134506d8ea1b7'
+        # Textura de la cabeza: https://minecraft-heads.com/custom-heads/head/43363-piggybank
+        # Use this for versions between 1.8 and 1.20.3 inclusive (open the link and search in section "For Developers: Value")
+        #texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDRjMDAxNjQyMzhkOGFkOTlhZmFkNzkwYzMwNTBmZjllZmY0MTBlMmQ0YTNmZTg1NjAwMzg5ZGNiODE4YTg0OSJ9fX0='
+        # Use this for versions between 1.20.4 and upper inclusive (open the link and search in section "For Developers: Minecraft URL")
+        texture: 'http://textures.minecraft.net/texture/44c00164238d8ad99afad790c3050ff9eff410e2d4a3fe85600389dcb818a849'
         amount: 1
-        name: '&eTu cuenta bancaria'
+        name: '&eBanco de %playerName%'
         lore:
-          - '&aNombre: &f%playerBankName%'
-          - '&aDinero: &f%moneySymbol%%playerBankBalance%/%moneySymbol%%playerBankMaxBalance%'
-          - '&aNivel: &f%playerBankLevel%/%playerBankMaxLevel%'
+          - '&aBank: &f%playerBankName%'
+          - '&aDinero: &f%playerBankBalance%&7/&f%playerBankMaxBalance%'
+          - '&aNivel: &f%playerBankLevel%&7/&f%playerBankMaxLevel%'
           - ''
-          - '&aEconomía: &f%moneySymbol%%playerEconomyBalance%'
+          - '&bBeneficios offline: &f%offlineProfitAmount%'
+          - '&bBeneficios offline veces: &f%offlineProfitTimes%&7/&f%offlineMaxProfitTimes%'
+          - ''
+          - '&fHaz click para &erecibir beneficios offline &fde'
+          - '&ftu banco mientras estabas desconectado'
+          - ''
+          - '&dEconomía: &f%playerEconomyBalance%'
+        command:
+          - '<player> bank receive profit'
 
-      40:
+      39:
         item: PLAYER_HEAD
         # Textura de la cabeza: https://minecraft-heads.com/custom-heads/head/70110-level-up
         # Usa esto para versiones entre la 1.8 and 1.20.3 incluidas (Abre el link y busca en la sección "For Developers: Value")
@@ -193,14 +214,31 @@ gui:
         amount: 1
         name: '&eSubir de nivel'
         lore:
-          - '&aSiguiente nivel: &f%moneySymbol%%playerBankBalance%/%moneySymbol%%playerBankNextLevelCost%'
-          - '&aNivel del banco: &f%playerBankLevel%/%playerBankMaxLevel%'
+          - '&aSiguiente nivel: &f%playerBankBalance%&7/&f%playerBankNextLevelCost%'
+          - '&aNivel del banco: &f%playerBankLevel%&7/&f%playerBankMaxLevel%'
           - ''
           - '&fHaz clic para &esubir de nivel &etu banco'
           - '&fsi tienes suficiente dinero'
-        command: 'bank levelup'
+        command:
+          - '<player> bank levelup'
 
-      42:
+      41:
+        item: PLAYER_HEAD
+        #Textura de la cabeza: https://minecraft-heads.com/custom-heads/head/50151-dollar
+        # Usa esto para versiones entre la 1.8 and 1.20.3 incluidas (Abre el link y busca en la sección "For Developers: Value")
+        #texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjg4OWNmY2JhY2JlNTk4ZThhMWNkODYxMGI0OWZjYjYyNjQ0ZThjYmE5ZDQ5MTFkMTIxMTM0NTA2ZDhlYTFiNyJ9fX0='
+        # Usa esto para versiones entre la 1.20.4 y superiores incluidas (Abre el link y busca en la sección "For Developers: Minecraft URL")
+        texture: 'http://textures.minecraft.net/texture/b889cfcbacbe598e8a1cd8610b49fcb62644e8cba9d4911d121134506d8ea1b7'
+        amount: 1
+        name: '&eMagic GUI'
+        lore:
+          - '&fHaz click para &eabrir el inventario Magic'
+        command:
+          - '<player> bank gui magic'
+        permission:
+          - 'minebank.admin'
+
+      43:
         item: PLAYER_HEAD
         # Textura de la cabeza: https://minecraft-heads.com/custom-heads/head/74737-gilded-blackstone-1
         # Usa esto para versiones entre la 1.8 and 1.20.3 incluidas (Abre el link y busca en la sección "For Developers: Value")
@@ -211,13 +249,52 @@ gui:
         name: '&eTop del banco'
         lore:
           # Puedes añadir hasta 100 jugadores,
-          - '&aTop %bankTopBankPosition_1%: &f%bankTopPlayerName_1% - %bankTopBankName_1% - %bankTopBankLevel_1% - %moneySymbol%%bankTopBankBalance_1%'
-          - '&aTop %bankTopBankPosition_2%: &f%bankTopPlayerName_2% - %bankTopBankName_2% - %bankTopBankLevel_1% - %moneySymbol%%bankTopBankBalance_2%'
-          - '&aTop %bankTopBankPosition_3%: &f%bankTopPlayerName_3% - %bankTopBankName_3% - %bankTopBankLevel_1% - %moneySymbol%%bankTopBankBalance_3%'
+          - '&aTop %bankTopBankPosition_1%: &f%bankTopPlayerName_1% - %bankTopBankName_1% - %bankTopBankLevel_1% - %bankTopBankBalance_1%'
+          - '&aTop %bankTopBankPosition_2%: &f%bankTopPlayerName_2% - %bankTopBankName_2% - %bankTopBankLevel_1% - %bankTopBankBalance_2%'
+          - '&aTop %bankTopBankPosition_3%: &f%bankTopPlayerName_3% - %bankTopBankName_3% - %bankTopBankLevel_1% - %bankTopBankBalance_3%'
           - ''
           - '&6Tu posición:'
-          - '&aTop %playerBankTop%: &b%playerName% - %playerBankName% - %playerBankLevel% - %moneySymbol%%playerBankBalance%'
+          - '&aTop %playerBankTop%: &b%playerName% - %playerBankName% - %playerBankLevel% - %playerBankBalance%'
           - ''
           - '&fHaz clic para ver el &etop 10 jugadores'
           - '&fcon el mayor saldo bancario'
-        command: 'bank baltop'
+        command:
+          - '<player> bank baltop'
+
+  magic:
+    name: '&4&l[&6&lMagic&a&lGUI&4&l]'
+    size: 2 # 9*2=18 Crea un inventario de 18 espacios (2 filas)
+    position-slot:
+      default:
+        # Materiales de minecraft: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+        item: LIGHT_BLUE_STAINED_GLASS_PANE
+        amount: 1
+        name: ' '
+
+      4:
+        item: APPLE
+        amount: 1
+        name: '&eEjemplo Multi-Comando'
+        lore:
+          - '&fHaz click para:'
+          - '&aRecibe mensaje desde la consola'
+          - '&aEspera 5 segundos'
+          - '&aEjecuta un comando como consola: Recibe una manzana'
+          - '&aRecibe un mensaje del banco'
+          - '&aEjecuta un comando como jugador'
+        command:
+          - '<console> tell %playerName% En 5 segundos recibirás una manzana'
+          - '<delay:100>'
+          - '<console> give %playerName% apple 1'
+          - '<bank-message> %chatPlugin% &aTu dinero en el banco es %playerBankBalance%'
+          - '<player> bank data'
+
+      17:
+        item: BARRIER
+        amount: 1
+        name: '&aVolver'
+        lore:
+          - '&fHaz click para volver'
+          - '&fal inventario principal'
+        command:
+          - '<player> bank gui main'

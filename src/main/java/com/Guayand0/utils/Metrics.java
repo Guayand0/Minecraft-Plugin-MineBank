@@ -48,9 +48,9 @@ import org.bukkit.plugin.Plugin;
 
 public class Metrics {
 
-    private Plugin plugin;
+    private final Plugin plugin;
 
-    private MetricsBase metricsBase;
+    private final MetricsBase metricsBase;
 
     /**
      * Creates a new Metrics instance.
@@ -79,7 +79,8 @@ public class Metrics {
                                     + "many people use their plugin and their total player count. It's recommended to keep bStats\n"
                                     + "enabled, but if you're not comfortable with this, you can turn this setting off. There is no\n"
                                     + "performance penalty associated with having metrics enabled, and data sent to bStats is fully\n"
-                                    + "anonymous.")
+                                    + "anonymous.\n"
+                                    + "Learn more here: https://bstats.org/docs/server-owners")
                     .copyDefaults(true);
             try {
                 config.save(configFile);
@@ -92,15 +93,23 @@ public class Metrics {
         boolean logErrors = config.getBoolean("logFailedRequests", false);
         boolean logSentData = config.getBoolean("logSentData", false);
         boolean logResponseStatusText = config.getBoolean("logResponseStatusText", false);
+        boolean isFolia = false;
+        try {
+            isFolia = Class.forName("io.papermc.paper.threadedregions.RegionizedServer") != null;
+        } catch (Exception e) {
+        }
         metricsBase =
-                new MetricsBase(
+                new // See https://github.com/Bastian/bstats-metrics/pull/126
+                        MetricsBase(
                         "bukkit",
                         serverUUID,
                         serviceId,
                         enabled,
                         this::appendPlatformData,
                         this::appendServiceData,
-                        submitDataTask -> Bukkit.getScheduler().runTask(plugin, submitDataTask),
+                        isFolia
+                                ? null
+                                : submitDataTask -> Bukkit.getScheduler().runTask(plugin, submitDataTask),
                         plugin::isEnabled,
                         (message, error) -> this.plugin.getLogger().log(Level.WARNING, message, error),
                         (message) -> this.plugin.getLogger().log(Level.INFO, message),
@@ -158,7 +167,7 @@ public class Metrics {
     public static class MetricsBase {
 
         /** The version of the Metrics class. */
-        public static final String METRICS_VERSION = "3.0.3";
+        public static final String METRICS_VERSION = "3.2.1";
 
         private static final String REPORT_URL = "https://bStats.org/api/v2/data/%s";
 
@@ -322,7 +331,6 @@ public class Metrics {
             scheduler.execute(
                     () -> {
                         try {
-                            // Send the data
                             sendData(data);
                         } catch (Exception e) {
                             // Something went wrong! :(
@@ -403,46 +411,6 @@ public class Metrics {
         }
     }
 
-    public static class AdvancedBarChart extends CustomChart {
-
-        private final Callable<Map<String, int[]>> callable;
-
-        /**
-         * Class constructor.
-         *
-         * @param chartId The id of the chart.
-         * @param callable The callable which is used to request the chart data.
-         */
-        public AdvancedBarChart(String chartId, Callable<Map<String, int[]>> callable) {
-            super(chartId);
-            this.callable = callable;
-        }
-
-        @Override
-        protected JsonObjectBuilder.JsonObject getChartData() throws Exception {
-            JsonObjectBuilder valuesBuilder = new JsonObjectBuilder();
-            Map<String, int[]> map = callable.call();
-            if (map == null || map.isEmpty()) {
-                // Null = skip the chart
-                return null;
-            }
-            boolean allSkipped = true;
-            for (Map.Entry<String, int[]> entry : map.entrySet()) {
-                if (entry.getValue().length == 0) {
-                    // Skip this invalid
-                    continue;
-                }
-                allSkipped = false;
-                valuesBuilder.appendField(entry.getKey(), entry.getValue());
-            }
-            if (allSkipped) {
-                // Null = skip the chart
-                return null;
-            }
-            return new JsonObjectBuilder().appendField("values", valuesBuilder.build()).build();
-        }
-    }
-
     public abstract static class CustomChart {
 
         private final String chartId;
@@ -475,6 +443,32 @@ public class Metrics {
         }
 
         protected abstract JsonObjectBuilder.JsonObject getChartData() throws Exception;
+    }
+
+    public static class SingleLineChart extends CustomChart {
+
+        private final Callable<Integer> callable;
+
+        /**
+         * Class constructor.
+         *
+         * @param chartId The id of the chart.
+         * @param callable The callable which is used to request the chart data.
+         */
+        public SingleLineChart(String chartId, Callable<Integer> callable) {
+            super(chartId);
+            this.callable = callable;
+        }
+
+        @Override
+        protected JsonObjectBuilder.JsonObject getChartData() throws Exception {
+            int value = callable.call();
+            if (value == 0) {
+                // Null = skip the chart
+                return null;
+            }
+            return new JsonObjectBuilder().appendField("value", value).build();
+        }
     }
 
     public static class DrilldownPie extends CustomChart {
@@ -521,9 +515,9 @@ public class Metrics {
         }
     }
 
-    public static class AdvancedPie extends CustomChart {
+    public static class AdvancedBarChart extends CustomChart {
 
-        private final Callable<Map<String, Integer>> callable;
+        private final Callable<Map<String, int[]>> callable;
 
         /**
          * Class constructor.
@@ -531,7 +525,7 @@ public class Metrics {
          * @param chartId The id of the chart.
          * @param callable The callable which is used to request the chart data.
          */
-        public AdvancedPie(String chartId, Callable<Map<String, Integer>> callable) {
+        public AdvancedBarChart(String chartId, Callable<Map<String, int[]>> callable) {
             super(chartId);
             this.callable = callable;
         }
@@ -539,14 +533,14 @@ public class Metrics {
         @Override
         protected JsonObjectBuilder.JsonObject getChartData() throws Exception {
             JsonObjectBuilder valuesBuilder = new JsonObjectBuilder();
-            Map<String, Integer> map = callable.call();
+            Map<String, int[]> map = callable.call();
             if (map == null || map.isEmpty()) {
                 // Null = skip the chart
                 return null;
             }
             boolean allSkipped = true;
-            for (Map.Entry<String, Integer> entry : map.entrySet()) {
-                if (entry.getValue() == 0) {
+            for (Map.Entry<String, int[]> entry : map.entrySet()) {
+                if (entry.getValue().length == 0) {
                     // Skip this invalid
                     continue;
                 }
@@ -591,32 +585,6 @@ public class Metrics {
         }
     }
 
-    public static class SingleLineChart extends CustomChart {
-
-        private final Callable<Integer> callable;
-
-        /**
-         * Class constructor.
-         *
-         * @param chartId The id of the chart.
-         * @param callable The callable which is used to request the chart data.
-         */
-        public SingleLineChart(String chartId, Callable<Integer> callable) {
-            super(chartId);
-            this.callable = callable;
-        }
-
-        @Override
-        protected JsonObjectBuilder.JsonObject getChartData() throws Exception {
-            int value = callable.call();
-            if (value == 0) {
-                // Null = skip the chart
-                return null;
-            }
-            return new JsonObjectBuilder().appendField("value", value).build();
-        }
-    }
-
     public static class MultiLineChart extends CustomChart {
 
         private final Callable<Map<String, Integer>> callable;
@@ -628,6 +596,46 @@ public class Metrics {
          * @param callable The callable which is used to request the chart data.
          */
         public MultiLineChart(String chartId, Callable<Map<String, Integer>> callable) {
+            super(chartId);
+            this.callable = callable;
+        }
+
+        @Override
+        protected JsonObjectBuilder.JsonObject getChartData() throws Exception {
+            JsonObjectBuilder valuesBuilder = new JsonObjectBuilder();
+            Map<String, Integer> map = callable.call();
+            if (map == null || map.isEmpty()) {
+                // Null = skip the chart
+                return null;
+            }
+            boolean allSkipped = true;
+            for (Map.Entry<String, Integer> entry : map.entrySet()) {
+                if (entry.getValue() == 0) {
+                    // Skip this invalid
+                    continue;
+                }
+                allSkipped = false;
+                valuesBuilder.appendField(entry.getKey(), entry.getValue());
+            }
+            if (allSkipped) {
+                // Null = skip the chart
+                return null;
+            }
+            return new JsonObjectBuilder().appendField("values", valuesBuilder.build()).build();
+        }
+    }
+
+    public static class AdvancedPie extends CustomChart {
+
+        private final Callable<Map<String, Integer>> callable;
+
+        /**
+         * Class constructor.
+         *
+         * @param chartId The id of the chart.
+         * @param callable The callable which is used to request the chart data.
+         */
+        public AdvancedPie(String chartId, Callable<Map<String, Integer>> callable) {
             super(chartId);
             this.callable = callable;
         }

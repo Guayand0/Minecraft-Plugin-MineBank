@@ -1,14 +1,14 @@
 package com.Guayand0.managers;
 
 import com.Guayand0.MineBank;
-import com.Guayand0.utils.BankUtils;
-import com.Guayand0.utils.ExceptionManager;
-import com.Guayand0.utils.MessageUtils;
+import com.Guayand0.zlib.*;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
@@ -16,8 +16,13 @@ import java.util.List;
 public class LanguageManager {
 
     private final MineBank plugin;
+
+    private final GetValues GV = new GetValues();
     private final MessageUtils MU = new MessageUtils();
+    private final ExceptionManager EM = new ExceptionManager();
+
     private FileConfiguration languageConfig;
+    private FileConfiguration guiConfig;
 
     public LanguageManager(MineBank plugin) {
         this.plugin = plugin;
@@ -30,7 +35,7 @@ public class LanguageManager {
         File langDir = new File(plugin.getDataFolder(), "messages");
         if (!langDir.exists()) langDir.mkdirs();
 
-        String[] defaultLangFiles = {"en.yml", "es.yml", "fr.yml", "ge.yml", "it.yml", "ja.yml", "ko.yml", "pt.yml", "ru.yml", "zhcn.yml", "pl.yml"};
+        String[] defaultLangFiles = {"en.yml", "es.yml"};
         for (String fileName : defaultLangFiles) {
             File outFile = new File(langDir, fileName);
             if (!outFile.exists()) {
@@ -39,7 +44,7 @@ public class LanguageManager {
                     else outFile.createNewFile();
                 } catch (IOException e) {
                     e.printStackTrace();
-                    if (BankUtils.getSaveException(plugin)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + ExceptionManager.saveInLog(e, plugin)));
+                    if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));
                 }
             }
         }
@@ -79,7 +84,7 @@ public class LanguageManager {
         File guiDir = new File(plugin.getDataFolder(), "gui");
         if (!guiDir.exists()) guiDir.mkdirs();
 
-        String[] defaultGuiFiles = {"en.yml", "es.yml", "fr.yml", "ge.yml", "it.yml", "ja.yml", "ko.yml", "pt.yml", "ru.yml", "zhcn.yml", "pl.yml"};
+        String[] defaultGuiFiles = {"en.yml", "es.yml"};
         for (String fileName : defaultGuiFiles) {
             File outFile = new File(guiDir, fileName);
             if (!outFile.exists()) {
@@ -88,7 +93,7 @@ public class LanguageManager {
                     else outFile.createNewFile();
                 } catch (IOException e) {
                     e.printStackTrace();
-                    if (BankUtils.getSaveException(plugin)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + ExceptionManager.saveInLog(e, plugin)));
+                    if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));
                 }
             }
         }
@@ -110,6 +115,6 @@ public class LanguageManager {
             selectedGuiFile = new File(guiDir, "en.yml");
         }
 
-        YamlConfiguration.loadConfiguration(selectedGuiFile);
+        guiConfig = YamlConfiguration.loadConfiguration(selectedGuiFile);
     }
 }

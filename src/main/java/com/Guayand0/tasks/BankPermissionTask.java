@@ -1,110 +1,105 @@
 package com.Guayand0.tasks;
 
-import com.Guayand0.data.BankData;
-import com.Guayand0.data.player.JSON.JSONGetPlayerData;
-import com.Guayand0.data.bank.JSON.JSONGetBankNames;
-import com.Guayand0.data.config.GetConfigData;
-import com.Guayand0.data.player.JSON.JSONSetPlayerBankData;
-import com.Guayand0.data.player.PlayerBankData;
 import com.Guayand0.MineBank;
-import com.Guayand0.utils.BankUtils;
-import com.Guayand0.utils.ExceptionManager;
-import com.Guayand0.utils.MessageUtils;
+import com.Guayand0.data.DataStorage;
+import com.Guayand0.data.bank.BankData;
+import com.Guayand0.data.player.PlayerData;
+import com.Guayand0.zlib.ExceptionManager;
+import com.Guayand0.zlib.GetValues;
+import com.Guayand0.zlib.MessageUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.IOException;
+import java.io.File;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class BankPermissionTask extends BukkitRunnable {
 
     private final MineBank plugin;
+    private final DataStorage dataStorage;
 
-    private final JSONGetPlayerData BM = new JSONGetPlayerData();
     private final MessageUtils MU = new MessageUtils();
-    private final JSONSetPlayerBankData SPBD = new JSONSetPlayerBankData();
-    private final GetConfigData GCD = new GetConfigData();
-    private final JSONGetBankNames GBN = new JSONGetBankNames();
+    private final GetValues GV = new GetValues();
+    private final ExceptionManager EM = new ExceptionManager();
+
 
     public BankPermissionTask(MineBank plugin) {
         this.plugin = plugin;
+        this.dataStorage = plugin.getStorage();
     }
 
     @Override
     public void run() {
-        startBankCheckTask();
+        boolean bankEnabled = GV.getBoolean(plugin, "bank.enabled", true);
+        if (!bankEnabled) return;
+
+        // Para cada jugador conectado comprobar si su banco es el correcto
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            handlePlayerPermission(player);
+        }
     }
 
-    // Comprobar si el banco de cada jugador coincide con el que deberia tener
-    public void startBankCheckTask() {
+    private void handlePlayerPermission(Player player) {
         try {
+            List<String> bankNames = dataStorage.getAllBankNames();
+            boolean adminBetterBank = GV.getBoolean(plugin, "bank.admin-better-bank", false);
 
-            // Para cada jugador conectado comprobar si su banco es el correcto
-            for (Player player : Bukkit.getOnlinePlayers()) {
+            String finalBank;
+            // Si el jugador tiene permiso de admin y esta activado en la config
+            if (player.hasPermission(plugin.pluginName + ".admin") && adminBetterBank) finalBank = bankNames.get(bankNames.size() - 1); // Obtener el último banco de la lista
+            else finalBank = getBankFromPermissions(player); // Buscar un permiso de banco
 
-                String playerName = player.getName();
+            // Cargar datos del jugador objetivo
+            UUID playerUUID = player.getUniqueId();
+            PlayerData playerData = dataStorage.loadPlayerData(playerUUID);
+            String bankName = playerData.getBank().getName();
 
-                BankData bankData = BM.getPlayerBankData(plugin, playerName);
-                String bankName = "NULL";
-                int bankBalance = -1;
-                int bankLevel = -1;
-                int offlineProfitAccrued = -1;
-                int offlineProfitTimes = -1;
+            if (finalBank != null && !finalBank.equalsIgnoreCase(bankName)) {
 
-                // Obtener datos del banco si existen
-                if (bankData != null) {
-                    bankName = bankData.getBankName();
-                    bankBalance = bankData.getBankBalance();
-                    bankLevel = bankData.getBankLevel();
-                    offlineProfitAccrued = bankData.getOfflineProfitAccrued();
-                    offlineProfitTimes = bankData.getOfflineProfitTimes();
+                int oldLevel = playerData.getBank().getLevel();
+
+                // niveles del nuevo banco
+                Map<String, BankData> bankDataMap = dataStorage.loadBankData(finalBank);
+                BankData bankData = bankDataMap.get(finalBank);
+                int maxNewLevel = bankData.getLevels().size();
+
+                // cambiar banco
+                playerData.getBank().setName(finalBank);
+
+                // ajustar nivel si supera el máximo del nuevo banco
+                if (oldLevel > maxNewLevel) {
+                    playerData.getBank().setLevel(maxNewLevel);
                 }
 
-                List<String> bankNames = GBN.getBankNames(plugin);
-                boolean adminLastBank = GCD.getBankAdminShouldHaveLastBank(plugin);
-
-                // Banco que el jugador deberia tener
-                String rightBank;
-
-                // Si el jugador tiene permiso de admin y esta activado en la config
-                if (player.hasPermission(plugin.pluginName + ".admin") && adminLastBank) rightBank = bankNames.get(bankNames.size() - 1); // Obtener el último banco de la lista
-                else rightBank = getBankFromPermissions(player); // Buscar un permiso de banco
-
-                // Si el banco no coincide con su permiso o condición, cambiar el banco
-                if (rightBank != null && !rightBank.equals(bankName)) {
-
-                    bankName = rightBank;
-                    // Establecer nuevos valores de banco
-                    PlayerBankData newBankData = new PlayerBankData(bankName, bankLevel, bankBalance, offlineProfitAccrued, offlineProfitTimes);
-
-                    boolean success = SPBD.setPlayerBankData(plugin, playerName, newBankData);
-                    if (!success) {
-                        Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + " &cCan't update player bank data for " + playerName));
-                    }
-                }
+                dataStorage.savePlayerData(player.getUniqueId(), playerData);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            if (BankUtils.getSaveException(plugin)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + ExceptionManager.saveInLog(e, plugin)));
+            if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));
         }
     }
 
     // Obtener el banco correcto basado en los permisos del jugador
-    private String getBankFromPermissions(Player player) throws IOException {
+    private String getBankFromPermissions(Player player) {
 
-        List<String> bankNames = GBN.getBankNames(plugin);
-        String selectedBank = null;
+        List<String> bankNames = dataStorage.getAllBankNames();
 
-        // Iterar sobre los bancos en orden
-        for (String bankName : bankNames) {
-            String permissionName = "minebank.bank." + bankName.toLowerCase();
-            // Si el jugador tiene el permiso para un banco específico
-            if (player.hasPermission(permissionName)) selectedBank = bankName; // Actualizar el banco seleccionado
+        // recorrer de MAYOR a MENOR prioridad
+        for (int i = bankNames.size() - 1; i >= 0; i--) {
+
+            String bankName = bankNames.get(i);
+            String permission = "minebank.bank." + bankName.toLowerCase();
+
+            if (player.hasPermission(permission)) {
+                return bankName; // máxima prioridad encontrada
+            }
         }
 
-        // Si no tiene ningún permiso de banco, asignar el primer banco
-        return selectedBank != null ? selectedBank : bankNames.get(0);
+        // si no tiene ningún permiso, usar el banco base
+        return bankNames.isEmpty() ? null : bankNames.get(0);
     }
 }

@@ -1,0 +1,4 @@
+bank-priority:
+  1: User
+  2: Vip
+  3: Mod

@@ -1,0 +1,24 @@
+{
+  "levels": {
+    "1": {
+      "max_balance": 5000,
+      "upgrade_cost": 2500
+    },
+    "2": {
+      "max_balance": 10000,
+      "upgrade_cost": 5000
+    },
+    "3": {
+      "max_balance": 20000,
+      "upgrade_cost": 10000
+    },
+    "4": {
+      "max_balance": 50000,
+      "upgrade_cost": 25000
+    },
+    "5": {
+      "max_balance": 100000,
+      "upgrade_cost": 0
+    }
+  }
+}

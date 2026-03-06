@@ -26,10 +26,8 @@ config:
   # the .yml file with the translations and the language via GitHub
   # https://github.com/Guayand0/Minecraft-Plugin-MineBank/issues
 
-  # Available default languages: en, es, fr, pt, it, ge, ru, ja, ko, zhcn, pl
-  # English - en.yml    # Portuguese - pt.yml   # Russian - ru.yml    # Simplified Chinese - zhcn.yml
-  # Spanish - es.yml    # Italian - it.yml      # Japanese - ja.yml   # Polish - pl.yml
-  # French - fr.yml     # German - ge.yml       # Korean - ko.yml
+  # Available default languages: en, es
+  # English - en.yml      Spanish - es.yml
 
   # Language of all chat messages
   message-language: en
@@ -47,16 +45,12 @@ config:
 
   # Enable/Disable the bank function
   # If set to false, all "/bank" commands will be disabled until set true
-  # It is highly recommended to disable this option and reload the plugin
-  # if any .json file is going to be modified without stopping the server
-  # Once the files have been modified, this option can be activated again
-  # That way you avoid many problems
   bank-allowed: true
 
   # List of allowed worlds in which the plugin works
   allowed-worlds:
     - world
-    - skyblock
+    #- skyblock
 
 # +----------------------------------+ #
 # |                                  | #
@@ -65,28 +59,29 @@ config:
 # +----------------------------------+ #
 bank:
 
+  # Modifying this requires a server restart for the changes to take effect
   # All player and bank data will be stored here
   data:
 
-    # Only JSON is available at the moment, more ways to store data will be added in the future
+    # Available storage data type: JSON, MYSQL
     type: JSON
 
-    # When there are more ways to store data, these options will be needed, at the moment they do nothing
-    host:
-    port:
-    batabase-name:
-    user:
+    # Database connection data
+    user: root
     password:
+    database: minebank
+    host: localhost
+    port: 3306
+    connection_params: ?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8&connectTimeout=30000&socketTimeout=30000
 
-  # You can add more banks in the banks.json file and also add more levels for the banks
-  # The priority of the banks is the order of the banks, first is the worst bank and last is the best bank
+  # You can add more banks in the "data/bank_data" folder and also add more levels for the banks
+  # The priority of the banks is the order of the banks in "data/banks.yml" file, first is the worst bank and last is the best bank
   # Make sure that the level numbers are consecutive numbers or errors may appear
-  # Make sure all "max_balance" of each level is less than 2147483647
-  # Make sure that the last level of each bank and only the last one level has ("final_level" : true)
+  # Make sure all "max_balance" and "upgrade_cost" of each level is less than 2147483647
   start:
 
-    # Before modify start section, check in banks.json the level does not exceed the maximum level for first bank
-    # and the balance does not exceed the maximum storage for first bank level or errors may appear
+    # Before modify start section, check the level does not exceed the maximum level for first bank
+    # and the balance does not exceed the maximum storage for first bank selected level or errors may appear
 
     # Start level of the bank for new players
     level: 1
@@ -94,19 +89,22 @@ bank:
     # Start balance of the bank for new players
     balance: 0
 
-  # The priority of the banks is the order of the banks, first is the worst bank and last is the best bank
+  # The priority of the banks is the order of the banks in "data/banks.yml" file, first is the worst bank and last is the best bank
   # If set to true, OP players and players with the "minebank.admin" permission will have the best bank
-  admin-should-have-last-bank: false
+  admin-better-bank: false
 
-  # Add to tabCompleter offline players (ony for op and admins)
-  # If set to false, the "/bank set <player> ..." command will only show connected players
-  set-offline: true
+  # Add to tabCompleter offline players (only for op and admins)
+  # If set to false, commands like "/bank set <player> ..." will only show connected players
+  offline-player-tabcompleter: true
 
   # Money configuration
   money:
 
-    # Symbol for bank balance for variable %moneySymbol%
+    # Symbol for bank balance
     symbol: $
+
+    # Position of the money symbol: BEFORE, AFTER, NONE
+    symbol-position: BEFORE
 
   # By having balance in the bank, automatically every player receive a profit of balance
   profit:

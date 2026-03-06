@@ -1,175 +1,118 @@
 package com.Guayand0.tasks;
 
-import com.Guayand0.data.BankData;
-import com.Guayand0.data.player.JSON.JSONGetPlayerData;
-import com.Guayand0.data.config.GetConfigData;
-import com.Guayand0.data.player.JSON.JSONGetPlayerNames;
-import com.Guayand0.data.player.JSON.JSONSetPlayerBankData;
-import com.Guayand0.data.player.PlayerBankData;
 import com.Guayand0.MineBank;
-import com.Guayand0.managers.LanguageManager;
-import com.Guayand0.utils.BankUtils;
-import com.Guayand0.utils.ExceptionManager;
-import com.Guayand0.utils.MessageUtils;
-import org.bukkit.entity.Player;
+import com.Guayand0.data.DataStorage;
+import com.Guayand0.data.bank.BankData;
+import com.Guayand0.data.player.PlayerData;
+import com.Guayand0.utils.SendMessage;
+import com.Guayand0.zlib.*;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class ProfitBankTask extends BukkitRunnable {
 
     private final MineBank plugin;
-    private final LanguageManager languageManager;
+    private final SendMessage sendMessage;
+    private final DataStorage dataStorage;
 
+    private final PlayerUtils PU = new PlayerUtils();
     private final MessageUtils MU = new MessageUtils();
-    private final BankUtils BU = new BankUtils();
-    private final JSONGetPlayerData BM = new JSONGetPlayerData();
-    private final JSONSetPlayerBankData SPBD = new JSONSetPlayerBankData();
-    private final GetConfigData GCD = new GetConfigData();
-    private final JSONGetPlayerNames GPN = new JSONGetPlayerNames();
-
-    private String bankName = "NULL";
-    private int bankBalance = -1;
-    private int bankLevel = -1;
-    private int offlineProfitAccrued = -1;
-    private int offlineProfitTimes = -1;
-    private int bankMaxBalance = -1;
-    private int amountRoundedProfit = -1;
-    private double profitPercentage = -1;
-    private int minBankBalanceToApplyProfit = -1;
+    private final GetValues GV = new GetValues();
+    private final ExceptionManager EM = new ExceptionManager();
 
     public ProfitBankTask(MineBank plugin) {
         this.plugin = plugin;
-        this.languageManager = plugin.getLanguageManager();
+        this.sendMessage = plugin.getSendMessage();
+        this.dataStorage = plugin.getStorage();
     }
 
     @Override
     public void run() {
-        if (GCD.getBankAllowed(plugin)) {
-            try {
-                executeBankTask();
-            } catch (Exception e) {
-                e.printStackTrace();
-                if (BankUtils.getSaveException(plugin)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + ExceptionManager.saveInLog(e, plugin)));
+
+        boolean bankEnabled = GV.getBoolean(plugin, "bank.enabled", true);
+        if (!bankEnabled) return;
+
+        List<UUID> uuids = dataStorage.getAllPlayerUUIDs();
+
+        for (UUID uuid : uuids) {
+            handlePlayer(uuid);
+        }
+    }
+
+    private void handlePlayer(UUID uuid) {
+        try {
+            PlayerData playerData = dataStorage.loadPlayerData(uuid);
+            if (playerData == null || playerData.getBank() == null) return;
+
+            PlayerData.Bank bank = playerData.getBank();
+
+            String bankName = bank.getName();
+            int bankLevel = bank.getLevel();
+            int bankBalance = bank.getBalance();
+
+            // Cargar datos del banco
+            Map<String, BankData> bankMap = dataStorage.loadBankData(bankName);
+            if (bankMap == null || !bankMap.containsKey(bankName)) return;
+
+            BankData bankData = bankMap.get(bankName);
+            BankData.Level levelData = bankData.getLevels().get(String.valueOf(bankLevel));
+            if (levelData == null) return;
+
+            int bankMaxBalance = levelData.getMax_balance();
+
+            int minBalance = GV.getInt(plugin, "bank.profit.min-bank-balance-to-receive", 0);
+            double profitPercent = GV.getDouble(plugin, "bank.profit.keep-in-bank-percentage", 0);
+            boolean multiplyByLevel = GV.getBoolean(plugin, "bank.profit.multiply-by-bank-level", false);
+            int maxOfflineTimes = GV.getInt(plugin, "bank.profit.times-profits-offline", 0);
+
+            if (bankBalance <= 0 || bankBalance > bankMaxBalance) return;
+            if (bankBalance < minBalance) return;
+
+            double finalPercent = multiplyByLevel ? profitPercent * bankLevel : profitPercent;
+            int profit = (int) Math.floor(bankBalance * finalPercent / 100.0);
+            if (profit <= 0) return;
+
+            boolean online = PU.isPlayerOnline(PU.getNameFromUUID(uuid));
+            Player player = online ? Bukkit.getPlayer(uuid) : null;
+
+            // OFFLINE
+            if (!online) {
+                PlayerData.Offline offline = bank.getOffline();
+
+                if (maxOfflineTimes > 0 && offline.getProfit_times() >= maxOfflineTimes) return;
+
+                offline.setAccrued_profit(offline.getAccrued_profit() + profit);
+                offline.setProfit_times(offline.getProfit_times() + 1);
+
+                dataStorage.savePlayerData(uuid, playerData);
+                return;
             }
-        }
-    }
 
-    private void executeBankTask() throws IOException {
-        
-        List<String> bankPlayerNames = GPN.getAllRegisteredPlayerName(plugin);
-
-        for (String playerName : bankPlayerNames) {
-
-            // Obtener datos del banco del jugador y maximos de nivel y balance
-            BankData bankData = BM.getPlayerBankData(plugin, playerName);
-            if (bankData != null) {
-                bankName = bankData.getBankName();
-                bankLevel = bankData.getBankLevel();
-                bankBalance = bankData.getBankBalance();
-                offlineProfitAccrued = bankData.getOfflineProfitAccrued();
-                offlineProfitTimes = bankData.getOfflineProfitTimes();
-                bankMaxBalance = bankData.getBankMaxBalance();
+            // ONLINE
+            if (!player.hasPermission(plugin.pluginName + ".use")) {
+                return;
             }
 
-            minBankBalanceToApplyProfit = GCD.getProfitMinBankBalanceToReceive(plugin);
-            double profitKeepInBankPercentage = GCD.getProfitKeepInBankPercentage(plugin);
-            boolean profitMultiplyByBankLevel = GCD.getProfitMultiplyByBankLevel(plugin);
-            boolean notBalanceProfitMessage = GCD.getProfitNotEnoughBalanceToReveiveMessage(plugin);
-            int timesProfitsOffline = GCD.getTimesProfitsOffline(plugin);
-            boolean isPlayerOnline = BU.isPlayerOnline(playerName);
-
-            Player player = null;
-
-            try {
-
-                // Si el jugador no tiene dinero o si tiene exceso de dinero
-                if (bankBalance <= 0 || bankBalance > bankMaxBalance) return;
-
-                // Si el jugador esta online establecerlo como player
-                if (isPlayerOnline) player = Bukkit.getPlayerExact(playerName);
-
-                // Si el jugador tiene suficiente dinero para ganar beneficio
-                if (bankBalance >= minBankBalanceToApplyProfit) {
-
-                    // Si multiplicar beneficio por nivel está activado
-                    if (profitMultiplyByBankLevel) profitPercentage = profitKeepInBankPercentage * bankLevel;
-                    else profitPercentage = profitKeepInBankPercentage;
-
-                    double profit = Math.floor(bankBalance * profitPercentage / 100.0);
-
-                    amountRoundedProfit = (int) profit;
-
-                    // Si el jugador no esta online añadirle el dinero del beneficio a "offline_accrued_profit"
-                    if (!isPlayerOnline) {
-
-                        // Si la opcion esta desactivada o el jugador ha llegado al maximo de la opcion
-                        if (timesProfitsOffline <= 0 || offlineProfitTimes >= timesProfitsOffline) return;
-
-                        offlineProfitAccrued = offlineProfitAccrued + amountRoundedProfit;
-                        offlineProfitTimes = offlineProfitTimes + 1;
-                        // Establecer nuevos valores de banco
-                        PlayerBankData newBankData = new PlayerBankData(bankName, bankLevel, bankBalance, offlineProfitAccrued, offlineProfitTimes);
-
-                        boolean success = SPBD.setPlayerBankData(plugin, playerName, newBankData);
-                        if (!success) {
-                            Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + " &cCan't update player bank data for " + playerName));
-                        }
-
-                        return;
-                    }
-
-                    // Si el jugador supera el maximo de almacenamiento de su nuvel de banco
-                    if (bankBalance + amountRoundedProfit > bankMaxBalance) {
-                        maxStorageProfitMessage(player); // Message
-                        return;
-                    }
-
-                    bankBalance = bankBalance + amountRoundedProfit;
-                    // Establecer nuevos valores de banco
-                    PlayerBankData newBankData = new PlayerBankData(bankName, bankLevel, bankBalance, offlineProfitAccrued, offlineProfitTimes);
-
-                    boolean success = SPBD.setPlayerBankData(plugin, playerName, newBankData);
-                    if (success) {
-                        receivedProfitMessage(player); // Mensaje
-                    } else {
-                        Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + " &cCan't update player bank data for " + playerName));
-                    }
-
-                } else {
-                    // Si enviar mensaje está activado y el jugador esta conectado
-                    if (notBalanceProfitMessage && player != null) minStorageProfitMessage(player); // Message
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                if (BankUtils.getSaveException(plugin)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + ExceptionManager.saveInLog(e, plugin)));
+            if (bankBalance + profit > bankMaxBalance) {
+                sendMessage.send(player, "bank.profit.max-storage", null); // Mensaje
+                return;
             }
-        }
-    }
 
-    public void receivedProfitMessage(Player player) {
-        plugin.placeholders.put("%keepinbankprofit%", String.valueOf(amountRoundedProfit));
-        plugin.placeholders.put("%profitpercentage%", String.valueOf(profitPercentage));
+            bank.setBalance(bankBalance + profit);
+            dataStorage.savePlayerData(uuid, playerData);
 
-        for (String message : languageManager.getAllMessage("bank.profit.received")) {
-            player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));
-        }
-    }
-
-    public void minStorageProfitMessage(Player player) {
-        plugin.placeholders.put("%minbankbalancetoreceiveprofit%", String.valueOf(minBankBalanceToApplyProfit));
-
-        for (String message : languageManager.getAllMessage("bank.profit.min-storage")) {
-            player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));
-        }
-    }
-
-    public void maxStorageProfitMessage(Player player) {
-        for (String message : languageManager.getAllMessage("bank.profit.max-storage")) {
-            player.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, plugin.placeholders));
+            plugin.placeholders.put("%keepinbankprofit%", String.valueOf(profit));
+            plugin.placeholders.put("%profitpercentage%", String.valueOf(finalPercent));
+            sendMessage.send(player, "bank.profit.received", null); // Mensaje
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));
         }
     }
 }
