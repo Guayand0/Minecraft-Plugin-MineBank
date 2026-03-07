@@ -102,12 +102,12 @@ public class AddSubCommand implements CommandExecutor {
                 amountArg = args[1];
             }
 
-            ph = plugin.buildPlayerPlaceholders(uuid);
-
             if (uuid == null) {
+                ph.put("%targetPlayerName%", targetName);
                 sendMessage.send(sender, "bank.unregistered-player", ph); // Mensaje
                 return true;
             }
+            ph = plugin.buildPlayerPlaceholders(uuid);
 
             // Cargar datos del jugador
             PlayerData playerData = dataStorage.loadPlayerData(uuid);
@@ -138,6 +138,10 @@ public class AddSubCommand implements CommandExecutor {
                 try {
                     amountDeposited = Integer.parseInt(amountArg);
                 } catch (NumberFormatException e) {
+                    sendMessage.send(sender, "bank.not-positive-integer", ph); // Mensaje
+                    return true;
+                }
+                if (amountDeposited <= 0) {
                     sendMessage.send(sender, "bank.not-positive-integer", ph); // Mensaje
                     return true;
                 }

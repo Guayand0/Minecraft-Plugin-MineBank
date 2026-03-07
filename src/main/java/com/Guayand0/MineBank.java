@@ -204,6 +204,7 @@ public class MineBank extends JavaPlugin {
 
     public Map<String, String> buildPlayerPlaceholders(UUID uuid) {
         Map<String, String> ph = new HashMap<>(placeholders);
+        if (uuid == null) return ph;
 
         OfflinePlayer offline = Bukkit.getOfflinePlayer(uuid);
         String playerName = offline.getName() != null ? offline.getName() : "Unknown";
@@ -238,7 +239,7 @@ public class MineBank extends JavaPlugin {
         ph.put("%playerBankMaxBalance%", BSP.format(this, String.valueOf(bankMaxBalance)));
         ph.put("%playerBankMaxLevel%", String.valueOf(bankMaxLevel));
         ph.put("%playerBankNextLevelCost%", BSP.format(this, String.valueOf(upgradeCost)));
-        ph.put("%playerbanktop%", playerTop == -1 ? "-" : String.valueOf(playerTop));
+        ph.put("%playerBankTop%", playerTop == -1 ? "-" : String.valueOf(playerTop));
 
         // Economía: si está online, usamos el Player real, si no, ponemos N/A
         if (offline.isOnline()) {

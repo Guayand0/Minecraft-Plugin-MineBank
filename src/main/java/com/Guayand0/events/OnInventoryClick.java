@@ -5,6 +5,7 @@ import com.Guayand0.inventory.BankConversation;
 import com.Guayand0.utils.GuiHolder;
 import com.Guayand0.utils.SendMessage;
 import com.Guayand0.zlib.InventoryUtils;
+import com.Guayand0.zlib.MessageUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
@@ -30,6 +31,7 @@ public class OnInventoryClick implements Listener {
     private final SendMessage sendMessage;
 
     private final InventoryUtils IU = new InventoryUtils();
+    private final MessageUtils MU = new MessageUtils();
 
     private FileConfiguration languageInventoryManager;
     private final BankConversation conversationManager;
@@ -185,13 +187,7 @@ public class OnInventoryClick implements Listener {
     }
 
     private String replacePlaceholders(String command, Map<String, String> ph) {
-        String result = command;
-        for (Map.Entry<String, String> entry : ph.entrySet()) {
-            if (entry.getValue() != null) {
-                result = result.replace(entry.getKey(), entry.getValue());
-            }
-        }
-        return result;
+        return MU.replacePlaceholdersText(command, ph);
     }
 
     private boolean processSpecialCommands(Player player, String guiIdOpened, String command) {

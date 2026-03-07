@@ -4,10 +4,10 @@ import com.Guayand0.MineBank;
 import com.Guayand0.data.DataStorage;
 import com.Guayand0.data.bank.BankData;
 import com.Guayand0.data.player.PlayerData;
+import com.Guayand0.utils.BalanceSymbolPosition;
 import com.Guayand0.utils.SendMessage;
 import com.Guayand0.zlib.*;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -25,6 +25,7 @@ public class ProfitBankTask extends BukkitRunnable {
     private final MessageUtils MU = new MessageUtils();
     private final GetValues GV = new GetValues();
     private final ExceptionManager EM = new ExceptionManager();
+    private final BalanceSymbolPosition BSP = new BalanceSymbolPosition();
 
     public ProfitBankTask(MineBank plugin) {
         this.plugin = plugin;
@@ -35,7 +36,7 @@ public class ProfitBankTask extends BukkitRunnable {
     @Override
     public void run() {
 
-        boolean bankEnabled = GV.getBoolean(plugin, "bank.enabled", true);
+        boolean bankEnabled = GV.getBoolean(plugin, "config.bank-allowed", true);
         if (!bankEnabled) return;
 
         List<UUID> uuids = dataStorage.getAllPlayerUUIDs();
@@ -107,9 +108,10 @@ public class ProfitBankTask extends BukkitRunnable {
             bank.setBalance(bankBalance + profit);
             dataStorage.savePlayerData(uuid, playerData);
 
-            plugin.placeholders.put("%keepinbankprofit%", String.valueOf(profit));
-            plugin.placeholders.put("%profitpercentage%", String.valueOf(finalPercent));
-            sendMessage.send(player, "bank.profit.received", null); // Mensaje
+            Map<String, String> ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
+            ph.put("%keepinbankprofit%", BSP.format(plugin, String.valueOf(profit)));
+            ph.put("%profitpercentage%", String.valueOf(finalPercent));
+            sendMessage.send(player, "bank.profit.received", ph); // Mensaje
         } catch (Exception e) {
             e.printStackTrace();
             if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));

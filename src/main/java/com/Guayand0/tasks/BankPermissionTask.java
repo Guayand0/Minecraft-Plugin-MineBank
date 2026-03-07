@@ -33,7 +33,7 @@ public class BankPermissionTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        boolean bankEnabled = GV.getBoolean(plugin, "bank.enabled", true);
+        boolean bankEnabled = GV.getBoolean(plugin, "config.bank-allowed", true);
         if (!bankEnabled) return;
 
         // Para cada jugador conectado comprobar si su banco es el correcto

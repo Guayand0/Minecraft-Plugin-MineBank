@@ -271,6 +271,16 @@ gui:
         amount: 1
         name: ' '
 
+      3:
+        item: IRON_INGOT
+        amount: 1
+        name: '&bEnchant Example 1'
+        lore:
+          - '&eThis item only shine'
+        enchant:
+          - 'UNBREAKING:6'
+          - 'MENDING:1'
+
       4:
         item: APPLE
         amount: 1
@@ -288,6 +298,19 @@ gui:
           - '<console> give %playerName% apple 1'
           - '<bank-message> %chatPlugin% &aYour bank balance is %playerBankBalance%'
           - '<player> bank data'
+        enchant:
+          - 'PROTECTION:4'
+        hide-enchant: true
+
+      5:
+        item: GOLD_INGOT
+        amount: 1
+        name: '&dEnchant Example 2'
+        lore:
+          - '&eThis item only shine'
+        enchant:
+          - 'UNBREAKING:1'
+        hide-enchant: true
 
       17:
         item: BARRIER

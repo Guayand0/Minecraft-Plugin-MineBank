@@ -250,8 +250,8 @@ gui:
         lore:
           # Puedes añadir hasta 100 jugadores,
           - '&aTop %bankTopBankPosition_1%: &f%bankTopPlayerName_1% - %bankTopBankName_1% - %bankTopBankLevel_1% - %bankTopBankBalance_1%'
-          - '&aTop %bankTopBankPosition_2%: &f%bankTopPlayerName_2% - %bankTopBankName_2% - %bankTopBankLevel_1% - %bankTopBankBalance_2%'
-          - '&aTop %bankTopBankPosition_3%: &f%bankTopPlayerName_3% - %bankTopBankName_3% - %bankTopBankLevel_1% - %bankTopBankBalance_3%'
+          - '&aTop %bankTopBankPosition_2%: &f%bankTopPlayerName_2% - %bankTopBankName_2% - %bankTopBankLevel_2% - %bankTopBankBalance_2%'
+          - '&aTop %bankTopBankPosition_3%: &f%bankTopPlayerName_3% - %bankTopBankName_3% - %bankTopBankLevel_3% - %bankTopBankBalance_3%'
           - ''
           - '&6Tu posición:'
           - '&aTop %playerBankTop%: &b%playerName% - %playerBankName% - %playerBankLevel% - %playerBankBalance%'
@@ -271,6 +271,16 @@ gui:
         amount: 1
         name: ' '
 
+      3:
+        item: IRON_INGOT
+        amount: 1
+        name: '&bEjemplo encantamiento 1'
+        lore:
+          - '&eEste item muestra los encantamientos'
+        enchant:
+          - 'UNBREAKING:6'
+          - 'MENDING:1'
+
       4:
         item: APPLE
         amount: 1
@@ -288,6 +298,16 @@ gui:
           - '<console> give %playerName% apple 1'
           - '<bank-message> %chatPlugin% &aTu dinero en el banco es %playerBankBalance%'
           - '<player> bank data'
+
+      5:
+        item: GOLD_INGOT
+        amount: 1
+        name: '&dEjemplo encantamiento 2'
+        lore:
+          - '&eEste item solo brilla'
+        enchant:
+          - 'UNBREAKING:1'
+        hide-enchant: true
 
       17:
         item: BARRIER

@@ -7,11 +7,14 @@ import com.Guayand0.MineBank;
 import com.Guayand0.zlib.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -25,6 +28,8 @@ import java.util.*;
 public class MainGUI {
 
     private final MineBank plugin;
+
+    private static final Map<String, Enchantment> ENCHANT_CACHE = new HashMap<>();
 
     // Guardamos jugadores con gui abierto
     public static Set<UUID> openedPlayersGUI = new HashSet<>();
@@ -93,8 +98,7 @@ public class MainGUI {
             }
             if (slotNumber < 0 || slotNumber >= inv.getSize()) continue;
 
-            ItemStack updatedItem = createItem(player, "gui." + guiId + ".position-slot." + key,
-                    plugin.buildPlayerPlaceholders(player.getUniqueId()));
+            ItemStack updatedItem = createItem("gui." + guiId + ".position-slot." + key, plugin.buildPlayerPlaceholders(player.getUniqueId()));
             if (updatedItem != null) {
                 itemsToUpdate.put(slotNumber, updatedItem);
             }
@@ -110,7 +114,7 @@ public class MainGUI {
     }
 
     private void setDefaultItems(Player player, Inventory inventory, String guiId) {
-        ItemStack def = createItem(player, "gui." + guiId + ".position-slot.default", plugin.buildPlayerPlaceholders(player.getUniqueId()));
+        ItemStack def = createItem("gui." + guiId + ".position-slot.default", plugin.buildPlayerPlaceholders(player.getUniqueId()));
         if (def != null) {
             for (int i = 0; i < inventory.getSize(); i++) {
                 ItemStack item = inventory.getItem(i);
@@ -121,50 +125,109 @@ public class MainGUI {
         }
     }
 
-    private ItemStack createItem(Player player, String route, Map<String,String> ph) {
-        String materialItem = languageInventoryManager.getString(route + ".item");
-        int amount = languageInventoryManager.getInt(route + ".amount", 1);
-        String name = languageInventoryManager.getString(route + ".name");
-        List<String> lore = languageInventoryManager.getStringList(route + ".lore");
+    private ItemStack createItem(String route, Map<String,String> ph) {
 
-        if (materialItem == null) return null;
+        ConfigurationSection section = languageInventoryManager.getConfigurationSection(route);
+        if (section == null) return null;
+
+        String materialName = section.getString("item");
+        if (materialName == null) return null;
 
         Material material;
         try {
-            material = Material.valueOf(materialItem.toUpperCase());
+            material = Material.valueOf(materialName.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             return null;
         }
 
-        if (amount <= 0) return null;
-
+        int amount = Math.max(1, section.getInt("amount", 1));
         ItemStack item = new ItemStack(material, amount);
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return item;
 
-        // 🔹 Placeholders del jugador
-        if (ph == null) {
-            ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
-        }
-
+        // ---- NAME ----
+        String name = section.getString("name");
         if (name != null) {
             meta.setDisplayName(MU.getColoredReplacePluginPlaceholdersText(name, ph));
         }
 
+        // ---- LORE ----
+        List<String> lore = section.getStringList("lore");
         if (!lore.isEmpty()) {
-            List<String> finalLore = new ArrayList<>();
+            List<String> finalLore = new ArrayList<>(lore.size());
             for (String line : lore) {
                 finalLore.add(MU.getColoredReplacePluginPlaceholdersText(line, ph));
             }
             meta.setLore(finalLore);
         }
 
+        // ---- ENCHANTS ----
+        List<String> enchants = section.getStringList("enchant");
+        if (!enchants.isEmpty()) {
+
+            for (String raw : enchants) {
+
+                String[] parts = raw.split(":", 2);
+                if (parts.length != 2) continue;
+
+                String enchantName = parts[0].trim();
+                String levelRaw = parts[1].trim();
+
+                int level;
+                try {
+                    level = Integer.parseInt(levelRaw);
+                } catch (NumberFormatException e) {
+                    continue;
+                }
+
+                if (level <= 0) continue;
+
+                Enchantment enchant = resolveEnchantment(enchantName);
+                if (enchant == null) continue;
+
+                meta.addEnchant(enchant, level, true);
+            }
+
+            boolean hideEnchant = section.getBoolean("hide-enchant", false);
+            if (hideEnchant) {
+                meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            }
+        }
+
+        // aplicar meta antes de texturas
         item.setItemMeta(meta);
 
-        ConfigurationSection itemData = languageInventoryManager.getConfigurationSection(route);
-        addHeadTexture(material, itemData, item);
+        // ---- HEAD TEXTURE ----
+        addHeadTexture(material, section, item);
 
         return item;
+    }
+
+    private Enchantment resolveEnchantment(String rawName) {
+
+        if (rawName == null) return null;
+
+        String normalized = rawName.trim().toLowerCase(Locale.ROOT);
+        if (normalized.isEmpty()) return null;
+
+        // ⚡ buscar en cache
+        Enchantment cached = ENCHANT_CACHE.get(normalized);
+        if (cached != null) return cached;
+
+        Enchantment enchant = null;
+
+        // intentar por nombre Bukkit
+        enchant = Enchantment.getByName(normalized.toUpperCase(Locale.ROOT));
+
+        // intentar por key namespaced
+        if (enchant == null) {
+            enchant = Enchantment.getByKey(NamespacedKey.minecraft(normalized));
+        }
+
+        // guardar resultado (aunque sea null evitamos repetir búsqueda)
+        ENCHANT_CACHE.put(normalized, enchant);
+
+        return enchant;
     }
 
     private void setSlottedItems(Player player, Inventory inventory, String path, String slot) {
@@ -180,7 +243,7 @@ public class MainGUI {
 
         if (slotNumber < 0 || slotNumber >= inventory.getSize()) return;
 
-        ItemStack item = createItem(player, route, plugin.buildPlayerPlaceholders(player.getUniqueId()));
+        ItemStack item = createItem(route, plugin.buildPlayerPlaceholders(player.getUniqueId()));
         if (item == null) return;
 
         inventory.setItem(slotNumber, item);

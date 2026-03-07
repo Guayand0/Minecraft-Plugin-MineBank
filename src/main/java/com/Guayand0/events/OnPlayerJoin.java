@@ -53,10 +53,10 @@ public class OnPlayerJoin implements Listener {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
-                        plugin.placeholders.put("%offlineprofitamount%", String.valueOf(offlineProfitAccrued));
-                        sendMessage.send((CommandSender) player, "bank.profit.offline-accumulated", null); // Mensaje
+                        Map<String, String> ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
+                        sendMessage.send((CommandSender) player, "bank.profit.offline-accumulated", ph); // Mensaje
                     }
-                }.runTaskLater(plugin, 10); // Ejecuta la tarea después de 10 ticks (0.5 segundos)
+                }.runTaskLater(plugin, 10); // Ejecuta la tarea despues de 10 ticks (0.5 segundos)
             }
 
             recalculateBankLevel(player);
@@ -96,6 +96,6 @@ public class OnPlayerJoin implements Listener {
                     if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));
                 }
             }
-        }.runTaskLater(plugin, 10); // Ejecuta la tarea después de 10 ticks (0.5 segundos)
+        }.runTaskLater(plugin, 10); // Ejecuta la tarea despues de 10 ticks (0.5 segundos)
     }
 }

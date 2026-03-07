@@ -65,7 +65,7 @@ public class PAPIVariables extends PlaceholderExpansion {
         int bankLevel = playerData.getBank().getLevel();
         int bankBalance = playerData.getBank().getBalance();
         int offlineProfitAccrued = playerData.getBank().getOffline().getAccrued_profit();
-        int offlineProfitTimes = playerData.getBank().getOffline().getAccrued_profit();
+        int offlineProfitTimes = playerData.getBank().getOffline().getProfit_times();
 
         // Cargar datos del banco del jugador
         Map<String, BankData> bankDataMap = dataStorage.loadBankData(bankName);

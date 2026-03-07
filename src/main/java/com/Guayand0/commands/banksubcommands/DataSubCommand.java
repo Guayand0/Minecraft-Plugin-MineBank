@@ -51,12 +51,12 @@ public class DataSubCommand implements CommandExecutor {
                 uuid = PU.getUUIDFromName(playerName);
             }
 
-            Map<String, String> ph = plugin.buildPlayerPlaceholders(uuid);
-
             if (uuid == null) {
+                Map<String, String> ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
                 sendMessage.send(sender, "bank.unregistered-player", ph); // Mensaje
                 return true;
             }
+            Map<String, String> ph = plugin.buildPlayerPlaceholders(uuid);
 
             // Cargar datos del jugador
             PlayerData playerData = dataStorage.loadPlayerData(uuid);
