@@ -5,6 +5,8 @@ import com.Guayand0.commands.minebanksubcommands.BackupSubCommand;
 import com.Guayand0.commands.minebanksubcommands.MigrateSubCommand;
 import com.Guayand0.managers.LanguageManager;
 import com.Guayand0.utils.SendMessage;
+import com.Guayand0.utils.gui.GuiMain;
+import com.Guayand0.utils.gui.GuiUtils;
 import com.Guayand0.zlib.ExceptionManager;
 import com.Guayand0.zlib.GetValues;
 import com.Guayand0.zlib.MessageUtils;
@@ -152,8 +154,8 @@ public class MineBankCommand implements CommandExecutor {
         plugin.registrarPluginPlaceholders();
         languageManager.reloadMessages();
         languageManager.reloadGui(); // Recarga guis
-        plugin.getMainGUI().reloadGuiConfig(); // Recargar archivos de gui
-        plugin.getMainGUI().reloadAllOpenInventories(); // Recargar guis abiertos
+        new GuiMain(plugin).reloadGuiConfig();
+        new GuiUtils(plugin).reloadGUI();
         plugin.updateBankProfitTask();
         plugin.updateRegisterBankPermissionTask();
     }

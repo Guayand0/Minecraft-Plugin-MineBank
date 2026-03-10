@@ -2,7 +2,7 @@ package com.Guayand0.events;
 
 import com.Guayand0.MineBank;
 import com.Guayand0.inventory.BankConversation;
-import com.Guayand0.utils.GuiHolder;
+import com.Guayand0.utils.gui.GuiHolder;
 import com.Guayand0.utils.SendMessage;
 import com.Guayand0.zlib.InventoryUtils;
 import com.Guayand0.zlib.MessageUtils;

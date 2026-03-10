@@ -1,7 +1,7 @@
 package com.Guayand0.events;
 
 import com.Guayand0.MineBank;
-import com.Guayand0.inventory.MainGUI;
+import com.Guayand0.utils.gui.GuiUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -21,6 +21,6 @@ public class OnInventoryClose implements Listener {
         Player player = (Player) event.getPlayer();
 
         // Eliminar el jugador de la lista
-        MainGUI.openedPlayersGUI.remove(player.getUniqueId());
+        GuiUtils.openedPlayersGUI.remove(player.getUniqueId());
     }
 }

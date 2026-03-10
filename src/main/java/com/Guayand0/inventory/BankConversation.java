@@ -2,6 +2,8 @@ package com.Guayand0.inventory;
 
 import com.Guayand0.MineBank;
 import com.Guayand0.utils.SendMessage;
+import com.Guayand0.utils.gui.GuiMain;
+import com.Guayand0.utils.gui.GuiUtils;
 import com.Guayand0.zlib.MessageUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -13,12 +15,12 @@ public class BankConversation {
 
     private final MineBank plugin;
     private final SendMessage sendMessage;
-    private final MainGUI mainGUI;
+    private final GuiMain guiMain;
 
     public BankConversation(MineBank plugin) {
         this.plugin = plugin;
         this.sendMessage = plugin.getSendMessage();
-        this.mainGUI = plugin.getMainGUI();
+        this.guiMain = plugin.getMainGUI();
     }
 
     public void startConversation(Player player, String guiIdOpened, boolean isWithdraw) {
@@ -55,8 +57,10 @@ public class BankConversation {
             }
 
             // Reabrir inventario
-            Bukkit.getScheduler().runTask(plugin, () ->
-                    mainGUI.openInventory(player1, guiIdOpened));
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                GuiUtils GUIU = new GuiUtils(plugin);
+                GUIU.openGUI(player1, guiIdOpened);
+            });
         });
 
         conversation.begin();

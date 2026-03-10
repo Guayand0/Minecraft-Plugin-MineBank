@@ -1,4 +1,4 @@
-package com.Guayand0.utils;
+package com.Guayand0.utils.gui;
 
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;

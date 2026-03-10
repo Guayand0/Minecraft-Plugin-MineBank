@@ -135,7 +135,7 @@ public class SetSubCommand implements CommandExecutor {
             } else if (type.equalsIgnoreCase("level")) {
 
                 amount = resolveAmount(amountString, bankMaxLevel);
-                if (amount < 0) {
+                if (amount <= 0) {
                     sendMessage.send(sender, "bank.not-positive-integer", ph); // Mensaje
                     return true;
                 }

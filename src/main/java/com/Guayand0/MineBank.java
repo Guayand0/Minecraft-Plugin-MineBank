@@ -10,12 +10,12 @@ import com.Guayand0.dbmigration.PendingMigration;
 import com.Guayand0.dbmigration.StorageManager;
 import com.Guayand0.dbmigration.StorageType;
 import com.Guayand0.events.*;
-import com.Guayand0.inventory.MainGUI;
 import com.Guayand0.managers.*;
 import com.Guayand0.tasks.BankPermissionTask;
 import com.Guayand0.tasks.ProfitBankTask;
 import com.Guayand0.tasks.UpdateItemsGUI;
 import com.Guayand0.utils.*;
+import com.Guayand0.utils.gui.GuiMain;
 import com.Guayand0.zlib.*;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
@@ -58,7 +58,7 @@ public class MineBank extends JavaPlugin {
     private BukkitTask bankProfitTask, bankPermissionTask;
     private LanguageManager languageManager;
     private FileManager fileManager;
-    private MainGUI mainGUI;
+    private GuiMain guiMain;
     private SendMessage sendMessage;
     private DataStorage dataStorage;
     private StorageManager storageManager;
@@ -104,7 +104,7 @@ public class MineBank extends JavaPlugin {
 
         languageManager = new LanguageManager(this);
         fileManager = new FileManager(this);
-        mainGUI = new MainGUI(this);
+        guiMain = new GuiMain(this);
         sendMessage = new SendMessage(this);
 
         new Update_4XX_501(this); // 4.x.x a 5.0.1
@@ -492,8 +492,8 @@ public class MineBank extends JavaPlugin {
         return languageManager;
     }
 
-    public MainGUI getMainGUI() {
-        return mainGUI;
+    public GuiMain getMainGUI() {
+        return guiMain;
     }
 
     public SendMessage getSendMessage() {

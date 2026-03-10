@@ -6,12 +6,7 @@ import com.Guayand0.zlib.PlayerUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.lang.reflect.Type;
 import java.sql.*;
 import java.text.SimpleDateFormat;
@@ -23,6 +18,7 @@ public class MySQLStorage implements DataStorage {
     private Connection connection;
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private final PlayerUtils PU = new PlayerUtils();
+    private static final long TOP_CACHE_TTL_MS = 5000L;
 
     private final String host;
     private final int port;
@@ -30,6 +26,13 @@ public class MySQLStorage implements DataStorage {
     private final String user;
     private final String pass;
     private final String params;
+
+    private final Map<UUID, PlayerData> playerDataCache = new HashMap<>();
+    private final Map<String, Map<String, BankData>> bankDataCache = new HashMap<>();
+    private final Map<UUID, String> playerNameCache = new HashMap<>();
+    private List<UUID> cachedPlayerUUIDs;
+    private long topCacheExpiresAt = 0L;
+    private List<List<String>> cachedTopRows = Collections.emptyList();
 
     public MySQLStorage(String host, int port, String database, String user, String pass, String params) {
         this.host = host;
@@ -61,8 +64,8 @@ public class MySQLStorage implements DataStorage {
     public void prepareTables() {
         try (PreparedStatement ps = getConnection().prepareStatement(
                 "CREATE TABLE IF NOT EXISTS bank_data (" +
-                        "priority INT NOT NULL," +
-                        "name VARCHAR(250) NOT NULL," +
+                        "priority INT UNIQUE NOT NULL," +
+                        "name VARCHAR(250) UNIQUE NOT NULL," +
                         "json LONGTEXT NOT NULL," +
                         "PRIMARY KEY(priority, name)" +
                         ");"
@@ -98,19 +101,19 @@ public class MySQLStorage implements DataStorage {
     // ---------------- PLAYER DATA ----------------
     @Override
     public void savePlayerData(UUID uuid, PlayerData data) {
-        try {
-            PreparedStatement ps = getConnection().prepareStatement(
-                    "INSERT INTO player_data (uuid, json) VALUES (?, ?) " +
-                            "ON DUPLICATE KEY UPDATE json = VALUES(json)"
-            );
-
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        try (PreparedStatement ps = getConnection().prepareStatement(
+                "INSERT INTO player_data (uuid, json) VALUES (?, ?) " +
+                        "ON DUPLICATE KEY UPDATE json = VALUES(json)"
+        )) {
             ps.setString(1, uuid.toString());
             ps.setString(2, gson.toJson(data));
-
             ps.executeUpdate();
-            ps.close();
 
+            synchronized (this) {
+                playerDataCache.put(uuid, data);
+                cachedPlayerUUIDs = null;
+                invalidateTopCache();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -118,20 +121,25 @@ public class MySQLStorage implements DataStorage {
 
     @Override
     public PlayerData loadPlayerData(UUID uuid) {
-        try {
-            PreparedStatement ps = getConnection().prepareStatement(
-                    "SELECT json FROM player_data WHERE uuid=?"
-            );
+        synchronized (this) {
+            PlayerData cached = playerDataCache.get(uuid);
+            if (cached != null) return cached;
+        }
+
+        try (PreparedStatement ps = getConnection().prepareStatement(
+                "SELECT json FROM player_data WHERE uuid=?"
+        )) {
             ps.setString(1, uuid.toString());
-            ResultSet rs = ps.executeQuery();
 
-            if (rs.next()) {
-                PlayerData data = gson.fromJson(rs.getString("json"), PlayerData.class);
-                ps.close();
-                return data;
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    PlayerData data = gson.fromJson(rs.getString("json"), PlayerData.class);
+                    synchronized (this) {
+                        playerDataCache.put(uuid, data);
+                    }
+                    return data;
+                }
             }
-
-            ps.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -140,19 +148,27 @@ public class MySQLStorage implements DataStorage {
 
     @Override
     public List<UUID> getAllPlayerUUIDs() {
+        synchronized (this) {
+            if (cachedPlayerUUIDs != null) {
+                return new ArrayList<>(cachedPlayerUUIDs);
+            }
+        }
+
         List<UUID> uuids = new ArrayList<>();
-        try {
-            PreparedStatement ps = getConnection().prepareStatement(
-                    "SELECT uuid FROM player_data"
-            );
-            ResultSet rs = ps.executeQuery();
+        try (PreparedStatement ps = getConnection().prepareStatement(
+                "SELECT uuid FROM player_data"
+        );
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 try {
                     uuids.add(UUID.fromString(rs.getString("uuid")));
                 } catch (Exception ignored) {}
             }
-            ps.close();
+
+            synchronized (this) {
+                cachedPlayerUUIDs = new ArrayList<>(uuids);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -162,10 +178,22 @@ public class MySQLStorage implements DataStorage {
     @Override
     public List<String> getAllPlayerNames() {
         List<String> names = new ArrayList<>();
-        PlayerUtils PU = new PlayerUtils();
 
         for (UUID uuid : getAllPlayerUUIDs()) {
-            String name = PU.getNameFromUUID(uuid);
+            String name;
+            synchronized (this) {
+                name = playerNameCache.get(uuid);
+            }
+
+            if (name == null) {
+                name = PU.getNameFromUUID(uuid);
+                if (name != null) {
+                    synchronized (this) {
+                        playerNameCache.put(uuid, name);
+                    }
+                }
+            }
+
             if (name != null) {
                 names.add(name);
             }
@@ -178,16 +206,23 @@ public class MySQLStorage implements DataStorage {
     // ---------------- PLAYER TOP DATA ----------------
     @Override
     public List<List<String>> getTopPlayerBankData(int amount) {
+        if (amount <= 0) return new ArrayList<>();
+
+        synchronized (this) {
+            long now = System.currentTimeMillis();
+            if (now < topCacheExpiresAt && !cachedTopRows.isEmpty()) {
+                int topSize = Math.min(amount, cachedTopRows.size());
+                return new ArrayList<>(cachedTopRows.subList(0, topSize));
+            }
+        }
 
         List<List<String>> result = new ArrayList<>();
         Map<UUID, PlayerData> players = new HashMap<>();
 
-        try {
-            PreparedStatement ps = getConnection().prepareStatement(
-                    "SELECT uuid, json FROM player_data"
-            );
-
-            ResultSet rs = ps.executeQuery();
+        try (PreparedStatement ps = getConnection().prepareStatement(
+                "SELECT uuid, json FROM player_data"
+        );
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 UUID uuid = UUID.fromString(rs.getString("uuid"));
@@ -197,7 +232,6 @@ public class MySQLStorage implements DataStorage {
                     players.put(uuid, data);
                 }
             }
-            ps.close();
 
             List<Map.Entry<UUID, PlayerData>> sorted = new ArrayList<>(players.entrySet());
 
@@ -211,7 +245,20 @@ public class MySQLStorage implements DataStorage {
                 if (pos >= amount) break;
 
                 UUID uuid = entry.getKey();
-                String playerName = PU.getNameFromUUID(uuid);
+                String playerName;
+                synchronized (this) {
+                    playerName = playerNameCache.get(uuid);
+                }
+
+                if (playerName == null) {
+                    playerName = PU.getNameFromUUID(uuid);
+                    if (playerName != null) {
+                        synchronized (this) {
+                            playerNameCache.put(uuid, playerName);
+                        }
+                    }
+                }
+
                 PlayerData data = entry.getValue();
 
                 List<String> row = new ArrayList<>();
@@ -222,6 +269,11 @@ public class MySQLStorage implements DataStorage {
 
                 result.add(row);
                 pos++;
+            }
+
+            synchronized (this) {
+                cachedTopRows = new ArrayList<>(result);
+                topCacheExpiresAt = System.currentTimeMillis() + TOP_CACHE_TTL_MS;
             }
 
         } catch (Exception e) {
@@ -243,18 +295,21 @@ public class MySQLStorage implements DataStorage {
             Map<String, Map<String, BankData.Level>> wrapper = new HashMap<>();
             wrapper.put("levels", data.getLevels());
 
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            PreparedStatement ps = getConnection().prepareStatement(
+            try (PreparedStatement ps = getConnection().prepareStatement(
                     "INSERT INTO bank_data (priority, name, json) VALUES (?, ?, ?) " +
                             "ON DUPLICATE KEY UPDATE json = VALUES(json)"
-            );
+            )) {
 
-            ps.setInt(1, priority); // prioridad según banks.yml
-            ps.setString(2, bankName);
-            ps.setString(3, gson.toJson(wrapper));
+                ps.setInt(1, priority); // prioridad segun banks.yml
+                ps.setString(2, bankName);
+                ps.setString(3, gson.toJson(wrapper));
 
-            ps.executeUpdate();
-            ps.close();
+                ps.executeUpdate();
+            }
+
+            synchronized (this) {
+                bankDataCache.remove(bankName);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -263,24 +318,35 @@ public class MySQLStorage implements DataStorage {
 
     @Override
     public Map<String, BankData> loadBankData(String bankName) {
-        try {
-            PreparedStatement ps = getConnection().prepareStatement(
-                    "SELECT json FROM bank_data WHERE name=? ORDER BY priority ASC LIMIT 1"
-            );
-            ps.setString(1, bankName);
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                String json = rs.getString("json");
-                Type type = new TypeToken<Map<String, Map<String, BankData.Level>>>(){}.getType();
-                Map<String, Map<String, BankData.Level>> raw = gson.fromJson(json, type);
-
-                BankData bankData = new BankData(bankName, raw.get("levels"));
-                Map<String, BankData> result = new HashMap<>();
-                result.put(bankName, bankData);
-                return result;
+        synchronized (this) {
+            Map<String, BankData> cached = bankDataCache.get(bankName);
+            if (cached != null) {
+                return new HashMap<>(cached);
             }
-            ps.close();
+        }
+
+        try (PreparedStatement ps = getConnection().prepareStatement(
+                "SELECT json FROM bank_data WHERE name=? ORDER BY priority ASC LIMIT 1"
+        )) {
+            ps.setString(1, bankName);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String json = rs.getString("json");
+                    Type type = new TypeToken<Map<String, Map<String, BankData.Level>>>(){}.getType();
+                    Map<String, Map<String, BankData.Level>> raw = gson.fromJson(json, type);
+
+                    BankData bankData = new BankData(bankName, raw.get("levels"));
+                    Map<String, BankData> result = new HashMap<>();
+                    result.put(bankName, bankData);
+
+                    synchronized (this) {
+                        bankDataCache.put(bankName, new HashMap<>(result));
+                    }
+
+                    return result;
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -291,12 +357,10 @@ public class MySQLStorage implements DataStorage {
     public List<String> getAllBankNames() {
         List<String> banks = new ArrayList<>();
 
-        try {
-            // Seleccionamos todos los bancos ordenados por priority ascendente
-            PreparedStatement ps = getConnection().prepareStatement(
-                    "SELECT name FROM bank_data ORDER BY priority ASC"
-            );
-            ResultSet rs = ps.executeQuery();
+        try (PreparedStatement ps = getConnection().prepareStatement(
+                "SELECT name FROM bank_data ORDER BY priority ASC"
+        );
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 String bankName = rs.getString("name");
@@ -305,7 +369,6 @@ public class MySQLStorage implements DataStorage {
                 }
             }
 
-            ps.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -321,14 +384,14 @@ public class MySQLStorage implements DataStorage {
             Map<String, Integer> data = new HashMap<>();
             data.put("accrued_interest", value);
 
-            PreparedStatement ps = getConnection().prepareStatement(
+            try (PreparedStatement ps = getConnection().prepareStatement(
                     "INSERT INTO interests_data (type, json) VALUES (?, ?) " +
                             "ON DUPLICATE KEY UPDATE json = VALUES(json)"
-            );
-            ps.setString(1, "global");
-            ps.setString(2, gson.toJson(data));
-            ps.executeUpdate();
-            ps.close();
+            )) {
+                ps.setString(1, "global");
+                ps.setString(2, gson.toJson(data));
+                ps.executeUpdate();
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -337,26 +400,23 @@ public class MySQLStorage implements DataStorage {
 
     @Override
     public int loadAccruedInterestData() {
-        try {
-            PreparedStatement ps = getConnection().prepareStatement(
-                    "SELECT json FROM interests_data WHERE type=?"
-            );
+        try (PreparedStatement ps = getConnection().prepareStatement(
+                "SELECT json FROM interests_data WHERE type=?"
+        )) {
             ps.setString(1, "global");
-            ResultSet rs = ps.executeQuery();
 
-            if (rs.next()) {
-                Map<String, Integer> data = gson.fromJson(rs.getString("json"), new TypeToken<Map<String, Integer>>(){}.getType());
-                ps.close();
-                return data.getOrDefault("accrued_interest", 0);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Map<String, Integer> data = gson.fromJson(rs.getString("json"), new TypeToken<Map<String, Integer>>(){}.getType());
+                    return data.getOrDefault("accrued_interest", 0);
+                }
             }
-            ps.close();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
         return 0;
     }
-
 
     // ---------------- BEFORE-MIGRATION DATA ----------------
     @Override
@@ -369,6 +429,15 @@ public class MySQLStorage implements DataStorage {
                 st.executeUpdate("DELETE FROM bank_data");
                 st.executeUpdate("DELETE FROM interests_data");
             }
+
+            synchronized (this) {
+                playerDataCache.clear();
+                bankDataCache.clear();
+                playerNameCache.clear();
+                cachedPlayerUUIDs = null;
+                invalidateTopCache();
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -380,7 +449,7 @@ public class MySQLStorage implements DataStorage {
         String date = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date());
         Connection conn = getConnection();
 
-        // Nombres dinámicos de las tablas de backup
+        // Nombres dinamicos de las tablas de backup
         String playerBackupTable = "player_data_backup_" + date;
         String bankBackupTable = "bank_data_backup_" + date;
         String interestsBackupTable = "interests_data_backup_" + date;
@@ -416,5 +485,10 @@ public class MySQLStorage implements DataStorage {
                         "SELECT type, json FROM interests_data " +
                         "ON DUPLICATE KEY UPDATE json = VALUES(json);"
         );
+    }
+
+    private synchronized void invalidateTopCache() {
+        topCacheExpiresAt = 0L;
+        cachedTopRows = Collections.emptyList();
     }
 }

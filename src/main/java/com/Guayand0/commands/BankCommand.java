@@ -2,9 +2,10 @@ package com.Guayand0.commands;
 
 import com.Guayand0.MineBank;
 import com.Guayand0.commands.banksubcommands.*;
-import com.Guayand0.inventory.MainGUI;
 import com.Guayand0.managers.*;
 import com.Guayand0.utils.SendMessage;
+import com.Guayand0.utils.gui.GuiMain;
+import com.Guayand0.utils.gui.GuiUtils;
 import com.Guayand0.zlib.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -19,7 +20,7 @@ public class BankCommand implements CommandExecutor {
     private final MineBank plugin;
     private final LanguageManager languageManager;
     private final SendMessage sendMessage;
-    private final MainGUI mainGUI;
+    private final GuiMain guiMain;
 
     private final GetValues GV = new GetValues();
     private final MessageUtils MU = new MessageUtils();
@@ -39,7 +40,7 @@ public class BankCommand implements CommandExecutor {
         this.plugin = plugin;
         this.languageManager = plugin.getLanguageManager();
         this.sendMessage = plugin.getSendMessage();
-        this.mainGUI = plugin.getMainGUI();
+        this.guiMain = plugin.getMainGUI();
 
         this.subCommandHelp = new HelpSubCommand(plugin);
         this.subCommandData = new DataSubCommand(plugin);
@@ -116,7 +117,8 @@ public class BankCommand implements CommandExecutor {
                 // Comprobar si es version reciente
                 boolean isRecentVersion = version.contains("1.13") || version.contains("1.14") || version.contains("1.15") || version.contains("1.16") || version.contains("1.17") || version.contains("1.18") || version.contains("1.19") || version.contains("1.20") || version.contains("1.21");
                 if (isRecentVersion) {
-                    mainGUI.openInventory(player, "main"); // Abrir el inventario si tiene version reciente
+                    GuiUtils GUIU = new GuiUtils(plugin);
+                    GUIU.openGUI(player, "main"); // Abrir el inventario si tiene version reciente
                 } else {
                     sendMessage.send(sender, "bank.general-usage", ph); // Mensaje
                 }

@@ -1,8 +1,9 @@
 package com.Guayand0.commands.banksubcommands;
 
 import com.Guayand0.MineBank;
-import com.Guayand0.inventory.MainGUI;
 import com.Guayand0.utils.SendMessage;
+import com.Guayand0.utils.gui.GuiMain;
+import com.Guayand0.utils.gui.GuiUtils;
 import com.Guayand0.zlib.ExceptionManager;
 import com.Guayand0.zlib.GetValues;
 import com.Guayand0.zlib.MessageUtils;
@@ -17,7 +18,7 @@ import java.util.Map;
 public class GuiSubCommand implements CommandExecutor {
 
     private final MineBank plugin;
-    private final MainGUI mainGUI;
+    private final GuiMain guiMain;
     private final SendMessage sendMessage;
 
     private final GetValues GV = new GetValues();
@@ -26,7 +27,7 @@ public class GuiSubCommand implements CommandExecutor {
 
     public GuiSubCommand(MineBank plugin) {
         this.plugin = plugin;
-        this.mainGUI = plugin.getMainGUI();
+        this.guiMain = plugin.getMainGUI();
         this.sendMessage = plugin.getSendMessage();
     }
 
@@ -44,12 +45,13 @@ public class GuiSubCommand implements CommandExecutor {
 
             String guiName = args[1].toLowerCase();
 
-            if (!mainGUI.guiExists(guiName)) {
+            if (!guiMain.guiExists(guiName)) {
                 sendMessage.send(sender, "bank.gui.not-found", ph); // Mensaje
                 return true;
             }
 
-            mainGUI.openInventory(player, guiName);
+            GuiUtils GUIU = new GuiUtils(plugin);
+            GUIU.openGUI(player, guiName);
         } catch (Exception e) {
             e.printStackTrace();
             if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));
