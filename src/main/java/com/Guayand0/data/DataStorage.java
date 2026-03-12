@@ -2,6 +2,7 @@ package com.Guayand0.data;
 
 import com.Guayand0.data.player.PlayerData;
 import com.Guayand0.data.bank.BankData;
+import com.Guayand0.data.transactions.TransactionData;
 
 import java.io.File;
 import java.util.List;
@@ -28,6 +29,10 @@ public interface DataStorage {
     // ---------------- ACCRUED INTERESTS ----------------
     void saveAccruedInterestData(int value);
     int loadAccruedInterestData();
+
+    // ---------------- TRANSACTIONS ----------------
+    void saveTransaction(TransactionData transaction);
+    List<TransactionData> getAllTransactions();
 
     // ---------------- BEFORE-MIGRATION DATA ----------------
     void clearAllData();

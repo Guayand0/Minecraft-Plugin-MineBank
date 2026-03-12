@@ -79,7 +79,7 @@ public class TabComplete implements TabCompleter {
         } else if (command.getName().equalsIgnoreCase("bank")) {
 
             if (args.length == 1) {
-                completions.addAll(Arrays.asList("help", "data", "bal", "balance", "level", "add", "deposit", "take", "withdraw", "levelup", "top", "baltop", "balancetop", "receive"));
+                completions.addAll(Arrays.asList("help", "data", "bal", "balance", "level", "add", "deposit", "take", "withdraw", "levelup", "top", "baltop", "balancetop", "receive", "transactions", "history"));
 
                 if (hasAdminPermission) {
                     completions.add("set");
@@ -137,6 +137,14 @@ public class TabComplete implements TabCompleter {
                             playerCompleter(offlinePlayersTabCompleter, completions);
                         }
                         break;
+
+                    case "history":
+                    case "transactions":
+                        completions.addAll(Arrays.asList("1", "2", "3"));
+                        if (hasAdminPermission) {
+                            completions.add("player");
+                        }
+                        break;
                 }
 
             } else if (args.length == 3) {
@@ -163,6 +171,13 @@ public class TabComplete implements TabCompleter {
                     case "set":
                         if (hasAdminPermission) {
                             completions.addAll(Arrays.asList("balance", "level"));
+                        }
+                        break;
+
+                    case "history":
+                    case "transactions":
+                        if (hasAdminPermission && args[1].equalsIgnoreCase("player")) {
+                            playerCompleter(offlinePlayersTabCompleter, completions);
                         }
                         break;
                 }

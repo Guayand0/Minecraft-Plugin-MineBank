@@ -3,6 +3,7 @@ package com.Guayand0.commands;
 import com.Guayand0.MineBank;
 import com.Guayand0.commands.minebanksubcommands.BackupSubCommand;
 import com.Guayand0.commands.minebanksubcommands.MigrateSubCommand;
+import com.Guayand0.managers.ConfigMessageKeyUpdater;
 import com.Guayand0.managers.LanguageManager;
 import com.Guayand0.utils.SendMessage;
 import com.Guayand0.utils.gui.GuiMain;
@@ -151,9 +152,13 @@ public class MineBankCommand implements CommandExecutor {
 
     private void reload() {
         plugin.reloadConfig();
+        ConfigMessageKeyUpdater keyUpdater = new ConfigMessageKeyUpdater(plugin);
+        keyUpdater.syncConfig();
+        plugin.reloadConfig();
         plugin.registrarPluginPlaceholders();
+        keyUpdater.syncMessages();
         languageManager.reloadMessages();
-        languageManager.reloadGui(); // Recarga guis
+        languageManager.reloadGui();
         new GuiMain(plugin).reloadGuiConfig();
         new GuiUtils(plugin).reloadGUI();
         plugin.updateBankProfitTask();

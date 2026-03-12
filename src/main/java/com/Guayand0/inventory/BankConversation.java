@@ -2,7 +2,6 @@ package com.Guayand0.inventory;
 
 import com.Guayand0.MineBank;
 import com.Guayand0.utils.SendMessage;
-import com.Guayand0.utils.gui.GuiMain;
 import com.Guayand0.utils.gui.GuiUtils;
 import com.Guayand0.zlib.MessageUtils;
 import org.bukkit.Bukkit;
@@ -15,12 +14,10 @@ public class BankConversation {
 
     private final MineBank plugin;
     private final SendMessage sendMessage;
-    private final GuiMain guiMain;
 
     public BankConversation(MineBank plugin) {
         this.plugin = plugin;
         this.sendMessage = plugin.getSendMessage();
-        this.guiMain = plugin.getMainGUI();
     }
 
     public void startConversation(Player player, String guiIdOpened, boolean isWithdraw) {
@@ -48,10 +45,10 @@ public class BankConversation {
                         String command = isWithdraw ? "bank take " + input : "bank add " + input;
                         player1.performCommand(command);
                     } else if (input.equalsIgnoreCase("exit")) {
-                        sendMessage.send((CommandSender) player, "bank.gui.transaction-canceled", null); // Mensaje
+                        sendMessage.send(player, "bank.gui.transaction-canceled", null); // Mensaje
                         return;
                     } else {
-                        sendMessage.send((CommandSender) player, "bank.gui.invalid-amount", null); // Mensaje
+                        sendMessage.send(player, "bank.gui.invalid-amount", null); // Mensaje
                     }
                 }
             }

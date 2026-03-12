@@ -48,7 +48,8 @@ public class GuiItemPosition {
 
     public ItemStack createItem(String route, Map<String,String> ph) {
 
-        FileConfiguration languageInventoryManager = IU.getGuiConfig(plugin, "gui/" + IU.getGuiLangFile(plugin));
+        String guiId = extractGuiId(route);
+        FileConfiguration languageInventoryManager = IU.getGuiConfig(plugin, guiId);
         ConfigurationSection section = languageInventoryManager.getConfigurationSection(route);
         if (section == null) return null;
 
@@ -87,6 +88,15 @@ public class GuiItemPosition {
         } catch (NumberFormatException e) {
             return null;
         }
+    }
+
+    private String extractGuiId(String route) {
+        if (route == null) return "main";
+        String[] parts = route.split("\\.");
+        if (parts.length >= 2) {
+            return parts[1];
+        }
+        return "main";
     }
 
     private void fillEmptySlots(Inventory inventory, ItemStack item) {

@@ -2,23 +2,24 @@ package com.Guayand0.data;
 
 import com.Guayand0.data.bank.BankData;
 import com.Guayand0.data.player.PlayerData;
+import com.Guayand0.data.transactions.TransactionData;
+import com.Guayand0.data.transactions.TransactionStorage;
 import com.Guayand0.zlib.PlayerUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.*;
 import java.lang.reflect.Type;
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Date;
 
-public class JsonStorage implements DataStorage {
+public class JsonStorage implements DataStorage, TransactionStorage {
 
     private final File folder;
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -272,6 +273,134 @@ public class JsonStorage implements DataStorage {
         return 0;
     }
 
+    // ---------------- TRANSACTIONS ----------------
+    @Override
+    public void saveTransaction(TransactionData transaction) {
+        try {
+            initialize();
+            save(transaction);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public List<TransactionData> getAllTransactions() {
+        List<TransactionData> transactions = new ArrayList<>();
+        File sqliteFile = new File(folder, "data/transactions.db");
+        if (!sqliteFile.exists()) {
+            return transactions;
+        }
+
+        try (Connection sqlite = getTransactionConnection()) {
+            initialize();
+            try (PreparedStatement select = sqlite.prepareStatement(
+                    "SELECT id, player_uuid, type, amount, description, context, timestamp FROM transactions"
+            );
+                 ResultSet rs = select.executeQuery()) {
+                while (rs.next()) {
+                    transactions.add(new TransactionData(
+                            rs.getString("id"),
+                            rs.getString("player_uuid"),
+                            rs.getString("type"),
+                            rs.getInt("amount"),
+                            rs.getString("description"),
+                            rs.getString("context"),
+                            rs.getLong("timestamp")
+                    ));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return transactions;
+    }
+
+    @Override
+    public void initialize() throws Exception {
+        try (Connection connection = getTransactionConnection();
+             PreparedStatement ps = connection.prepareStatement(
+                     "CREATE TABLE IF NOT EXISTS transactions (" +
+                             "id TEXT PRIMARY KEY," +
+                             "player_uuid TEXT NOT NULL," +
+                             "type TEXT NOT NULL," +
+                             "amount INTEGER NOT NULL," +
+                             "description TEXT NOT NULL," +
+                             "context TEXT NOT NULL," +
+                             "timestamp INTEGER NOT NULL" +
+                             ")"
+             )) {
+            ps.executeUpdate();
+        }
+
+        try (Connection connection = getTransactionConnection();
+             PreparedStatement ps = connection.prepareStatement(
+                     "CREATE INDEX IF NOT EXISTS idx_transactions_player_ts ON transactions (player_uuid, timestamp DESC)"
+             )) {
+            ps.executeUpdate();
+        }
+    }
+
+    @Override
+    public void save(TransactionData transaction) throws Exception {
+        try (Connection connection = getTransactionConnection();
+             PreparedStatement ps = connection.prepareStatement(
+                     "INSERT OR IGNORE INTO transactions (id,player_uuid,type,amount,description,context,timestamp) VALUES(?,?,?,?,?,?,?)"
+             )) {
+            ps.setString(1, transaction.getId());
+            ps.setString(2, transaction.getPlayerUuid());
+            ps.setString(3, transaction.getType());
+            ps.setInt(4, transaction.getAmount());
+            ps.setString(5, transaction.getDescription());
+            ps.setString(6, transaction.getContext());
+            ps.setLong(7, transaction.getTimestamp());
+            ps.executeUpdate();
+        }
+    }
+
+    @Override
+    public List<TransactionData> findByPlayer(String playerUuid, int limit, int offset) throws Exception {
+        List<TransactionData> transactions = new ArrayList<>();
+
+        try (Connection connection = getTransactionConnection();
+             PreparedStatement ps = connection.prepareStatement(
+                     "SELECT id, player_uuid, type, amount, description, context, timestamp " +
+                             "FROM transactions " +
+                             "WHERE player_uuid = ? " +
+                             "ORDER BY timestamp DESC " +
+                             "LIMIT ? OFFSET ?"
+             )) {
+            ps.setString(1, playerUuid);
+            ps.setInt(2, limit);
+            ps.setInt(3, offset);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    transactions.add(new TransactionData(
+                            rs.getString("id"),
+                            rs.getString("player_uuid"),
+                            rs.getString("type"),
+                            rs.getInt("amount"),
+                            rs.getString("description"),
+                            rs.getString("context"),
+                            rs.getLong("timestamp")
+                    ));
+                }
+            }
+        }
+
+        return transactions;
+    }
+
+    private Connection getTransactionConnection() throws Exception {
+        File sqliteFile = new File(folder, "data/transactions.db");
+        File parent = sqliteFile.getParentFile();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
+        return DriverManager.getConnection("jdbc:sqlite:" + sqliteFile.getAbsolutePath());
+    }
 
     // ---------------- BEFORE-MIGRATION DATA ----------------
     @Override
@@ -305,6 +434,12 @@ public class JsonStorage implements DataStorage {
                 interestsFile.delete();
             }
 
+            // Borrar transacciones
+            File transactionsFile = new File(folder, "data/transactions.db");
+            if (transactionsFile.exists()) {
+                transactionsFile.delete();
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -314,17 +449,29 @@ public class JsonStorage implements DataStorage {
     // ---------------- BACKUP ----------------
     @Override
     public void backup() throws Exception {
-        // Carpeta base del backup
+
+        // Fecha para el nombre del backup
         String date = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
-        File backupRoot = new File(folder.getParentFile(), "MineBank_backup_" + date);
+
+        // Carpeta backups/
+        File backupsFolder = new File(folder, "backups");
+        if (!backupsFolder.exists()) backupsFolder.mkdirs();
+
+        // Carpeta del backup actual
+        File backupRoot = new File(backupsFolder, date);
         backupRoot.mkdirs();
 
-        // Carpeta original de datos
-        File dataFolder = new File(folder, "data");
-        if (!dataFolder.exists() || !dataFolder.isDirectory()) return;
+        // Copiar el contenido de MineBank
+        File[] files = folder.listFiles();
+        if (files == null) return;
 
-        // Copiar lo que haya dentro de data/ al backup
-        copyFileOrDir(dataFolder, new File(backupRoot, "data"));
+        for (File file : files) {
+
+            // No copiar la carpeta backups para evitar copiar backups dentro de backups
+            if (file.getName().equals("backups")) continue;
+
+            copyFileOrDir(file, new File(backupRoot, file.getName()));
+        }
     }
 
     /**

@@ -6,10 +6,13 @@ import com.Guayand0.converters.*;
 import com.Guayand0.data.*;
 import com.Guayand0.data.bank.BankData;
 import com.Guayand0.data.player.PlayerData;
+import com.Guayand0.data.transactions.TransactionService;
+import com.Guayand0.data.transactions.TransactionStorage;
 import com.Guayand0.dbmigration.PendingMigration;
 import com.Guayand0.dbmigration.StorageManager;
 import com.Guayand0.dbmigration.StorageType;
 import com.Guayand0.events.*;
+import com.Guayand0.guis.TransactionGUI;
 import com.Guayand0.managers.*;
 import com.Guayand0.tasks.BankPermissionTask;
 import com.Guayand0.tasks.ProfitBankTask;
@@ -62,6 +65,8 @@ public class MineBank extends JavaPlugin {
     private SendMessage sendMessage;
     private DataStorage dataStorage;
     private StorageManager storageManager;
+    private TransactionService transactionService;
+    private TransactionGUI transactionGUI;
 
     private Economy economy;
 
@@ -102,7 +107,15 @@ public class MineBank extends JavaPlugin {
 
     public void startServer() {
 
+        saveDefaultConfig();
+        ConfigMessageKeyUpdater keyUpdater = new ConfigMessageKeyUpdater(this);
+        keyUpdater.syncConfig();
+        reloadConfig();
+
         languageManager = new LanguageManager(this);
+        if (keyUpdater.syncMessages()) {
+            languageManager.reloadMessages();
+        }
         fileManager = new FileManager(this);
         guiMain = new GuiMain(this);
         sendMessage = new SendMessage(this);
@@ -110,9 +123,10 @@ public class MineBank extends JavaPlugin {
         new Update_4XX_501(this); // 4.x.x a 5.0.1
         new Update_501_511(this); // 5.0.1 a 5.1.1
         new Update_51X_521(this); // 5.1.x a 5.2.1
+        new Update_5XX_523(this); // 5.x.x a 5.2.3
 
         if (!setupEconomy()) {
-            Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + " &cVault or an economy manager plugin not found!"));
+            Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + " &cVault/Economy plugin not found!"));
             getServer().getPluginManager().disablePlugin(this);
             enablePlugin = false;
             return;
@@ -133,9 +147,9 @@ public class MineBank extends JavaPlugin {
             }, 40L); // espera 2 segundos (40 ticks)
         }
 
-        saveDefaultConfig();
         setupStorages();
         getDataStorageType();
+        setupTransactionStorage();
         getLastVersion();
 
         registrarPluginPlaceholders();
@@ -349,10 +363,10 @@ public class MineBank extends JavaPlugin {
                 }
             }
         } catch (Exception e) {
-            // Fallback a JSON en cualquier fallo
-            Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + " &cFailed to initialize storage '" + storageType + "'. Using JSON by default!"));
             e.printStackTrace();
             if (GV.getBoolean(this, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + EM.saveInLog(e, this)));
+            // Fallback a JSON en cualquier fallo
+            Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + " &cFailed to initialize storage '" + storageType + "'. Using JSON by default!"));
             dataStorage = storageManager.get(StorageType.JSON);
         }
 
@@ -360,6 +374,20 @@ public class MineBank extends JavaPlugin {
         if (dataStorage == null) {
             dataStorage = storageManager.get(StorageType.JSON);
         }
+    }
+
+    private void setupTransactionStorage() {
+        TransactionStorage transactionStorage;
+
+        if (dataStorage instanceof TransactionStorage) {
+            transactionStorage = (TransactionStorage) dataStorage;
+        } else {
+            transactionStorage = new JsonStorage(getDataFolder());
+        }
+
+        transactionService = new TransactionService(this, transactionStorage);
+        transactionService.initialize();
+        transactionGUI = new TransactionGUI(this, transactionService);
     }
 
     public void scheduleBankProfitTask() {
@@ -506,6 +534,14 @@ public class MineBank extends JavaPlugin {
 
     public StorageManager getStorageManager() {
         return storageManager;
+    }
+
+    public TransactionService getTransactionService() {
+        return transactionService;
+    }
+
+    public TransactionGUI getTransactionGUI() {
+        return transactionGUI;
     }
 
     public Map<UUID, PendingMigration> getPendingMigrations() {

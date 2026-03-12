@@ -58,6 +58,7 @@ messages:
     - '&e/bank top <amount> &7- Muestra una cantidad de jugadores del top con más dinero'
     - '&e/bank top player <player> &7- Muestra la posicion del top y los datos del banco del jugador'
     - '&e/bank receive profit &7- Recibe los beneficios acumulados por estar desconectado'
+    - '&e/bank transactions [pagina] &7- Abre el historial de transacciones con paginacion'
     - '&e/bank gui <GUI> &7- Abre el inventario del plugin seleccionado'
 
   reload: '%plugin% &aEl plugin ha sido recargado'
@@ -147,9 +148,10 @@ bank:
     - '&e/bank top <amount> &7- Muestra una cantidad de jugadores del top con más dinero'
     - '&e/bank top player <player> &7- Muestra la posicion del top y los datos del banco del jugador'
     - '&e/bank receive profit &7- Recibe los beneficios acumulados por estar desconectado'
+    - '&e/bank transactions [pagina] &7- Abre el historial de transacciones con paginación'
     - '&e/bank gui <GUI> &7- Abre el inventario seleccionado del plugin'
 
-  general-usage: '%chatPlugin% &eUso: /bank {help/data/add/take/levelup/top/receive}'
+  general-usage: '%chatPlugin% &eUso: /bank {help/data/add/take/levelup/top/receive/transactions}'
   data-usage: '%chatPlugin% &eUso: /bank {data/bal/balance/level} [jugador]'
   add-usage: '%chatPlugin% &eUso: /bank {add/deposit} {<cantidad>/half-balance/all/mid-max}'
   take-usage: '%chatPlugin% &eUso: /bank {take/withdraw} {<cantidad>/half-balance/all/mid-max}'
@@ -157,6 +159,7 @@ bank:
   baltop-usage: '%chatPlugin% &eUso: /bank {top/baltop/balancetop} [<cantidad>/player] [<jugador>]'
   set-usage: '%chatPlugin% &eUso: /bank set <jugador> {balance/level} {<cantidad>/mid-max/max}'
   receive-usage: '%chatPlugin% &eUso: /bank receive profit'
+  transaction-usage: '%chatPlugin% &eUso: /bank transactions [pagina]'
   gui-usage: '%chatPlugin% &eUso: /bank gui <GUI>'
 
   unregistered-player: '%chatPlugin% &cEl jugador no esta registrado'

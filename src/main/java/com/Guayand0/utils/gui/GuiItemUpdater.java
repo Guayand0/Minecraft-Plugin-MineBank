@@ -25,7 +25,7 @@ public class GuiItemUpdater {
     }
 
     public ConfigurationSection getGuiSlots(String guiId) {
-        FileConfiguration languageInventoryManager = IU.getGuiConfig(plugin, "gui/" + IU.getGuiLangFile(plugin));
+        FileConfiguration languageInventoryManager = IU.getGuiConfig(plugin, guiId);
         return languageInventoryManager.getConfigurationSection("gui." + guiId + ".position-slot");
     }
 

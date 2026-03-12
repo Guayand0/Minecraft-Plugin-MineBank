@@ -8,31 +8,40 @@ import java.io.File;
 
 public class InventoryUtils {
 
-    /**
-     * Gets the selected GUI language file name from the plugin config.
-     *
-     * @param plugin The plugin instance.
-     * @return The file name of the selected language.
-     */
     public String getGuiLangFile(Plugin plugin) {
-        String selectedLanguage = plugin.getConfig().getString("config.gui-language", "en");
-        return selectedLanguage + ".yml";
+        return plugin.getConfig().getString("config.gui-language", "en");
     }
 
     /**
-     * Loads a GUI configuration file located within the plugin's data folder.
-     * If the file doesn't exist, it will be created from the plugin's resources.
-     *
-     * @param plugin The plugin instance.
-     * @param filePath The relative path to the GUI config file.
-     * @return The loaded FileConfiguration object.
+     * Loads a GUI configuration file by gui id and selected language.
+     * Format: gui/<lang>/<guiId>.yml
      */
-    public FileConfiguration getGuiConfig(Plugin plugin, String filePath) {
+    public FileConfiguration getGuiConfig(Plugin plugin, String guiId) {
+        String selectedLanguage = getGuiLangFile(plugin);
+        String filePath = "gui/" + selectedLanguage + "/" + guiId + ".yml";
         File configFile = new File(plugin.getDataFolder(), filePath);
+
         if (!configFile.exists()) {
             configFile.getParentFile().mkdirs();
-            plugin.saveResource(filePath, false);
+            try {
+                plugin.saveResource(filePath, false);
+            } catch (IllegalArgumentException ignored) {
+                // If language resource does not exist, use english resource for this gui.
+            }
         }
+
+        if (!configFile.exists()) {
+            String fallbackPath = "gui/en/" + guiId + ".yml";
+            File fallbackConfig = new File(plugin.getDataFolder(), fallbackPath);
+            if (!fallbackConfig.exists()) {
+                fallbackConfig.getParentFile().mkdirs();
+                try {
+                    plugin.saveResource(fallbackPath, false);
+                } catch (IllegalArgumentException ignored) {}
+            }
+            return YamlConfiguration.loadConfiguration(fallbackConfig);
+        }
+
         return YamlConfiguration.loadConfiguration(configFile);
     }
 }

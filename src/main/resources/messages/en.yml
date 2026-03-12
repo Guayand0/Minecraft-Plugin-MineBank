@@ -58,6 +58,7 @@ messages:
     - '&e/bank top <amount> &7- Show top amount players with the most money'
     - '&e/bank top player <player> &7- Show top position and bank data of player'
     - '&e/bank receive profit &7- Receive the offline accumulated benefits'
+    - '&e/bank transactions [page] &7- Open your paged transaction history'
     - '&e/bank gui <GUI> &7- Open a selected GUI'
 
   reload: '%plugin% &aThe plugin has been reloaded'
@@ -147,9 +148,10 @@ bank:
     - '&e/bank top <amount> &7- Show top amount players with the most money'
     - '&e/bank top player <player> &7- Show top position and bank data of player'
     - '&e/bank receive profit &7- Receive the offline accumulated benefits'
+    - '&e/bank transactions [page] &7- Open your paged transaction history'
     - '&e/bank gui <GUI> &7- Open a selected gui'
 
-  general-usage: '%chatPlugin% &eUsage: /bank {help/data/add/take/levelup/top/receive}'
+  general-usage: '%chatPlugin% &eUsage: /bank {help/data/add/take/levelup/top/receive/transactions}'
   data-usage: '%chatPlugin% &eUsage: /bank {data/bal/balance/level} [player]'
   add-usage: '%chatPlugin% &eUsage: /bank {add/deposit} {<amount>/half-balance/all/mid-max}'
   take-usage: '%chatPlugin% &eUsage: /bank {take/withdraw} {<amount>/half-balance/all/mid-max}'
@@ -157,6 +159,7 @@ bank:
   baltop-usage: '%chatPlugin% &eUsage: /bank {top/baltop/balancetop} [<amount>/player] [<player>]'
   set-usage: '%chatPlugin% &eUsage: /bank set <player> {balance/level} {<amount>/mid-max/max}'
   receive-usage: '%chatPlugin% &eUsage: /bank receive profit'
+  transaction-usage: '%chatPlugin% &eUsage: /bank transactions [page]'
   gui-usage: '%chatPlugin% &eUsage: /bank gui <GUI>'
 
   unregistered-player: '%chatPlugin% &cThe player is not registered'

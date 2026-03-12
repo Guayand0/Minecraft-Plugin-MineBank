@@ -15,9 +15,9 @@ public class OnInventoryClose implements Listener {
         this.plugin = plugin;
     }
 
-    // Cerrarel inventario
+    // Cerrar el inventario
     @EventHandler
-    public void onInventoryClose(InventoryCloseEvent event) {
+    public void onClose(InventoryCloseEvent event) {
         Player player = (Player) event.getPlayer();
 
         // Eliminar el jugador de la lista

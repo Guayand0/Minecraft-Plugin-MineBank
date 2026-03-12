@@ -1,6 +1,7 @@
 package com.Guayand0.events;
 
 import com.Guayand0.MineBank;
+import com.Guayand0.guis.TransactionGUI;
 import com.Guayand0.inventory.BankConversation;
 import com.Guayand0.utils.gui.GuiHolder;
 import com.Guayand0.utils.SendMessage;
@@ -35,15 +36,17 @@ public class OnInventoryClick implements Listener {
 
     private FileConfiguration languageInventoryManager;
     private final BankConversation conversationManager;
+    private final TransactionGUI transactionGUI;
 
     public OnInventoryClick(MineBank plugin) {
         this.plugin = plugin;
         this.sendMessage = plugin.getSendMessage();
         this.conversationManager = new BankConversation(plugin);
+        this.transactionGUI = plugin.getTransactionGUI();
     }
 
     @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
+    public void onClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player)) return;
 
         Player player = (Player) event.getWhoClicked();
@@ -58,8 +61,6 @@ public class OnInventoryClick implements Listener {
     /* ------------------ Métodos auxiliares ------------------ */
 
     private String getOpenedGuiId(InventoryClickEvent event) {
-        languageInventoryManager = IU.getGuiConfig(plugin, "gui/" + IU.getGuiLangFile(plugin));
-
         InventoryHolder holder = event.getView().getTopInventory().getHolder();
 
         if (!(holder instanceof GuiHolder)) {
@@ -90,6 +91,7 @@ public class OnInventoryClick implements Listener {
 
     private void processSlotClick(Player player, String guiIdOpened, int slot) {
         String slotPath = "gui." + guiIdOpened + ".position-slot";
+        FileConfiguration languageInventoryManager = IU.getGuiConfig(plugin, guiIdOpened);
         ConfigurationSection slots = languageInventoryManager.getConfigurationSection(slotPath);
         if (slots == null || !slots.contains(String.valueOf(slot))) return;
 
@@ -191,6 +193,16 @@ public class OnInventoryClick implements Listener {
     }
 
     private boolean processSpecialCommands(Player player, String guiIdOpened, String command) {
+        if ("<transactions-prev>".equalsIgnoreCase(command)) {
+            transactionGUI.openPreviousPage(player);
+            return true;
+        }
+
+        if ("<transactions-next>".equalsIgnoreCase(command)) {
+            transactionGUI.openNextPage(player);
+            return true;
+        }
+
         if (command.contains("<amount>")) {
             boolean isWithdraw = command.contains("bank take");
             conversationManager.startConversation(player, guiIdOpened, isWithdraw);

@@ -84,19 +84,28 @@ public class LanguageManager {
         File guiDir = new File(plugin.getDataFolder(), "gui");
         if (!guiDir.exists()) guiDir.mkdirs();
 
-        String[] defaultGuiFiles = {"en.yml", "es.yml"};
-        for (String fileName : defaultGuiFiles) {
-            File outFile = new File(guiDir, fileName);
-            if (!outFile.exists()) {
-                try (InputStream resource = plugin.getResource("gui/" + fileName)) {
-                    if (resource != null) Files.copy(resource, outFile.toPath());
-                    else outFile.createNewFile();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));
+        String[] languages = {"en", "es"};
+        String[] guiNames = {"main", "transactions"};
+
+        for (String language : languages) {
+            File langDir = new File(guiDir, language);
+            if (!langDir.exists()) langDir.mkdirs();
+
+            for (String guiName : guiNames) {
+                String relativePath = "gui/" + language + "/" + guiName + ".yml";
+                File outFile = new File(plugin.getDataFolder(), relativePath);
+                if (!outFile.exists()) {
+                    try (InputStream resource = plugin.getResource(relativePath)) {
+                        if (resource != null) Files.copy(resource, outFile.toPath());
+                        else outFile.createNewFile();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));
+                    }
                 }
             }
         }
+
         reloadGuiConfig();
     }
 
@@ -107,12 +116,12 @@ public class LanguageManager {
     public void reloadGuiConfig() {
         String selectedGui = plugin.getConfig().getString("config.gui-language", "en");
         File guiDir = new File(plugin.getDataFolder(), "gui");
-        File selectedGuiFile = new File(guiDir, selectedGui + ".yml");
+        File selectedGuiFile = new File(guiDir, selectedGui + "/main.yml");
 
         if (!selectedGuiFile.exists()) {
-            Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + " &4Gui " + selectedGui + ".yml does not exist in gui folder."));
-            Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + " &4Using en.yml by default."));
-            selectedGuiFile = new File(guiDir, "en.yml");
+            Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + " &4Gui language " + selectedGui + " does not exist in gui folder."));
+            Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + " &4Using en/main.yml by default."));
+            selectedGuiFile = new File(guiDir, "en/main.yml");
         }
 
         guiConfig = YamlConfiguration.loadConfiguration(selectedGuiFile);

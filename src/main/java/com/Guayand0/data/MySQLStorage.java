@@ -2,6 +2,8 @@ package com.Guayand0.data;
 
 import com.Guayand0.data.bank.BankData;
 import com.Guayand0.data.player.PlayerData;
+import com.Guayand0.data.transactions.TransactionData;
+import com.Guayand0.data.transactions.TransactionStorage;
 import com.Guayand0.zlib.PlayerUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -13,7 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 
-public class MySQLStorage implements DataStorage {
+public class MySQLStorage implements DataStorage, TransactionStorage {
 
     private Connection connection;
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -96,6 +98,24 @@ public class MySQLStorage implements DataStorage {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        try (PreparedStatement ps = getConnection().prepareStatement(
+                "CREATE TABLE IF NOT EXISTS transactions (" +
+                        "id VARCHAR(36) PRIMARY KEY," +
+                        "player_uuid VARCHAR(36) NOT NULL," +
+                        "type VARCHAR(32) NOT NULL," +
+                        "amount INT NOT NULL," +
+                        "description VARCHAR(255) NOT NULL," +
+                        "context VARCHAR(32) NOT NULL," +
+                        "timestamp BIGINT NOT NULL," +
+                        "INDEX idx_transactions_player_ts(player_uuid, timestamp)" +
+                        ")"
+        )) {
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     // ---------------- PLAYER DATA ----------------
@@ -418,6 +438,117 @@ public class MySQLStorage implements DataStorage {
         return 0;
     }
 
+    // ---------------- TRANSACTIONS ----------------
+    @Override
+    public void saveTransaction(TransactionData transaction) {
+        try {
+            initialize();
+            save(transaction);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public List<TransactionData> getAllTransactions() {
+        List<TransactionData> transactions = new ArrayList<>();
+
+        try {
+            initialize();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try (PreparedStatement select = getConnection().prepareStatement(
+                "SELECT id, player_uuid, type, amount, description, context, timestamp FROM transactions"
+        );
+             ResultSet rs = select.executeQuery()) {
+            while (rs.next()) {
+                transactions.add(new TransactionData(
+                        rs.getString("id"),
+                        rs.getString("player_uuid"),
+                        rs.getString("type"),
+                        rs.getInt("amount"),
+                        rs.getString("description"),
+                        rs.getString("context"),
+                        rs.getLong("timestamp")
+                ));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return transactions;
+    }
+
+    @Override
+    public void initialize() throws Exception {
+        try (PreparedStatement ps = getConnection().prepareStatement(
+                "CREATE TABLE IF NOT EXISTS transactions (" +
+                        "id VARCHAR(36) PRIMARY KEY," +
+                        "player_uuid VARCHAR(36) NOT NULL," +
+                        "type VARCHAR(32) NOT NULL," +
+                        "amount INT NOT NULL," +
+                        "description VARCHAR(255) NOT NULL," +
+                        "context VARCHAR(32) NOT NULL," +
+                        "timestamp BIGINT NOT NULL," +
+                        "INDEX idx_transactions_player_ts(player_uuid, timestamp)" +
+                        ")"
+        )) {
+            ps.executeUpdate();
+        }
+    }
+
+    @Override
+    public void save(TransactionData transaction) throws Exception {
+        try (PreparedStatement insert = getConnection().prepareStatement(
+                "INSERT IGNORE INTO transactions (id,player_uuid,type,amount,description,context,timestamp) VALUES(?,?,?,?,?,?,?)"
+        )) {
+            insert.setString(1, transaction.getId());
+            insert.setString(2, transaction.getPlayerUuid());
+            insert.setString(3, transaction.getType());
+            insert.setInt(4, transaction.getAmount());
+            insert.setString(5, transaction.getDescription());
+            insert.setString(6, transaction.getContext());
+            insert.setLong(7, transaction.getTimestamp());
+            insert.executeUpdate();
+        }
+    }
+
+    @Override
+    public List<TransactionData> findByPlayer(String playerUuid, int limit, int offset) throws Exception {
+        List<TransactionData> transactions = new ArrayList<>();
+
+        try (PreparedStatement ps = getConnection().prepareStatement(
+                "SELECT id, player_uuid, type, amount, description, context, timestamp " +
+                        "FROM transactions " +
+                        "WHERE player_uuid = ? " +
+                        "ORDER BY timestamp DESC " +
+                        "LIMIT ? OFFSET ?"
+        )) {
+            ps.setString(1, playerUuid);
+            ps.setInt(2, limit);
+            ps.setInt(3, offset);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    transactions.add(new TransactionData(
+                            rs.getString("id"),
+                            rs.getString("player_uuid"),
+                            rs.getString("type"),
+                            rs.getInt("amount"),
+                            rs.getString("description"),
+                            rs.getString("context"),
+                            rs.getLong("timestamp")
+                    ));
+                }
+            }
+        }
+
+        return transactions;
+    }
+
     // ---------------- BEFORE-MIGRATION DATA ----------------
     @Override
     public void clearAllData() {
@@ -428,6 +559,7 @@ public class MySQLStorage implements DataStorage {
                 st.executeUpdate("DELETE FROM player_data");
                 st.executeUpdate("DELETE FROM bank_data");
                 st.executeUpdate("DELETE FROM interests_data");
+                st.executeUpdate("DELETE FROM transactions");
             }
 
             synchronized (this) {
@@ -453,6 +585,7 @@ public class MySQLStorage implements DataStorage {
         String playerBackupTable = "player_data_backup_" + date;
         String bankBackupTable = "bank_data_backup_" + date;
         String interestsBackupTable = "interests_data_backup_" + date;
+        String transactionsBackupTable = "transactions_backup_" + date;
 
         // Crear tablas de backup si no existen (estructura igual a original)
         conn.createStatement().executeUpdate(
@@ -463,6 +596,9 @@ public class MySQLStorage implements DataStorage {
         );
         conn.createStatement().executeUpdate(
                 "CREATE TABLE IF NOT EXISTS " + interestsBackupTable + " LIKE interests_data;"
+        );
+        conn.createStatement().executeUpdate(
+                "CREATE TABLE IF NOT EXISTS " + transactionsBackupTable + " LIKE transactions;"
         );
 
         // ---------------- Player Data ----------------
@@ -485,6 +621,20 @@ public class MySQLStorage implements DataStorage {
                         "SELECT type, json FROM interests_data " +
                         "ON DUPLICATE KEY UPDATE json = VALUES(json);"
         );
+
+        // ---------------- Transactions ----------------
+        conn.createStatement().executeUpdate(
+                "INSERT INTO " + transactionsBackupTable + " (id, player_uuid, type, amount, description, context, timestamp) " +
+                        "SELECT id, player_uuid, type, amount, description, context, timestamp FROM transactions " +
+                        "ON DUPLICATE KEY UPDATE " +
+                        "player_uuid = VALUES(player_uuid), " +
+                        "type = VALUES(type), " +
+                        "amount = VALUES(amount), " +
+                        "description = VALUES(description), " +
+                        "context = VALUES(context), " +
+                        "timestamp = VALUES(timestamp);"
+        );
+
     }
 
     private synchronized void invalidateTopCache() {

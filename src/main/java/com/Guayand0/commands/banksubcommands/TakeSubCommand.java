@@ -4,6 +4,7 @@ import com.Guayand0.MineBank;
 import com.Guayand0.data.DataStorage;
 import com.Guayand0.data.bank.BankData;
 import com.Guayand0.data.player.PlayerData;
+import com.Guayand0.data.transactions.TransactionService;
 import com.Guayand0.utils.BalanceSymbolPosition;
 import com.Guayand0.utils.SendMessage;
 import com.Guayand0.zlib.ExceptionManager;
@@ -26,6 +27,7 @@ public class TakeSubCommand implements CommandExecutor {
     private final MineBank plugin;
     private final SendMessage sendMessage;
     private final DataStorage dataStorage;
+    private final TransactionService transactionService;
 
     private final MessageUtils MU = new MessageUtils();
     private final GetValues GV = new GetValues();
@@ -39,6 +41,7 @@ public class TakeSubCommand implements CommandExecutor {
         this.plugin = plugin;
         this.sendMessage = plugin.getSendMessage();
         this.dataStorage = plugin.getStorage();
+        this.transactionService = plugin.getTransactionService();
 
         this.economy = plugin.getEconomy();
     }
@@ -156,6 +159,7 @@ public class TakeSubCommand implements CommandExecutor {
                 int newBalance = bankBalance - amountTaken;
                 playerData.getBank().setBalance(newBalance);
                 dataStorage.savePlayerData(uuid, playerData);
+                transactionService.register(uuid, "withdraw", amountTaken, "plugin", "admin");
 
                 // Mensaje al ejecutor
                 ph.put("%amount%", BSP.format(plugin, String.valueOf(amountTaken)));
@@ -255,6 +259,7 @@ public class TakeSubCommand implements CommandExecutor {
                 playerData.getBank().setBalance(newBalance);
                 dataStorage.savePlayerData(player.getUniqueId(), playerData);
                 dataStorage.saveAccruedInterestData(accruedInterestData + interestsAmount);
+                transactionService.register(player.getUniqueId(), "withdraw", amountTaken, "plugin", "self");
 
                 economy.depositPlayer(player, amountTaken);
 

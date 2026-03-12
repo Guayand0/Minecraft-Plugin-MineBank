@@ -4,6 +4,7 @@ import com.Guayand0.MineBank;
 import com.Guayand0.data.DataStorage;
 import com.Guayand0.data.bank.BankData;
 import com.Guayand0.data.player.PlayerData;
+import com.Guayand0.data.transactions.TransactionService;
 import com.Guayand0.utils.BalanceSymbolPosition;
 import com.Guayand0.utils.SendMessage;
 import com.Guayand0.zlib.ExceptionManager;
@@ -24,8 +25,9 @@ public class SetSubCommand implements CommandExecutor {
     private final MineBank plugin;
     private final SendMessage sendMessage;
     private final DataStorage dataStorage;
-    private final PlayerUtils PU = new PlayerUtils();
+    private final TransactionService transactionService;
 
+    private final PlayerUtils PU = new PlayerUtils();
     private final MessageUtils MU = new MessageUtils();
     private final ExceptionManager EM = new ExceptionManager();
     private final GetValues GV = new GetValues();
@@ -35,6 +37,7 @@ public class SetSubCommand implements CommandExecutor {
         this.plugin = plugin;
         this.sendMessage = plugin.getSendMessage();
         this.dataStorage = plugin.getStorage();
+        this.transactionService = plugin.getTransactionService();
     }
 
     @Override
@@ -127,6 +130,7 @@ public class SetSubCommand implements CommandExecutor {
 
                 targetData.getBank().setBalance(amount);
                 dataStorage.savePlayerData(targetUUID, targetData);
+                transactionService.register(targetUUID, "set", amount, "plugin", "admin");
 
                 ph.put("%amount%", BSP.format(plugin, String.valueOf(amount)));
                 sendMessage.send(sender, "bank.set.set-balance-success", ph); // Mensaje

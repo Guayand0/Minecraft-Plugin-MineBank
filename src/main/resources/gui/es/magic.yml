@@ -1,0 +1,59 @@
+gui:
+  magic:
+    name: '&4&l[&6&lMagic&a&lGUI&4&l]'
+    size: 2 # 9*2=18 Crea un inventario de 18 espacios (2 filas)
+    position-slot:
+      default:
+        # Materiales de minecraft: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+        item: LIGHT_BLUE_STAINED_GLASS_PANE
+        amount: 1
+        name: ' '
+
+      3:
+        item: IRON_INGOT
+        amount: 1
+        name: '&bEjemplo encantamiento 1'
+        lore:
+          - '&eEste item muestra los encantamientos'
+        enchant:
+          - 'UNBREAKING:6'
+          - 'MENDING:1'
+
+      4:
+        item: APPLE
+        amount: 1
+        name: '&eEjemplo Multi-Comando'
+        lore:
+          - '&fHaz click para:'
+          - '&aRecibe mensaje desde la consola'
+          - '&aEspera 5 segundos'
+          - '&aEjecuta un comando como consola: Recibe una manzana'
+          - '&aRecibe un mensaje del banco'
+          - '&aEjecuta un comando como jugador'
+        command:
+          - '<console> tell %playerName% En 5 segundos recibirás una manzana'
+          - '<delay:100>'
+          - '<console> give %playerName% apple 1'
+          - '<bank-message> %chatPlugin% &aTu dinero en el banco es %playerBankBalance%'
+          - '<player> bank data'
+
+      5:
+        item: GOLD_INGOT
+        amount: 1
+        name: '&dEjemplo encantamiento 2'
+        lore:
+          - '&eEste item solo brilla'
+        enchant:
+          - 'UNBREAKING:1'
+        hide-enchant: true
+
+      17:
+        item: BARRIER
+        amount: 1
+        name: '&aVolver'
+        lore:
+          - '&fHaz click para volver'
+          - '&fal inventario principal'
+        command:
+          - '<player> bank gui main'
+

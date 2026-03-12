@@ -4,6 +4,7 @@ import com.Guayand0.MineBank;
 import com.Guayand0.data.DataStorage;
 import com.Guayand0.data.bank.BankData;
 import com.Guayand0.data.player.PlayerData;
+import com.Guayand0.data.transactions.TransactionService;
 import com.Guayand0.utils.BalanceSymbolPosition;
 import com.Guayand0.utils.SendMessage;
 import com.Guayand0.zlib.ExceptionManager;
@@ -25,6 +26,7 @@ public class AddSubCommand implements CommandExecutor {
     private final MineBank plugin;
     private final SendMessage sendMessage;
     private final DataStorage dataStorage;
+    private final TransactionService transactionService;
 
     private final MessageUtils MU = new MessageUtils();
     private final GetValues GV = new GetValues();
@@ -38,6 +40,7 @@ public class AddSubCommand implements CommandExecutor {
         this.plugin = plugin;
         this.sendMessage = plugin.getSendMessage();
         this.dataStorage = plugin.getStorage();
+        this.transactionService = plugin.getTransactionService();
 
         this.economy = plugin.getEconomy();
     }
@@ -159,6 +162,7 @@ public class AddSubCommand implements CommandExecutor {
                 int newBalance = bankBalance + amountDeposited;
                 playerData.getBank().setBalance(newBalance);
                 dataStorage.savePlayerData(uuid, playerData);
+                transactionService.register(uuid, "deposit", amountDeposited, "plugin", "admin");
 
                 // Mensaje al ejecutor
                 ph.put("%amount%", BSP.format(plugin, String.valueOf(amountDeposited)));
@@ -216,6 +220,7 @@ public class AddSubCommand implements CommandExecutor {
                 int newBalance = bankBalance + amountDeposited;
                 playerData.getBank().setBalance(newBalance);
                 dataStorage.savePlayerData(uuid, playerData);
+                transactionService.register(uuid, "deposit", amountDeposited, "plugin", "self");
 
                 ph.put("%amount%", BSP.format(plugin, String.valueOf(amountDeposited)));
                 sendMessage.send(sender, "bank.add.deposit-success" , ph); // Mensaje

@@ -1,0 +1,39 @@
+gui:
+  transactions:
+    name: '&4&l[&6&lBank&a&lTransactions&4&l]'
+    size: 6
+    position-slot:
+      default:
+        item: BLACK_STAINED_GLASS_PANE
+        amount: 1
+        name: ' '
+
+      49:
+        item: BARRIER
+        amount: 1
+        name: '&cBack'
+        lore:
+          - '&fClick to return'
+          - '&fto the main GUI'
+        command:
+          - '<player> bank gui main'
+
+      45:
+        item: ARROW
+        amount: 1
+        name: '&ePrevious Page'
+        lore:
+          - '&fClick to open the'
+          - '&fprevious page'
+        command:
+          - '<transactions-prev>'
+
+      53:
+        item: ARROW
+        amount: 1
+        name: '&eNext Page'
+        lore:
+          - '&fClick to open the'
+          - '&fnext page'
+        command:
+          - '<transactions-next>'

@@ -15,9 +15,9 @@ public class OnPlayerExit implements Listener {
         this.plugin = plugin;
     }
 
-    // Cerrarel inventario
+    // Cerrar el inventario
     @EventHandler
-    public void onPlayerExit(PlayerQuitEvent event) {
+    public void onExit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
 
         // Eliminar el jugador de la lista

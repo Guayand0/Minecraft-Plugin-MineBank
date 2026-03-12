@@ -2,14 +2,11 @@ package com.Guayand0.utils.gui;
 
 import com.Guayand0.MineBank;
 import com.Guayand0.zlib.InventoryUtils;
-import com.Guayand0.zlib.MessageUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryView;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
@@ -34,7 +31,7 @@ public class GuiUtils {
         GuiItemPosition GUIIP = new GuiItemPosition(plugin);
         Inventory inventory = createGUI(guiId); // Cada GUI tiene su inventario local
 
-        FileConfiguration languageInventoryManager = IU.getGuiConfig(plugin, "gui/" + IU.getGuiLangFile(plugin));
+        FileConfiguration languageInventoryManager = IU.getGuiConfig(plugin, guiId);
         ConfigurationSection slots = languageInventoryManager.getConfigurationSection("gui." + guiId + ".position-slot");
         if (slots != null) {
 
@@ -79,4 +76,16 @@ public class GuiUtils {
             GUIR.reloadPlayerGUI(player);
         }
     }
+
+    /*Map<String, String> titlePlaceholders = null;
+            if ("transactions".equalsIgnoreCase(guiId)) {
+        TransactionGUI transactionGUI = plugin.getTransactionGUI();
+        if (transactionGUI != null) {
+            String viewedTargetName = transactionGUI.getViewedTargetName(player);
+            if (viewedTargetName != null && !viewedTargetName.isEmpty()) {
+                titlePlaceholders = new HashMap<>();
+                titlePlaceholders.put("%playerName%", viewedTargetName);
+            }
+        }
+    }*/
 }

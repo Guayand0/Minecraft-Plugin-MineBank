@@ -3,6 +3,7 @@ package com.Guayand0.dbmigration;
 import com.Guayand0.data.DataStorage;
 import com.Guayand0.data.bank.BankData;
 import com.Guayand0.data.player.PlayerData;
+import com.Guayand0.data.transactions.TransactionData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -17,6 +18,7 @@ public class DataMigrator {
         int players = 0;
         int banks = 0;
         int interest = 0;
+        int transactions = 0;
 
         // -------- PLAYER DATA --------
         for (UUID uuid : from.getAllPlayerUUIDs()) {
@@ -47,6 +49,14 @@ public class DataMigrator {
         interest = from.loadAccruedInterestData();
         to.saveAccruedInterestData(interest);
 
-        return new MigrationResult(players, banks, interest);
+        // -------- TRANSACTIONS --------
+        for (TransactionData transaction : from.getAllTransactions()) {
+            if (transaction != null) {
+                to.saveTransaction(transaction);
+                transactions++;
+            }
+        }
+
+        return new MigrationResult(players, banks, interest, transactions);
     }
 }

@@ -1,0 +1,62 @@
+gui:
+  magic:
+    name: '&4&l[&6&lMagic&a&lGUI&4&l]'
+    size: 2 # 9*2=18 Create an inventario of 18 slots (2 rows)
+    position-slot:
+      default:
+        # Minecraft Material: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+        item: LIGHT_BLUE_STAINED_GLASS_PANE
+        amount: 1
+        name: ' '
+
+      3:
+        item: IRON_INGOT
+        amount: 1
+        name: '&bEnchant Example 1'
+        lore:
+          - '&eThis item only shine'
+        enchant:
+          - 'UNBREAKING:6'
+          - 'MENDING:1'
+
+      4:
+        item: APPLE
+        amount: 1
+        name: '&eMulti-Command Example'
+        lore:
+          - '&fClick to:'
+          - '&aReceive a message from console'
+          - '&aWait 5 seconds'
+          - '&aExecute a command as console: Receive an apple'
+          - '&aReceive a message from bank'
+          - '&aExecute a command as player'
+        command:
+          - '<console> tell %playerName% In 5 seconds you will receive an apple'
+          - '<delay:100>'
+          - '<console> give %playerName% apple 1'
+          - '<bank-message> %chatPlugin% &aYour bank balance is %playerBankBalance%'
+          - '<player> bank data'
+        enchant:
+          - 'PROTECTION:4'
+        hide-enchant: true
+
+      5:
+        item: GOLD_INGOT
+        amount: 1
+        name: '&dEnchant Example 2'
+        lore:
+          - '&eThis item only shine'
+        enchant:
+          - 'UNBREAKING:1'
+        hide-enchant: true
+
+      17:
+        item: BARRIER
+        amount: 1
+        name: '&aBack'
+        lore:
+          - '&fClick to back to'
+          - '&fthe main GUI'
+        command:
+          - '<player> bank gui main'
+

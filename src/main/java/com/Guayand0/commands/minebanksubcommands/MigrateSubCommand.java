@@ -120,6 +120,7 @@ public class MigrateSubCommand implements CommandExecutor {
                     ph.put("%MIGRATEDPLAYERS%", String.valueOf(result.getPlayersMigrated()));
                     ph.put("%MIGRATEDBANKS%", String.valueOf(result.getBanksMigrated()));
                     ph.put("%MIGRATEDINTERESTS%", String.valueOf(result.getAccruedInterest()));
+                    ph.put("%MIGRATEDTRANSACTIONS%", String.valueOf(result.getTransactionsMigrated()));
                     sendMessage.send(sender, "messages.migrate.success", ph); // Mensaje
 
                 } catch (Exception e) {

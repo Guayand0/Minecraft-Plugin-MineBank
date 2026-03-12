@@ -1,0 +1,39 @@
+gui:
+  transactions:
+    name: '&4&l[&a&lTransacciones&4&l]'
+    size: 6
+    position-slot:
+      default:
+        item: BLACK_STAINED_GLASS_PANE
+        amount: 1
+        name: ' '
+
+      49:
+        item: BARRIER
+        amount: 1
+        name: '&cVolver'
+        lore:
+          - '&fHaz clic para volver'
+          - '&fal GUI principal'
+        command:
+          - '<player> bank gui main'
+
+      45:
+        item: ARROW
+        amount: 1
+        name: '&ePagina Anterior'
+        lore:
+          - '&fHaz clic para abrir la'
+          - '&fpagina anterior'
+        command:
+          - '<transactions-prev>'
+
+      53:
+        item: ARROW
+        amount: 1
+        name: '&ePagina Siguiente'
+        lore:
+          - '&fHaz clic para abrir la'
+          - '&fpagina siguiente'
+        command:
+          - '<transactions-next>'
