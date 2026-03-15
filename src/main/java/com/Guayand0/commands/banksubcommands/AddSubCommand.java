@@ -71,10 +71,11 @@ public class AddSubCommand implements CommandExecutor {
 
         Player player = (Player) sender;
         ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
+        String usageKey = player.hasPermission(plugin.pluginName + ".admin") ? "bank.add.usage-admin" : "bank.add.usage";
 
         // Si el comando tiene menos de 2 argumentos, muestra el mensaje de uso
         if (args.length < 2) {
-            sendMessage.send(sender, "bank.add-usage", ph); // Mensaje
+            sendMessage.send(sender, usageKey, ph); // Mensaje
             return true;
         }
 
@@ -87,13 +88,13 @@ public class AddSubCommand implements CommandExecutor {
             if (args[1].equalsIgnoreCase("player")) {
 
                 if (!player.hasPermission(plugin.pluginName + ".admin")) {
-                    sendMessage.send(sender, "bank.add-usage", ph); // Mensaje
+                    sendMessage.send(sender, usageKey, ph); // Mensaje
                     return true;
                 }
 
                 // args[0]=add, args[1]=player, args[2]=target, args[3]=amount
                 if (args.length < 4) {
-                    sendMessage.send(sender, "bank.add-usage", ph); // Mensaje
+                    sendMessage.send(sender, usageKey, ph); // Mensaje
                     return true;
                 }
 

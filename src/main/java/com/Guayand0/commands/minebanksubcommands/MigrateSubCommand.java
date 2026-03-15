@@ -1,8 +1,7 @@
 package com.Guayand0.commands.minebanksubcommands;
 
 import com.Guayand0.MineBank;
-import com.Guayand0.data.DataStorage;
-import com.Guayand0.data.MySQLStorage;
+import com.Guayand0.data.*;
 import com.Guayand0.dbmigration.*;
 import com.Guayand0.utils.SendMessage;
 import com.Guayand0.zlib.ExceptionManager;
@@ -36,9 +35,10 @@ public class MigrateSubCommand implements CommandExecutor {
 
         Player player = (Player) sender;
         Map<String, String> ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
+        String usageKey = "bank.migrate.usage-admin";
 
         if (args.length < 2) {
-            sendMessage.send(sender, "messages.migrate.usage", ph); // Mensaje
+            sendMessage.send(sender, usageKey, ph); // Mensaje
             return true;
         }
 
@@ -46,7 +46,7 @@ public class MigrateSubCommand implements CommandExecutor {
             // ----------------- Confirm -----------------
             if ("confirm".equalsIgnoreCase(args[1])) {
                 if (!plugin.getPendingMigrations().containsKey(player.getUniqueId())) {
-                    sendMessage.send(sender, "messages.migrate.no-pending", ph); // Mensaje
+                    sendMessage.send(sender, "bank.migrate.no-pending", ph); // Mensaje
                     return true;
                 }
                 PendingMigration pending = plugin.getPendingMigrations().remove(player.getUniqueId());
@@ -55,8 +55,16 @@ public class MigrateSubCommand implements CommandExecutor {
                 DataStorage fromStorage = sm.get(pending.from);
                 DataStorage toStorage = sm.get(pending.to);
 
+                // Si destino es JSON y no está iniciado → iniciarlo
+                if (pending.to == StorageType.JSON && toStorage == null) {
+                    JsonStorage json = new JsonStorage(plugin.getDataFolder());
+                    sm.register(StorageType.JSON, json);
+                    toStorage = json;
+                }
+
                 // Si destino es MYSQL y no está iniciado → iniciarlo
                 if (pending.to == StorageType.MYSQL && toStorage == null) {
+                    String mysqlUri = GV.getString(plugin, "bank.data.mysql-uri");
                     String host = GV.getString(plugin, "bank.data.host");
                     int port = GV.getInt(plugin, "bank.data.port", 3306);
                     String database = GV.getString(plugin, "bank.data.database");
@@ -65,13 +73,19 @@ public class MigrateSubCommand implements CommandExecutor {
                     String params = GV.getString(plugin, "bank.data.connection_params");
 
                     // Validar datos MySQL
-                    if (host == null || host.isEmpty() || database == null || database.isEmpty() || user == null || user.isEmpty() || password == null) {
-                        sendMessage.send(sender, "messages.migrate.failed-credentials", ph); // Mensaje
+                    if ((mysqlUri == null || mysqlUri.isEmpty()) && (host == null || host.isEmpty() || database == null || database.isEmpty() || user == null || user.isEmpty() || password == null)) {
+                        ph.put("%MIGRATEDTO%", pending.to.name().toUpperCase());
+                        sendMessage.send(sender, "bank.migrate.failed-credentials", ph); // Mensaje
                         return true;
                     }
 
                     try {
-                        MySQLStorage mysql = new MySQLStorage(host, port, database, user, password, params);
+                        MySQLStorage mysql;
+                        if (mysqlUri != null && !mysqlUri.isEmpty()) {
+                            mysql = new MySQLStorage(mysqlUri);
+                        } else {
+                            mysql = new MySQLStorage(host, port, database, user, password, params);
+                        }
 
                         mysql.prepareTables();
                         sm.register(StorageType.MYSQL, mysql);
@@ -80,14 +94,93 @@ public class MigrateSubCommand implements CommandExecutor {
                     } catch (Exception ex) {
                         ex.printStackTrace();
                         if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(ex, plugin)));
-                        sendMessage.send(sender, "messages.migrate.failed-connection", ph); // Mensaje
+                        ph.put("%MIGRATEDTO%", pending.to.name().toUpperCase());
+                        sendMessage.send(sender, "bank.migrate.failed-connection", ph); // Mensaje
                         return true;
                     }
                 }
 
+                // Si destino es SQLITE y no está iniciado → iniciarlo
+                if (pending.to == StorageType.SQLITE && toStorage == null) {
+                    try {
+                        SQLiteStorage sqlite = new SQLiteStorage(plugin.getDataFolder());
+                        sqlite.prepareTables();
+                        sm.register(StorageType.SQLITE, sqlite);
+                        toStorage = sqlite;
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(ex, plugin)));
+                        sendMessage.send(sender, "bank.migrate.failed-connection", ph); // Mensaje
+                        return true;
+                    }
+                }
+
+                /*// Si destino es POSTGRESQL y no está iniciado → iniciarlo
+                if (pending.to == StorageType.POSTGRESQL && toStorage == null) {
+                    String pgUri = GV.getString(plugin, "bank.data.postgresql-uri");
+                    String host = GV.getString(plugin, "bank.data.host");
+                    int port = GV.getInt(plugin, "bank.data.port", 5432);
+                    String database = GV.getString(plugin, "bank.data.database");
+                    String user = GV.getString(plugin, "bank.data.user");
+                    String password = GV.getString(plugin, "bank.data.password");
+                    String params = GV.getString(plugin, "bank.data.connection_params");
+
+                    // Validar datos PostgreSQL
+                    if ((pgUri == null || pgUri.isEmpty()) && (host == null || host.isEmpty() || database == null || database.isEmpty() || user == null || user.isEmpty() || password == null)) {
+                        sendMessage.send(sender, "bank.migrate.failed-credentials", ph); // Mensaje
+                        return true;
+                    }
+
+                    try {
+                        PostgreSQLStorage pg;
+                        if (pgUri != null && !pgUri.isEmpty()) {
+                            pg = new PostgreSQLStorage(pgUri);
+                        } else {
+                            pg = new PostgreSQLStorage(host, port, database, user, password, params);
+                        }
+
+                        pg.prepareTables();
+                        sm.register(StorageType.POSTGRESQL, pg);
+                        toStorage = pg;
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(ex, plugin)));
+                        sendMessage.send(sender, "bank.migrate.failed-connection", ph); // Mensaje
+                        return true;
+                    }
+                }
+
+                // Si destino es MONGODB y no está iniciado → iniciarlo
+                if (pending.to == StorageType.MONGODB && toStorage == null) {
+                    String mongoUri = GV.getString(plugin, "bank.data.mongodb-uri");
+                    String host = GV.getString(plugin, "bank.data.host");
+                    int port = GV.getInt(plugin, "bank.data.port", 27017);
+                    String database = GV.getString(plugin, "bank.data.database");
+                    String user = GV.getString(plugin, "bank.data.user");
+                    String password = GV.getString(plugin, "bank.data.password");
+                    String params = GV.getString(plugin, "bank.data.connection_params");
+
+                    try {
+                        MongoDBStorage mongo;
+                        if (mongoUri != null && !mongoUri.isEmpty()) {
+                            mongo = new MongoDBStorage(mongoUri);
+                        } else {
+                            mongo = new MongoDBStorage(host, port, database, user, password, params);
+                        }
+                        mongo.prepareCollections();
+                        sm.register(StorageType.MONGODB, mongo);
+                        toStorage = mongo;
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(ex, plugin)));
+                        sendMessage.send(sender, "bank.migrate.failed-connection", ph); // Mensaje
+                        return true;
+                    }
+                }*/
+
                 if (fromStorage == null || toStorage == null) {
-                    sendMessage.send(sender, "messages.migrate.failed", ph); // Mensaje
-                    return true;
+                    throw new Exception("Error while connecting to database");
                 }
 
 //                // Hacer backup si fue indicado
@@ -109,26 +202,40 @@ public class MigrateSubCommand implements CommandExecutor {
 //                        return true;
 //                    }
 //                }
+                DataStorage finalToStorage = toStorage;
+                DataStorage finalFromStorage = fromStorage;
 
-                try {
-                    // Limpiar destino antes de migrar
-                    toStorage.clearAllData();
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        try {
 
-                    MigrationResult result = DataMigrator.migrate(fromStorage, toStorage);
-                    ph.put("%MIGRATEDFROM%", pending.from.name().toUpperCase());
-                    ph.put("%MIGRATEDTO%", pending.to.name().toUpperCase());
-                    ph.put("%MIGRATEDPLAYERS%", String.valueOf(result.getPlayersMigrated()));
-                    ph.put("%MIGRATEDBANKS%", String.valueOf(result.getBanksMigrated()));
-                    ph.put("%MIGRATEDINTERESTS%", String.valueOf(result.getAccruedInterest()));
-                    ph.put("%MIGRATEDTRANSACTIONS%", String.valueOf(result.getTransactionsMigrated()));
-                    sendMessage.send(sender, "messages.migrate.success", ph); // Mensaje
+                            long start = System.currentTimeMillis();
+                            finalToStorage.clearAllData();
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));
-                    ph.put("%migrationError%", e.getMessage());
-                    sendMessage.send(sender, "messages.migrate.failed", ph); // Mensaje
-                }
+                            MigrationResult result = DataMigrator.migrate(finalFromStorage, finalToStorage);
+                            long elapsedMs = System.currentTimeMillis() - start;
+
+                            Bukkit.getScheduler().runTask(plugin, () -> {
+                                ph.put("%MIGRATEDFROM%", pending.from.name().toUpperCase());
+                                ph.put("%MIGRATEDTO%", pending.to.name().toUpperCase());
+                                ph.put("%MIGRATEDPLAYERS%", String.valueOf(result.getPlayersMigrated()));
+                                ph.put("%MIGRATEDBANKS%", String.valueOf(result.getBanksMigrated()));
+                                ph.put("%MIGRATEDINTERESTS%", String.valueOf(result.getAccruedInterest()));
+                                ph.put("%MIGRATEDTRANSACTIONS%", String.valueOf(result.getTransactionsMigrated()));
+                                ph.put("%MIGRATIONTIME%", elapsedMs + "ms");
+
+                                sendMessage.send(sender, "bank.migrate.success", ph);
+                            });
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            ph.put("%MIGRATIONERROR%", e.getMessage());
+                            sendMessage.send(sender, "bank.migrate.failed", ph);
+                            if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));
+                        }
+                    }
+                }.runTaskAsynchronously(plugin);
 
                 return true;
             }
@@ -137,7 +244,7 @@ public class MigrateSubCommand implements CommandExecutor {
             String[] parts = migration.split("-");
 
             if (!migration.matches("^[A-Z]+-[A-Z]+$") || parts.length != 2) {
-                sendMessage.send(sender, "messages.migrate.usage", ph); // Mensaje
+                sendMessage.send(sender, usageKey, ph); // Mensaje
                 return true;
             }
 
@@ -145,18 +252,18 @@ public class MigrateSubCommand implements CommandExecutor {
             StorageType to = StorageType.fromString(parts[1]);
 
             if (from == null || to == null || from == to) {
-                sendMessage.send(sender, "messages.migrate.not-supported", ph); // Mensaje
+                sendMessage.send(sender, "bank.migrate.not-supported", ph); // Mensaje
                 return true;
             }
 
             if (from.name().equals(to.name())) {
-                sendMessage.send(sender, "messages.migrate.same-storage-type", ph); // Mensaje
+                sendMessage.send(sender, "bank.migrate.same-storage-type", ph); // Mensaje
                 return true;
             }
 
             if (!from.name().equals(GV.getString(plugin, "bank.data.type").toUpperCase())) {
                 ph.put("%MIGRATEDFROM%", from.name().toUpperCase());
-                sendMessage.send(sender, "messages.migrate.not-current-data-type", ph); // Mensaje
+                sendMessage.send(sender, "bank.migrate.not-current-data-type", ph); // Mensaje
                 return true;
             }
 
@@ -165,18 +272,19 @@ public class MigrateSubCommand implements CommandExecutor {
             PendingMigration pendingMigration = new PendingMigration(from, to, backup);*/
             PendingMigration pendingMigration = new PendingMigration(from, to, false);
             plugin.getPendingMigrations().put(player.getUniqueId(), pendingMigration);
-            sendMessage.send(sender, "messages.migrate.confirm-needed", ph); // Mensaje
+            sendMessage.send(sender, "bank.migrate.confirm-needed", ph); // Mensaje
 
             // Programar eliminación automática después de 10 segundos (200 ticks)
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    if (plugin.getPendingMigrations().containsKey(player.getUniqueId())) {
+                    PendingMigration current = plugin.getPendingMigrations().get(player.getUniqueId());
+                    if (current != null && current == pendingMigration) {
                         plugin.getPendingMigrations().remove(player.getUniqueId());
                         // Mensaje al jugador si sigue en línea
                         Player p = Bukkit.getPlayer(player.getUniqueId());
                         if (p != null && p.isOnline()) {
-                            sendMessage.send(p, "messages.migrate.confirm-expired", ph); // Mensaje
+                            sendMessage.send(p, "bank.migrate.confirm-expired", ph); // Mensaje
                         }
                     }
                 }

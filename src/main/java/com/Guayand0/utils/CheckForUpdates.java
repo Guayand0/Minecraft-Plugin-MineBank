@@ -41,7 +41,7 @@ public class CheckForUpdates implements Listener {
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            sendMessage.send((CommandSender) player, "config.update-checker", null); // Mensaje
+                            sendMessage.send(player, "config.update-checker", null); // Mensaje
                         }
                     }.runTask(plugin); // Ejecuta la tarea en el siguiente tick
                 }

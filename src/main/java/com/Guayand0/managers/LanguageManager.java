@@ -85,7 +85,7 @@ public class LanguageManager {
         if (!guiDir.exists()) guiDir.mkdirs();
 
         String[] languages = {"en", "es"};
-        String[] guiNames = {"main", "transactions"};
+        String[] guiNames = {"main", "transactions", "events"};
 
         for (String language : languages) {
             File langDir = new File(guiDir, language);

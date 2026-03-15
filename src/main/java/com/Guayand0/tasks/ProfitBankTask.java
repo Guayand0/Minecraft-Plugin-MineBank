@@ -4,6 +4,7 @@ import com.Guayand0.MineBank;
 import com.Guayand0.data.DataStorage;
 import com.Guayand0.data.bank.BankData;
 import com.Guayand0.data.player.PlayerData;
+import com.Guayand0.managers.EventManager;
 import com.Guayand0.utils.BalanceSymbolPosition;
 import com.Guayand0.utils.SendMessage;
 import com.Guayand0.zlib.*;
@@ -76,6 +77,8 @@ public class ProfitBankTask extends BukkitRunnable {
             if (bankBalance < minBalance) return;
 
             double finalPercent = multiplyByLevel ? profitPercent * bankLevel : profitPercent;
+            double eventMultiplier = plugin.getEventManager().getMultiplier(EventManager.EventType.PROFIT);
+            finalPercent = finalPercent * eventMultiplier;
             int profit = (int) Math.floor(bankBalance * finalPercent / 100.0);
             if (profit <= 0) return;
 

@@ -63,6 +63,7 @@ public class LevelUpSubCommand implements CommandExecutor {
 
         Player player = (Player) sender;
         ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
+        String usageKey = player.hasPermission(plugin.pluginName + ".admin") ? "bank.levelup.usage-admin" : "bank.levelup.usage";
 
         try {
 
@@ -72,7 +73,7 @@ public class LevelUpSubCommand implements CommandExecutor {
 
             if (args.length >= 2) {
                 if (!player.hasPermission(plugin.pluginName + ".admin")) {
-                    sendMessage.send(sender, "bank.levelup-usage", ph); // Mensaje
+                    sendMessage.send(sender, usageKey, ph); // Mensaje
                     return true;
                 }
 

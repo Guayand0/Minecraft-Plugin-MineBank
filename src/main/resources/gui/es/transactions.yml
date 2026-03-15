@@ -11,10 +11,10 @@ gui:
       49:
         item: BARRIER
         amount: 1
-        name: '&cVolver'
+        name: '&cAtras'
         lore:
-          - '&fHaz clic para volver'
-          - '&fal GUI principal'
+          - '&fClick para volver'
+          - '&fal menu principal'
         command:
           - '<player> bank gui main'
 

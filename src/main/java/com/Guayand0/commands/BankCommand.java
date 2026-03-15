@@ -32,6 +32,7 @@ public class BankCommand implements CommandExecutor {
     private final ReceiveSubCommand subCommandReceive;
     private final TransactionsSubCommand subCommandTransactions;
     private final GuiSubCommand subCommandGui;
+    private final EventsSubCommand subCommandEvents;
 
     public BankCommand(MineBank plugin) {
         this.plugin = plugin;
@@ -47,6 +48,7 @@ public class BankCommand implements CommandExecutor {
         this.subCommandReceive = new ReceiveSubCommand(plugin);
         this.subCommandTransactions = new TransactionsSubCommand(plugin);
         this.subCommandGui = new GuiSubCommand(plugin);
+        this.subCommandEvents = new EventsSubCommand(plugin);
     }
 
     @Override
@@ -167,6 +169,9 @@ public class BankCommand implements CommandExecutor {
 
                 case "gui":
                     return subCommandGui.onCommand(player, command, label, args);
+
+                case "events":
+                    return subCommandEvents.onCommand(player, command, label, args);
 
                 default:
                     sendMessage.send(sender, "bank.general-usage", ph); // Mensaje

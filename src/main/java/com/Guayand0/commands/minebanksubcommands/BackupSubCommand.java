@@ -33,10 +33,16 @@ public class BackupSubCommand implements CommandExecutor {
         }
 
         try {
+            String usageKey = "bank.backup.usage-admin";
+            if (args.length > 1) {
+                sendMessage.send(sender, usageKey, ph);
+                return true;
+            }
+
             dataStorage.backup();
-            sendMessage.send(sender, "messages.backup.success", ph);
+            sendMessage.send(sender, "bank.backup.success", ph);
         } catch (Exception e) {
-            sendMessage.send(sender, "messages.backup.failed", ph);
+            sendMessage.send(sender, "bank.backup.failed", ph);
         }
 
         return true;

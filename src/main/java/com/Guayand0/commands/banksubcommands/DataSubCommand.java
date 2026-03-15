@@ -39,8 +39,15 @@ public class DataSubCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
         Player player = (Player) sender;
+        String usageKey = player.hasPermission(plugin.pluginName + ".admin") ? "bank.data.usage-admin" : "bank.data.usage";
 
         try {
+            if (args.length > 2) {
+                Map<String, String> ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
+                sendMessage.send(sender, usageKey, ph);
+                return true;
+            }
+
             String playerName;
             UUID uuid;
 

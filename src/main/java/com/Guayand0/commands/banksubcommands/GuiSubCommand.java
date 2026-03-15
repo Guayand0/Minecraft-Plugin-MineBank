@@ -39,10 +39,11 @@ public class GuiSubCommand implements CommandExecutor {
 
         Player player = (Player) sender;
         Map<String,String> ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
+        String usageKey = player.hasPermission(plugin.pluginName + ".admin") ? "bank.gui.usage-admin" : "bank.gui.usage";
 
         try {
             if (args.length < 2) {
-                sendMessage.send(sender, "bank.gui-usage", ph); // Mensaje
+                sendMessage.send(sender, usageKey, ph); // Mensaje
                 return true;
             }
 

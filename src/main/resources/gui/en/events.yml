@@ -1,0 +1,19 @@
+gui:
+  events:
+    name: '&4&l[&6&lBank&a&lEvents&4&l]'
+    size: 3
+    position-slot:
+      default:
+        item: BLACK_STAINED_GLASS_PANE
+        amount: 1
+        name: ' '
+
+      22:
+        item: BARRIER
+        amount: 1
+        name: '&cBack'
+        lore:
+          - '&fClick to return'
+          - '&fto the main GUI'
+        command:
+          - '<player> bank gui main'

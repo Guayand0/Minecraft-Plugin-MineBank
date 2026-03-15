@@ -63,16 +63,22 @@ bank:
   # All player and bank data will be stored here
   data:
 
-    # Available storage data type: JSON, MYSQL
+    # Available storage data type: JSON, SQLITE, MYSQL
+    # JSON    -> plugins/MineBank/data/
+    # SQLITE  -> plugins/MineBank/minebank.db
     type: JSON
 
-    # Database connection data
+    # Connection data
     user: root
     password:
     database: minebank
     host: localhost
     port: 3306
-    connection_params: ?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8&connectTimeout=30000&socketTimeout=30000
+    connection_params:
+
+    # Full connection data uri
+    # mysql://<user>:<password>@<host>:<port>/<database>[params]
+    mysql-uri:
 
   # You can add more banks in the "data/bank_data" folder and also add more levels for the banks
   # The priority of the banks is the order of the banks in "data/banks.yml" file, first is the worst bank and last is the best bank

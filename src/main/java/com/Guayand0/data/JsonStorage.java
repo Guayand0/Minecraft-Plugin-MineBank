@@ -4,6 +4,7 @@ import com.Guayand0.data.bank.BankData;
 import com.Guayand0.data.player.PlayerData;
 import com.Guayand0.data.transactions.TransactionData;
 import com.Guayand0.data.transactions.TransactionStorage;
+import com.Guayand0.dbmigration.StorageType;
 import com.Guayand0.zlib.PlayerUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -14,6 +15,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.*;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -23,7 +25,14 @@ public class JsonStorage implements DataStorage, TransactionStorage {
 
     private final File folder;
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private final Gson gsonCompact = new Gson();
     private final PlayerUtils PU = new PlayerUtils();
+    private final Object transactionInitLock = new Object();
+    private boolean transactionsPrepared = false;
+    private boolean bulkMode = false;
+    private Connection bulkTransactionConnection;
+    private final Map<Integer, String> pendingBankPriorities = new HashMap<>();
+    private FileConfiguration cachedBanksConfig;
 
     public JsonStorage(File folder) {
         this.folder = folder;
@@ -35,9 +44,34 @@ public class JsonStorage implements DataStorage, TransactionStorage {
     @Override
     public void savePlayerData(UUID uuid, PlayerData data) {
         try {
-            File file = new File(folder, "data/player_data/" + uuid.toString() + ".json");
-            try (FileWriter writer = new FileWriter(file)) {
-                gson.toJson(data, writer);
+            File dir = new File(folder, "data/player_data");
+            if (!dir.exists()) dir.mkdirs();
+            File file = new File(dir, uuid.toString() + ".json");
+            Gson writerGson = bulkMode ? gsonCompact : gson;
+            try (BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)
+            )) {
+                writerGson.toJson(data, writer);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void savePlayersBatch(Map<UUID, PlayerData> players) {
+        if (players == null || players.isEmpty()) return;
+        try {
+            File dir = new File(folder, "data/player_data");
+            if (!dir.exists()) dir.mkdirs();
+            Gson writerGson = bulkMode ? gsonCompact : gson;
+            for (Map.Entry<UUID, PlayerData> entry : players.entrySet()) {
+                if (entry.getKey() == null || entry.getValue() == null) continue;
+                File file = new File(dir, entry.getKey().toString() + ".json");
+                try (BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)
+                )) {
+                    writerGson.toJson(entry.getValue(), writer);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -160,23 +194,74 @@ public class JsonStorage implements DataStorage, TransactionStorage {
             Map<String, Object> wrapper = new HashMap<>();
             wrapper.put("levels", levels);
 
-            try (FileWriter writer = new FileWriter(file)) {
-                gson.toJson(wrapper, writer);
+            Gson writerGson = bulkMode ? gsonCompact : gson;
+            try (BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)
+            )) {
+                writerGson.toJson(wrapper, writer);
             }
 
-            File banksYml = new File(folder, "data/banks.yml");
-            FileConfiguration config = YamlConfiguration.loadConfiguration(banksYml);
+            if (bulkMode) {
+                pendingBankPriorities.put(priority, bankName);
+            } else {
+                File banksYml = new File(folder, "data/banks.yml");
+                FileConfiguration config = YamlConfiguration.loadConfiguration(banksYml);
 
-            if (!config.isConfigurationSection("bank-priority")) {
-                config.createSection("bank-priority");
+                if (!config.isConfigurationSection("bank-priority")) {
+                    config.createSection("bank-priority");
+                }
+
+                // Insertamos la prioridad en la posición correspondiente
+                config.set("bank-priority." + priority, bankName);
+
+                // Guardar cambios
+                config.save(banksYml);
             }
 
-            // Insertamos la prioridad en la posición correspondiente
-            config.set("bank-priority." + priority, bankName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-            // Guardar cambios
-            config.save(banksYml);
+    public void saveBanksBatch(List<String> bankNames, List<BankData> bankDataList, List<Integer> priorities) {
+        if (bankNames == null || bankDataList == null || priorities == null || bankNames.isEmpty()) return;
+        try {
+            File folderBank = new File(folder, "data/bank_data");
+            if (!folderBank.exists()) folderBank.mkdirs();
+            Gson writerGson = bulkMode ? gsonCompact : gson;
+            int count = Math.min(bankNames.size(), bankDataList.size());
+            for (int i = 0; i < count; i++) {
+                String bankName = bankNames.get(i);
+                BankData data = bankDataList.get(i);
+                int priority = priorities.size() > i && priorities.get(i) != null ? priorities.get(i) : (i + 1);
+                if (bankName == null || bankName.isEmpty() || data == null) {
+                    continue;
+                }
 
+                Map<String, Map<String, BankData.Level>> wrapper = new HashMap<>();
+                wrapper.put("levels", data.getLevels());
+
+                File file = new File(folderBank, bankName + ".json");
+                try (BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)
+                )) {
+                    writerGson.toJson(wrapper, writer);
+                }
+
+                if (bulkMode) {
+                    pendingBankPriorities.put(priority, bankName);
+                } else {
+                    File banksYml = new File(folder, "data/banks.yml");
+                    FileConfiguration config = YamlConfiguration.loadConfiguration(banksYml);
+
+                    if (!config.isConfigurationSection("bank-priority")) {
+                        config.createSection("bank-priority");
+                    }
+
+                    config.set("bank-priority." + priority, bankName);
+                    config.save(banksYml);
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -246,8 +331,11 @@ public class JsonStorage implements DataStorage, TransactionStorage {
             Map<String, Integer> data = new HashMap<>();
             data.put("accrued_interest", value);
 
-            try (FileWriter writer = new FileWriter(file)) {
-                gson.toJson(data, writer);
+            Gson writerGson = bulkMode ? gsonCompact : gson;
+            try (BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)
+            )) {
+                writerGson.toJson(data, writer);
             }
 
         } catch (Exception e) {
@@ -284,6 +372,36 @@ public class JsonStorage implements DataStorage, TransactionStorage {
         }
     }
 
+    public void saveTransactionsBatch(List<TransactionData> transactions) {
+        if (transactions == null || transactions.isEmpty()) return;
+
+        try {
+            initialize();
+            Connection conn = getTransactionConnection(false);
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "INSERT OR IGNORE INTO transactions (id,player_uuid,type,amount,description,context,timestamp) VALUES(?,?,?,?,?,?,?)"
+            )) {
+                for (TransactionData transaction : transactions) {
+                    if (transaction == null) continue;
+                    ps.setString(1, transaction.getId());
+                    ps.setString(2, transaction.getPlayerUuid());
+                    ps.setString(3, transaction.getType());
+                    ps.setInt(4, transaction.getAmount());
+                    ps.setString(5, transaction.getDescription());
+                    ps.setString(6, transaction.getContext());
+                    ps.setLong(7, transaction.getTimestamp());
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+            }
+            if (!bulkMode) {
+                conn.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public List<TransactionData> getAllTransactions() {
         List<TransactionData> transactions = new ArrayList<>();
@@ -292,7 +410,7 @@ public class JsonStorage implements DataStorage, TransactionStorage {
             return transactions;
         }
 
-        try (Connection sqlite = getTransactionConnection()) {
+        try (Connection sqlite = getTransactionConnection(true)) {
             initialize();
             try (PreparedStatement select = sqlite.prepareStatement(
                     "SELECT id, player_uuid, type, amount, description, context, timestamp FROM transactions"
@@ -319,35 +437,41 @@ public class JsonStorage implements DataStorage, TransactionStorage {
 
     @Override
     public void initialize() throws Exception {
-        try (Connection connection = getTransactionConnection();
-             PreparedStatement ps = connection.prepareStatement(
-                     "CREATE TABLE IF NOT EXISTS transactions (" +
-                             "id TEXT PRIMARY KEY," +
-                             "player_uuid TEXT NOT NULL," +
-                             "type TEXT NOT NULL," +
-                             "amount INTEGER NOT NULL," +
-                             "description TEXT NOT NULL," +
-                             "context TEXT NOT NULL," +
-                             "timestamp INTEGER NOT NULL" +
-                             ")"
-             )) {
-            ps.executeUpdate();
-        }
+        synchronized (transactionInitLock) {
+            File sqliteFile = new File(folder, "data/transactions.db");
+            if (transactionsPrepared && sqliteFile.exists()) return;
+            transactionsPrepared = false;
+            try (Connection connection = getTransactionConnection(true);
+                 PreparedStatement ps = connection.prepareStatement(
+                         "CREATE TABLE IF NOT EXISTS transactions (" +
+                                 "id TEXT PRIMARY KEY," +
+                                 "player_uuid TEXT NOT NULL," +
+                                 "type TEXT NOT NULL," +
+                                 "amount INTEGER NOT NULL," +
+                                 "description TEXT NOT NULL," +
+                                 "context TEXT NOT NULL," +
+                                 "timestamp INTEGER NOT NULL" +
+                                 ")"
+                 )) {
+                ps.executeUpdate();
+            }
 
-        try (Connection connection = getTransactionConnection();
-             PreparedStatement ps = connection.prepareStatement(
-                     "CREATE INDEX IF NOT EXISTS idx_transactions_player_ts ON transactions (player_uuid, timestamp DESC)"
-             )) {
-            ps.executeUpdate();
+            try (Connection connection = getTransactionConnection(true);
+                 PreparedStatement ps = connection.prepareStatement(
+                         "CREATE INDEX IF NOT EXISTS idx_transactions_player_ts ON transactions (player_uuid, timestamp DESC)"
+                 )) {
+                ps.executeUpdate();
+            }
+            transactionsPrepared = true;
         }
     }
 
     @Override
     public void save(TransactionData transaction) throws Exception {
-        try (Connection connection = getTransactionConnection();
-             PreparedStatement ps = connection.prepareStatement(
-                     "INSERT OR IGNORE INTO transactions (id,player_uuid,type,amount,description,context,timestamp) VALUES(?,?,?,?,?,?,?)"
-             )) {
+        Connection connection = getTransactionConnection(false);
+        try (PreparedStatement ps = connection.prepareStatement(
+                "INSERT OR IGNORE INTO transactions (id,player_uuid,type,amount,description,context,timestamp) VALUES(?,?,?,?,?,?,?)"
+        )) {
             ps.setString(1, transaction.getId());
             ps.setString(2, transaction.getPlayerUuid());
             ps.setString(3, transaction.getType());
@@ -356,6 +480,10 @@ public class JsonStorage implements DataStorage, TransactionStorage {
             ps.setString(6, transaction.getContext());
             ps.setLong(7, transaction.getTimestamp());
             ps.executeUpdate();
+        } finally {
+            if (!bulkMode) {
+                connection.close();
+            }
         }
     }
 
@@ -363,7 +491,7 @@ public class JsonStorage implements DataStorage, TransactionStorage {
     public List<TransactionData> findByPlayer(String playerUuid, int limit, int offset) throws Exception {
         List<TransactionData> transactions = new ArrayList<>();
 
-        try (Connection connection = getTransactionConnection();
+        try (Connection connection = getTransactionConnection(true);
              PreparedStatement ps = connection.prepareStatement(
                      "SELECT id, player_uuid, type, amount, description, context, timestamp " +
                              "FROM transactions " +
@@ -393,13 +521,70 @@ public class JsonStorage implements DataStorage, TransactionStorage {
         return transactions;
     }
 
-    private Connection getTransactionConnection() throws Exception {
+    private Connection getTransactionConnection(boolean temporary) throws Exception {
+        if (!temporary && bulkMode && bulkTransactionConnection != null && !bulkTransactionConnection.isClosed()) {
+            return bulkTransactionConnection;
+        }
         File sqliteFile = new File(folder, "data/transactions.db");
         File parent = sqliteFile.getParentFile();
         if (parent != null && !parent.exists()) {
             parent.mkdirs();
         }
         return DriverManager.getConnection("jdbc:sqlite:" + sqliteFile.getAbsolutePath());
+    }
+
+    public void beginBulkOperation() throws Exception {
+        bulkMode = true;
+        File banksYml = new File(folder, "data/banks.yml");
+        cachedBanksConfig = YamlConfiguration.loadConfiguration(banksYml);
+        if (bulkTransactionConnection == null || bulkTransactionConnection.isClosed()) {
+            bulkTransactionConnection = getTransactionConnection(true);
+        }
+        bulkTransactionConnection.setAutoCommit(false);
+    }
+
+    public void endBulkOperation(boolean commit) {
+        if (!bulkMode) return;
+        try {
+            if (cachedBanksConfig != null || !pendingBankPriorities.isEmpty()) {
+                File banksYml = new File(folder, "data/banks.yml");
+                FileConfiguration config = cachedBanksConfig != null
+                        ? cachedBanksConfig
+                        : YamlConfiguration.loadConfiguration(banksYml);
+
+                if (!config.isConfigurationSection("bank-priority")) {
+                    config.createSection("bank-priority");
+                }
+
+                for (Map.Entry<Integer, String> entry : pendingBankPriorities.entrySet()) {
+                    config.set("bank-priority." + entry.getKey(), entry.getValue());
+                }
+
+                config.save(banksYml);
+            }
+
+            if (bulkTransactionConnection != null && !bulkTransactionConnection.isClosed()) {
+                if (commit) {
+                    bulkTransactionConnection.commit();
+                } else {
+                    bulkTransactionConnection.rollback();
+                }
+                bulkTransactionConnection.setAutoCommit(true);
+                bulkTransactionConnection.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            bulkMode = false;
+            pendingBankPriorities.clear();
+            cachedBanksConfig = null;
+            try {
+                if (bulkTransactionConnection != null && !bulkTransactionConnection.isClosed()) {
+                    bulkTransactionConnection.close();
+                }
+            } catch (Exception ignored) {}
+            bulkTransactionConnection = null;
+        }
     }
 
     // ---------------- BEFORE-MIGRATION DATA ----------------
@@ -439,6 +624,13 @@ public class JsonStorage implements DataStorage, TransactionStorage {
             if (transactionsFile.exists()) {
                 transactionsFile.delete();
             }
+            synchronized (transactionInitLock) {
+                transactionsPrepared = false;
+            }
+            if (bulkTransactionConnection != null && !bulkTransactionConnection.isClosed()) {
+                bulkTransactionConnection.close();
+            }
+            bulkTransactionConnection = null;
 
         } catch (Exception e) {
             e.printStackTrace();

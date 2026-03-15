@@ -11,19 +11,16 @@ import java.util.Map;
 public class SendMessage {
 
     private final MineBank plugin;
-    private final LanguageManager languageManager;
 
     private final MessageUtils MU = new MessageUtils();
 
     public SendMessage(MineBank plugin) {
         this.plugin = plugin;
-        this.languageManager = plugin.getLanguageManager();
-
     }
 
     public void send(CommandSender sender, String messagePath, Map<String, String> ph) {
         Map<String, String> placeholders = (ph != null) ? ph : plugin.placeholders;
-        for (String message : languageManager.getAllMessage(messagePath)) {
+        for (String message : plugin.getLanguageManager().getAllMessage(messagePath)) {
             if (sender instanceof Player) {
                 Player player = (Player) sender;
                 sender.sendMessage(MU.getCheckAllPlaceholdersText(plugin.getPlaceholderAPI(), player, message, placeholders));

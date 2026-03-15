@@ -60,13 +60,13 @@ public class MineBank extends JavaPlugin {
 
     private BukkitTask bankProfitTask, bankPermissionTask;
     private LanguageManager languageManager;
-    private FileManager fileManager;
     private GuiMain guiMain;
     private SendMessage sendMessage;
     private DataStorage dataStorage;
     private StorageManager storageManager;
     private TransactionService transactionService;
     private TransactionGUI transactionGUI;
+    private EventManager eventManager;
 
     private Economy economy;
 
@@ -92,7 +92,6 @@ public class MineBank extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // Cancelar la tarea del banco si está activa
         if (bankProfitTask != null) {
             bankProfitTask.cancel();
             bankProfitTask = null;
@@ -102,6 +101,11 @@ public class MineBank extends JavaPlugin {
             bankPermissionTask.cancel();
             bankPermissionTask = null;
         }
+
+        if (eventManager != null) {
+            eventManager.cancelAllEvents();
+        }
+
         Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + " &fDisabled, (&aVersion: &b" + currentVersion + "&f)"));
     }
 
@@ -113,10 +117,9 @@ public class MineBank extends JavaPlugin {
         reloadConfig();
 
         languageManager = new LanguageManager(this);
-        if (keyUpdater.syncMessages()) {
-            languageManager.reloadMessages();
-        }
-        fileManager = new FileManager(this);
+        if (keyUpdater.syncMessages()) { languageManager.reloadMessages(); }
+        eventManager = new EventManager();
+        new FileManager(this);
         guiMain = new GuiMain(this);
         sendMessage = new SendMessage(this);
 
@@ -126,7 +129,7 @@ public class MineBank extends JavaPlugin {
         new Update_5XX_523(this); // 5.x.x a 5.2.3
 
         if (!setupEconomy()) {
-            Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + " &cVault/Economy plugin not found!"));
+            Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + " &cVault or an economy manager plugin not found!"));
             getServer().getPluginManager().disablePlugin(this);
             enablePlugin = false;
             return;
@@ -323,6 +326,9 @@ public class MineBank extends JavaPlugin {
 
         // Registrar MYSQL solo como "placeholder" o null
         storageManager.register(StorageType.MYSQL, null);
+        //storageManager.register(StorageType.POSTGRESQL, null);
+        storageManager.register(StorageType.SQLITE, null);
+        //storageManager.register(StorageType.MONGODB, null);
     }
 
     // Metodo para obtener el tipo de almacenamiento de datos
@@ -339,39 +345,79 @@ public class MineBank extends JavaPlugin {
 
         try {
             if (storageType == StorageType.JSON) {
-                // Usar JSON directamente
                 dataStorage = storageManager.get(StorageType.JSON);
 
             } else if (storageType == StorageType.MYSQL) {
-                // Crear MySQLStorage solo ahora
-                MySQLStorage mysql = new MySQLStorage(
-                        getConfig().getString("bank.data.host"),
-                        getConfig().getInt("bank.data.port"),
-                        getConfig().getString("bank.data.database"),
-                        getConfig().getString("bank.data.user"),
-                        getConfig().getString("bank.data.password"),
-                        getConfig().getString("bank.data.connection_params")
-                );
+                String mysqlUri = getConfig().getString("bank.data.mysql-uri", "");
+                MySQLStorage mysql;
+                if (!mysqlUri.isEmpty()) {
+                    mysql = new MySQLStorage(mysqlUri);
+                } else {
+                    mysql = new MySQLStorage(
+                            getConfig().getString("bank.data.host", "localhost"),
+                            getConfig().getInt("bank.data.port", 3306),
+                            getConfig().getString("bank.data.database", "minebank"),
+                            getConfig().getString("bank.data.user", "root"),
+                            getConfig().getString("bank.data.password", ""),
+                            getConfig().getString("bank.data.connection_params", "")
+                    );
+                }
+
                 mysql.prepareTables();
                 storageManager.register(StorageType.MYSQL, mysql);
                 dataStorage = mysql;
 
-            } else {
-                dataStorage = storageManager.get(storageType);
-                if (dataStorage == null) {
-                    throw new Exception("Storage not found in StorageManager");
-                }
+            } else if (storageType == StorageType.SQLITE) {
+                SQLiteStorage sqlite = new SQLiteStorage(getDataFolder());
+                sqlite.prepareTables();
+                storageManager.register(StorageType.SQLITE, sqlite);
+                dataStorage = sqlite;
+
             }
+            /*else if (storageType == StorageType.POSTGRESQL) {
+                String pgUri = getConfig().getString("bank.data.postgresql-uri", "");
+                PostgreSQLStorage pg;
+                if (!pgUri.isEmpty()) {
+                    pg = new PostgreSQLStorage(pgUri);
+                } else {
+                    pg = new PostgreSQLStorage(
+                            getConfig().getString("bank.data.host", "localhost"),
+                            getConfig().getInt("bank.data.port", 5432),
+                            getConfig().getString("bank.data.database", "minebank"),
+                            getConfig().getString("bank.data.user", "postgres"),
+                            getConfig().getString("bank.data.password", ""),
+                            getConfig().getString("bank.data.connection_params", "")
+                    );
+                }
+
+                pg.prepareTables();
+                storageManager.register(StorageType.POSTGRESQL, pg);
+                dataStorage = pg;
+
+            } else if (storageType == StorageType.MONGODB) {
+                String mongoUri = getConfig().getString("bank.data.mongodb-uri", "");
+                MongoDBStorage mongo;
+                if (!mongoUri.isEmpty()) {
+                    mongo = new MongoDBStorage(mongoUri);
+                } else {
+                    mongo = new MongoDBStorage(
+                            getConfig().getString("bank.data.host", "localhost"),
+                            getConfig().getInt("bank.data.port", 27017),
+                            getConfig().getString("bank.data.database", "minebank"),
+                            getConfig().getString("bank.data.user", ""),
+                            getConfig().getString("bank.data.password", ""),
+                            getConfig().getString("bank.data.connection_params", "")
+                    );
+                }
+
+                mongo.prepareCollections();
+                storageManager.register(StorageType.MONGODB, mongo);
+                dataStorage = mongo;
+            }*/
+
         } catch (Exception e) {
-            e.printStackTrace();
-            if (GV.getBoolean(this, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + EM.saveInLog(e, this)));
             // Fallback a JSON en cualquier fallo
             Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + " &cFailed to initialize storage '" + storageType + "'. Using JSON by default!"));
-            dataStorage = storageManager.get(StorageType.JSON);
-        }
-
-        // Protección extra por si storageManager devuelve null
-        if (dataStorage == null) {
             dataStorage = storageManager.get(StorageType.JSON);
         }
     }
@@ -490,7 +536,7 @@ public class MineBank extends JavaPlugin {
             Bukkit.getConsoleSender().sendMessage(MU.getColoredText(""));
             Bukkit.getConsoleSender().sendMessage(MU.getColoredReplacePluginPlaceholdersText("   &eSpigotMC -> &f%link%", placeholders));
             Bukkit.getConsoleSender().sendMessage(MU.getColoredText(""));
-            Bukkit.getConsoleSender().sendMessage(MU.getColoredReplacePluginPlaceholdersText("%plugin% &bSome updates may require you to change some things manually.", placeholders));
+            //Bukkit.getConsoleSender().sendMessage(MU.getColoredReplacePluginPlaceholdersText("%plugin% &bSome updates may require you to change some things manually.", placeholders));
             Bukkit.getConsoleSender().sendMessage(MU.getColoredReplacePluginPlaceholdersText("%plugin% &bRead changelog: &f%link%/updates", placeholders));
         } else {
             if (!updateCheckerWork) {
@@ -542,6 +588,10 @@ public class MineBank extends JavaPlugin {
 
     public TransactionGUI getTransactionGUI() {
         return transactionGUI;
+    }
+
+    public EventManager getEventManager() {
+        return eventManager;
     }
 
     public Map<UUID, PendingMigration> getPendingMigrations() {

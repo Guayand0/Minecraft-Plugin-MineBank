@@ -50,13 +50,13 @@ gui:
           - 'UNBREAKING:1'
         hide-enchant: true
 
-      17:
+      13:
         item: BARRIER
         amount: 1
-        name: '&aBack'
+        name: '&cBack'
         lore:
-          - '&fClick to back to'
-          - '&fthe main GUI'
+          - '&fClick to return'
+          - '&fto the main GUI'
         command:
           - '<player> bank gui main'
 

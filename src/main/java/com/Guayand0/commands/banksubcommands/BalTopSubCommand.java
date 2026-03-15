@@ -42,9 +42,15 @@ public class BalTopSubCommand implements CommandExecutor {
 
         Player player = (Player) sender;
         Map<String,String> ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
+        String usageKey = player.hasPermission(plugin.pluginName + ".admin") ? "bank.top.usage-admin" : "bank.top.usage";
 
         try {
             int amount = 10;
+
+            if (args.length > 3) {
+                sendMessage.send(sender, usageKey, ph);
+                return true;
+            }
 
             // /bank baltop
             if (args.length == 1) {
@@ -68,6 +74,7 @@ public class BalTopSubCommand implements CommandExecutor {
 
             // /bank baltop player <player>
             if (args.length >= 3 && args[1].equalsIgnoreCase("player")) {
+
                 String targetName = args[2];
                 UUID targetUUID = PU.getUUIDFromName(targetName);
 
@@ -95,9 +102,19 @@ public class BalTopSubCommand implements CommandExecutor {
             }
 
             // /bank baltop <amount>
+            if (args.length == 2 && args[1].equalsIgnoreCase("player")) {
+                sendMessage.send(sender, usageKey, ph);
+                return true;
+            }
+
             try {
                 amount = Integer.parseInt(args[1]);
             } catch (NumberFormatException e) {
+                sendMessage.send(sender, "bank.not-positive-integer", ph); // Mensaje
+                return true;
+            }
+
+            if (amount <= 0) {
                 sendMessage.send(sender, "bank.not-positive-integer", ph); // Mensaje
                 return true;
             }

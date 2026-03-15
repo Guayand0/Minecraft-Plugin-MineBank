@@ -38,10 +38,11 @@ public class ReceiveSubCommand implements CommandExecutor {
         Player player = (Player) sender;
 
         Map<String,String> ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
+        String usageKey = player.hasPermission(plugin.pluginName + ".admin") ? "bank.receive.usage-admin" : "bank.receive.usage";
 
         // Si el comando tiene menos de 2 argumentos, muestra el mensaje de uso
         if (args.length < 2) {
-            sendMessage.send(sender, "bank.receive-usage", ph); // Mensaje
+            sendMessage.send(sender, usageKey, ph); // Mensaje
             return true;
         }
 
@@ -66,7 +67,7 @@ public class ReceiveSubCommand implements CommandExecutor {
             String arg = args[1];
 
             if (!arg.equalsIgnoreCase("profit")) {
-                sendMessage.send(sender, "bank.receive-usage", ph); // Mensaje
+                sendMessage.send(sender, usageKey, ph); // Mensaje
                 return true;
             }
 

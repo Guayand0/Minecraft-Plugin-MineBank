@@ -47,13 +47,13 @@ gui:
           - 'UNBREAKING:1'
         hide-enchant: true
 
-      17:
+      13:
         item: BARRIER
         amount: 1
-        name: '&aVolver'
+        name: '&cAtras'
         lore:
-          - '&fHaz click para volver'
-          - '&fal inventario principal'
+          - '&fClick para volver'
+          - '&fal menu principal'
         command:
           - '<player> bank gui main'
 

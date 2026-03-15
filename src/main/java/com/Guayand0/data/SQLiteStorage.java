@@ -10,28 +10,39 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.lang.reflect.Type;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
-public class MySQLStorage implements DataStorage, TransactionStorage {
+public class SQLiteStorage implements DataStorage, TransactionStorage {
 
-    private Connection connection;
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    private final PlayerUtils PU = new PlayerUtils();
     private static final long TOP_CACHE_TTL_MS = 5000L;
+
+    private final File folder;
+    private final File dbFile;
+    private Connection connection;
+    private final Object tableInitLock = new Object();
+    private boolean tablesPrepared = false;
     private boolean bulkMode = false;
     private Boolean bulkPreviousAutoCommit = null;
 
-    private final String connectionUri;
-    private final String host;
-    private final int port;
-    private final String database;
-    private final String user;
-    private final String pass;
-    private final String params;
+    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private final PlayerUtils PU = new PlayerUtils();
 
     private final Map<UUID, PlayerData> playerDataCache = new HashMap<>();
     private final Map<String, Map<String, BankData>> bankDataCache = new HashMap<>();
@@ -40,111 +51,105 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
     private long topCacheExpiresAt = 0L;
     private List<List<String>> cachedTopRows = Collections.emptyList();
 
-    public MySQLStorage(String host, int port, String database, String user, String pass, String params) {
-        this.connectionUri = null;
-        this.host = host;
-        this.port = port;
-        this.database = database;
-        this.user = user;
-        this.pass = pass;
-        this.params = params;
-    }
-
-    public MySQLStorage(String connectionUri) {
-        this.connectionUri = connectionUri;
-        this.host = null;
-        this.port = 0;
-        this.database = null;
-        this.user = null;
-        this.pass = null;
-        this.params = null;
-    }
-
-    private void connect() throws SQLException {
-        if (connectionUri != null && !connectionUri.isEmpty()) {
-            String url = "jdbc:" + connectionUri;
-            connection = DriverManager.getConnection(url);
-            return;
+    public SQLiteStorage(File folder) {
+        this.folder = folder;
+        if (!folder.exists()) {
+            folder.mkdirs();
         }
 
-        String url = "jdbc:mysql://" + host + ":" + port + "/" + database;
-
-        if (params != null && !params.isEmpty()) {
-            if (!params.startsWith("?")) url += "?";
-            url += params;
-        }
-
-        connection = DriverManager.getConnection(url, user, pass);
+        this.dbFile = new File(folder, "minebank.db");
     }
 
     private Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
-            connect();
+            connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
         }
         return connection;
     }
 
     public void prepareTables() {
-        try (PreparedStatement ps = getConnection().prepareStatement(
-                "CREATE TABLE IF NOT EXISTS bank_data (" +
-                        "priority INT UNIQUE NOT NULL," +
-                        "name VARCHAR(250) UNIQUE NOT NULL," +
-                        "json LONGTEXT NOT NULL," +
-                        "PRIMARY KEY(priority, name)" +
-                        ");"
-        )) {
-            ps.executeUpdate();
+        synchronized (tableInitLock) {
+            if (tablesPrepared) return;
+            try (Statement st = getConnection().createStatement()) {
+                st.executeUpdate(
+                        "CREATE TABLE IF NOT EXISTS bank_data (" +
+                                "name TEXT PRIMARY KEY," +
+                                "priority INTEGER UNIQUE NOT NULL," +
+                                "json TEXT NOT NULL" +
+                                ")"
+                );
+                st.executeUpdate(
+                        "CREATE TABLE IF NOT EXISTS player_data (" +
+                                "uuid TEXT PRIMARY KEY," +
+                                "json TEXT NOT NULL" +
+                                ")"
+                );
+                st.executeUpdate(
+                        "CREATE TABLE IF NOT EXISTS interests_data (" +
+                                "type TEXT PRIMARY KEY," +
+                                "json TEXT NOT NULL" +
+                                ")"
+                );
+                st.executeUpdate(
+                        "CREATE TABLE IF NOT EXISTS transactions (" +
+                                "id TEXT PRIMARY KEY," +
+                                "player_uuid TEXT NOT NULL," +
+                                "type TEXT NOT NULL," +
+                                "amount INTEGER NOT NULL," +
+                                "description TEXT NOT NULL," +
+                                "context TEXT NOT NULL," +
+                                "timestamp INTEGER NOT NULL" +
+                                ")"
+                );
+                st.executeUpdate(
+                        "CREATE INDEX IF NOT EXISTS idx_transactions_player_ts ON transactions (player_uuid, timestamp DESC)"
+                );
+                tablesPrepared = true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void beginBulkOperation() throws SQLException {
+        prepareTables();
+        Connection conn = getConnection();
+        bulkPreviousAutoCommit = conn.getAutoCommit();
+        if (bulkPreviousAutoCommit) {
+            conn.setAutoCommit(false);
+        }
+        bulkMode = true;
+    }
+
+    public void endBulkOperation(boolean commit) {
+        if (!bulkMode) return;
+        try {
+            Connection conn = getConnection();
+            if (commit) {
+                conn.commit();
+            } else {
+                conn.rollback();
+            }
+            if (bulkPreviousAutoCommit != null) {
+                conn.setAutoCommit(bulkPreviousAutoCommit);
+            } else {
+                conn.setAutoCommit(true);
+            }
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            bulkMode = false;
+            bulkPreviousAutoCommit = null;
         }
-
-        try (PreparedStatement ps = getConnection().prepareStatement(
-                "CREATE TABLE IF NOT EXISTS player_data (" +
-                        "uuid VARCHAR(36) PRIMARY KEY," +
-                        "json LONGTEXT NOT NULL" +
-                        ");"
-        )) {
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try (PreparedStatement ps = getConnection().prepareStatement(
-                "CREATE TABLE IF NOT EXISTS interests_data (" +
-                        "type VARCHAR(250) PRIMARY KEY," +
-                        "json LONGTEXT NOT NULL" +
-                        ");"
-        )) {
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try (PreparedStatement ps = getConnection().prepareStatement(
-                "CREATE TABLE IF NOT EXISTS transactions (" +
-                        "id VARCHAR(36) PRIMARY KEY," +
-                        "player_uuid VARCHAR(36) NOT NULL," +
-                        "type VARCHAR(32) NOT NULL," +
-                        "amount INT NOT NULL," +
-                        "description VARCHAR(255) NOT NULL," +
-                        "context VARCHAR(32) NOT NULL," +
-                        "timestamp BIGINT NOT NULL," +
-                        "INDEX idx_transactions_player_ts(player_uuid, timestamp)" +
-                        ")"
-        )) {
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
     }
 
     // ---------------- PLAYER DATA ----------------
     @Override
     public void savePlayerData(UUID uuid, PlayerData data) {
+        prepareTables();
         try (PreparedStatement ps = getConnection().prepareStatement(
                 "INSERT INTO player_data (uuid, json) VALUES (?, ?) " +
-                        "ON DUPLICATE KEY UPDATE json = VALUES(json)"
+                        "ON CONFLICT(uuid) DO UPDATE SET json = excluded.json"
         )) {
             ps.setString(1, uuid.toString());
             ps.setString(2, gson.toJson(data));
@@ -162,9 +167,10 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
 
     public void savePlayersBatch(Map<UUID, PlayerData> players) {
         if (players == null || players.isEmpty()) return;
+        prepareTables();
         try (PreparedStatement ps = getConnection().prepareStatement(
                 "INSERT INTO player_data (uuid, json) VALUES (?, ?) " +
-                        "ON DUPLICATE KEY UPDATE json = VALUES(json)"
+                        "ON CONFLICT(uuid) DO UPDATE SET json = excluded.json"
         )) {
             for (Map.Entry<UUID, PlayerData> entry : players.entrySet()) {
                 if (entry.getKey() == null || entry.getValue() == null) continue;
@@ -185,6 +191,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
             if (cached != null) return cached;
         }
 
+        prepareTables();
         try (PreparedStatement ps = getConnection().prepareStatement(
                 "SELECT json FROM player_data WHERE uuid=?"
         )) {
@@ -213,6 +220,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
             }
         }
 
+        prepareTables();
         List<UUID> uuids = new ArrayList<>();
         try (PreparedStatement ps = getConnection().prepareStatement(
                 "SELECT uuid FROM player_data"
@@ -261,7 +269,6 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
         return names;
     }
 
-
     // ---------------- PLAYER TOP DATA ----------------
     @Override
     public List<List<String>> getTopPlayerBankData(int amount) {
@@ -275,6 +282,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
             }
         }
 
+        prepareTables();
         List<List<String>> result = new ArrayList<>();
         Map<UUID, PlayerData> players = new HashMap<>();
 
@@ -342,25 +350,24 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
         return result;
     }
 
-
     // ---------------- BANK DATA ----------------
     @Override
     public void saveBankData(String bankName, Map<String, BankData> bankData, int priority) {
+        prepareTables();
         try {
             BankData data = bankData.get(bankName);
             if (data == null) return;
 
-            // Guardamos solo levels envuelto en "levels"
             Map<String, Map<String, BankData.Level>> wrapper = new HashMap<>();
             wrapper.put("levels", data.getLevels());
 
             try (PreparedStatement ps = getConnection().prepareStatement(
-                    "INSERT INTO bank_data (priority, name, json) VALUES (?, ?, ?) " +
-                            "ON DUPLICATE KEY UPDATE json = VALUES(json)"
+                    "INSERT INTO bank_data (name, priority, json) VALUES (?, ?, ?) " +
+                            "ON CONFLICT(name) DO UPDATE SET priority = excluded.priority, json = excluded.json"
             )) {
 
-                ps.setInt(1, priority); // prioridad segun banks.yml
-                ps.setString(2, bankName);
+                ps.setString(1, bankName);
+                ps.setInt(2, priority);
                 ps.setString(3, gson.toJson(wrapper));
 
                 ps.executeUpdate();
@@ -377,9 +384,10 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
 
     public void saveBanksBatch(List<String> bankNames, List<BankData> bankDataList, List<Integer> priorities) {
         if (bankNames == null || bankDataList == null || priorities == null || bankNames.isEmpty()) return;
+        prepareTables();
         try (PreparedStatement ps = getConnection().prepareStatement(
-                "INSERT INTO bank_data (priority, name, json) VALUES (?, ?, ?) " +
-                        "ON DUPLICATE KEY UPDATE json = VALUES(json)"
+                "INSERT INTO bank_data (name, priority, json) VALUES (?, ?, ?) " +
+                        "ON CONFLICT(name) DO UPDATE SET priority = excluded.priority, json = excluded.json"
         )) {
             int count = Math.min(bankNames.size(), bankDataList.size());
             for (int i = 0; i < count; i++) {
@@ -393,8 +401,8 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
                 Map<String, Map<String, BankData.Level>> wrapper = new HashMap<>();
                 wrapper.put("levels", data.getLevels());
 
-                ps.setInt(1, priority);
-                ps.setString(2, bankName);
+                ps.setString(1, bankName);
+                ps.setInt(2, priority);
                 ps.setString(3, gson.toJson(wrapper));
                 ps.addBatch();
             }
@@ -413,6 +421,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
             }
         }
 
+        prepareTables();
         try (PreparedStatement ps = getConnection().prepareStatement(
                 "SELECT json FROM bank_data WHERE name=? ORDER BY priority ASC LIMIT 1"
         )) {
@@ -443,6 +452,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
 
     @Override
     public List<String> getAllBankNames() {
+        prepareTables();
         List<String> banks = new ArrayList<>();
 
         try (PreparedStatement ps = getConnection().prepareStatement(
@@ -464,17 +474,17 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
         return banks;
     }
 
-
     // ---------------- ACCRUED INTERESTS ----------------
     @Override
     public void saveAccruedInterestData(int value) {
+        prepareTables();
         try {
             Map<String, Integer> data = new HashMap<>();
             data.put("accrued_interest", value);
 
             try (PreparedStatement ps = getConnection().prepareStatement(
                     "INSERT INTO interests_data (type, json) VALUES (?, ?) " +
-                            "ON DUPLICATE KEY UPDATE json = VALUES(json)"
+                            "ON CONFLICT(type) DO UPDATE SET json = excluded.json"
             )) {
                 ps.setString(1, "global");
                 ps.setString(2, gson.toJson(data));
@@ -488,6 +498,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
 
     @Override
     public int loadAccruedInterestData() {
+        prepareTables();
         try (PreparedStatement ps = getConnection().prepareStatement(
                 "SELECT json FROM interests_data WHERE type=?"
         )) {
@@ -495,7 +506,10 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Map<String, Integer> data = gson.fromJson(rs.getString("json"), new TypeToken<Map<String, Integer>>(){}.getType());
+                    Map<String, Integer> data = gson.fromJson(
+                            rs.getString("json"),
+                            new TypeToken<Map<String, Integer>>(){}.getType()
+                    );
                     return data.getOrDefault("accrued_interest", 0);
                 }
             }
@@ -523,7 +537,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
         try {
             initialize();
             try (PreparedStatement insert = getConnection().prepareStatement(
-                    "INSERT IGNORE INTO transactions (id,player_uuid,type,amount,description,context,timestamp) " +
+                    "INSERT OR IGNORE INTO transactions (id,player_uuid,type,amount,description,context,timestamp) " +
                             "VALUES(?,?,?,?,?,?,?)"
             )) {
                 for (TransactionData transaction : transactions) {
@@ -579,26 +593,14 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
 
     @Override
     public void initialize() throws Exception {
-        try (PreparedStatement ps = getConnection().prepareStatement(
-                "CREATE TABLE IF NOT EXISTS transactions (" +
-                        "id VARCHAR(36) PRIMARY KEY," +
-                        "player_uuid VARCHAR(36) NOT NULL," +
-                        "type VARCHAR(32) NOT NULL," +
-                        "amount INT NOT NULL," +
-                        "description VARCHAR(255) NOT NULL," +
-                        "context VARCHAR(32) NOT NULL," +
-                        "timestamp BIGINT NOT NULL," +
-                        "INDEX idx_transactions_player_ts(player_uuid, timestamp)" +
-                        ")"
-        )) {
-            ps.executeUpdate();
-        }
+        prepareTables();
     }
 
     @Override
     public void save(TransactionData transaction) throws Exception {
         try (PreparedStatement insert = getConnection().prepareStatement(
-                "INSERT IGNORE INTO transactions (id,player_uuid,type,amount,description,context,timestamp) VALUES(?,?,?,?,?,?,?)"
+                "INSERT OR IGNORE INTO transactions (id,player_uuid,type,amount,description,context,timestamp) " +
+                        "VALUES(?,?,?,?,?,?,?)"
         )) {
             insert.setString(1, transaction.getId());
             insert.setString(2, transaction.getPlayerUuid());
@@ -647,120 +649,38 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
     // ---------------- BEFORE-MIGRATION DATA ----------------
     @Override
     public void clearAllData() {
-        try {
-            Connection conn = getConnection();
-
-            try (Statement st = conn.createStatement()) {
-                st.executeUpdate("DELETE FROM player_data");
-                st.executeUpdate("DELETE FROM bank_data");
-                st.executeUpdate("DELETE FROM interests_data");
-                st.executeUpdate("DELETE FROM transactions");
-            }
-
-            synchronized (this) {
-                playerDataCache.clear();
-                bankDataCache.clear();
-                playerNameCache.clear();
-                cachedPlayerUUIDs = null;
-                invalidateTopCache();
-            }
-
+        prepareTables();
+        try (Statement st = getConnection().createStatement()) {
+            st.executeUpdate("DELETE FROM player_data");
+            st.executeUpdate("DELETE FROM bank_data");
+            st.executeUpdate("DELETE FROM interests_data");
+            st.executeUpdate("DELETE FROM transactions");
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
 
-    public void beginBulkOperation() throws SQLException {
-        Connection conn = getConnection();
-        bulkPreviousAutoCommit = conn.getAutoCommit();
-        if (bulkPreviousAutoCommit) {
-            conn.setAutoCommit(false);
-        }
-        bulkMode = true;
-    }
-
-    public void endBulkOperation(boolean commit) {
-        if (!bulkMode) return;
-        try {
-            Connection conn = getConnection();
-            if (commit) {
-                conn.commit();
-            } else {
-                conn.rollback();
-            }
-            if (bulkPreviousAutoCommit != null) {
-                conn.setAutoCommit(bulkPreviousAutoCommit);
-            } else {
-                conn.setAutoCommit(true);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            bulkMode = false;
-            bulkPreviousAutoCommit = null;
+        synchronized (this) {
+            playerDataCache.clear();
+            bankDataCache.clear();
+            playerNameCache.clear();
+            cachedPlayerUUIDs = null;
+            invalidateTopCache();
         }
     }
 
     // ---------------- BACKUP ----------------
     @Override
     public void backup() throws Exception {
+        if (!dbFile.exists()) return;
+
         String date = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date());
-        Connection conn = getConnection();
+        File backupsFolder = new File(folder, "backups");
+        if (!backupsFolder.exists()) {
+            backupsFolder.mkdirs();
+        }
 
-        // Nombres dinamicos de las tablas de backup
-        String playerBackupTable = "player_data_backup_" + date;
-        String bankBackupTable = "bank_data_backup_" + date;
-        String interestsBackupTable = "interests_data_backup_" + date;
-        String transactionsBackupTable = "transactions_backup_" + date;
-
-        // Crear tablas de backup si no existen (estructura igual a original)
-        conn.createStatement().executeUpdate(
-                "CREATE TABLE IF NOT EXISTS " + playerBackupTable + " LIKE player_data;"
-        );
-        conn.createStatement().executeUpdate(
-                "CREATE TABLE IF NOT EXISTS " + bankBackupTable + " LIKE bank_data;"
-        );
-        conn.createStatement().executeUpdate(
-                "CREATE TABLE IF NOT EXISTS " + interestsBackupTable + " LIKE interests_data;"
-        );
-        conn.createStatement().executeUpdate(
-                "CREATE TABLE IF NOT EXISTS " + transactionsBackupTable + " LIKE transactions;"
-        );
-
-        // ---------------- Player Data ----------------
-        conn.createStatement().executeUpdate(
-                "INSERT INTO " + playerBackupTable + " (uuid, json) " +
-                        "SELECT uuid, json FROM player_data " +
-                        "ON DUPLICATE KEY UPDATE json = VALUES(json);"
-        );
-
-        // ---------------- Bank Data ----------------
-        conn.createStatement().executeUpdate(
-                "INSERT INTO " + bankBackupTable + " (priority, name, json) " +
-                        "SELECT priority, name, json FROM bank_data " +
-                        "ON DUPLICATE KEY UPDATE json = VALUES(json);"
-        );
-
-        // ---------------- Interests ----------------
-        conn.createStatement().executeUpdate(
-                "INSERT INTO " + interestsBackupTable + " (type, json) " +
-                        "SELECT type, json FROM interests_data " +
-                        "ON DUPLICATE KEY UPDATE json = VALUES(json);"
-        );
-
-        // ---------------- Transactions ----------------
-        conn.createStatement().executeUpdate(
-                "INSERT INTO " + transactionsBackupTable + " (id, player_uuid, type, amount, description, context, timestamp) " +
-                        "SELECT id, player_uuid, type, amount, description, context, timestamp FROM transactions " +
-                        "ON DUPLICATE KEY UPDATE " +
-                        "player_uuid = VALUES(player_uuid), " +
-                        "type = VALUES(type), " +
-                        "amount = VALUES(amount), " +
-                        "description = VALUES(description), " +
-                        "context = VALUES(context), " +
-                        "timestamp = VALUES(timestamp);"
-        );
-
+        File backupFile = new File(backupsFolder, "storage_backup_" + date + ".db");
+        Files.copy(dbFile.toPath(), backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
     private synchronized void invalidateTopCache() {

@@ -1,14 +1,11 @@
 package com.Guayand0.commands.banksubcommands;
 
 import com.Guayand0.MineBank;
-import com.Guayand0.data.DataStorage;
-import com.Guayand0.data.player.PlayerData;
 import com.Guayand0.guis.TransactionGUI;
 import com.Guayand0.utils.SendMessage;
 import com.Guayand0.zlib.ExceptionManager;
 import com.Guayand0.zlib.GetValues;
 import com.Guayand0.zlib.MessageUtils;
-import com.Guayand0.zlib.PlayerUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -16,15 +13,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
-import java.util.UUID;
 
 public class TransactionsSubCommand implements CommandExecutor {
 
     private final MineBank plugin;
     private final SendMessage sendMessage;
     private final TransactionGUI transactionGUI;
-    private final DataStorage dataStorage;
-    private final PlayerUtils PU = new PlayerUtils();
 
     private final GetValues GV = new GetValues();
     private final MessageUtils MU = new MessageUtils();
@@ -34,13 +28,13 @@ public class TransactionsSubCommand implements CommandExecutor {
         this.plugin = plugin;
         this.sendMessage = plugin.getSendMessage();
         this.transactionGUI = plugin.getTransactionGUI();
-        this.dataStorage = plugin.getStorage();
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         Player player = (Player) sender;
         Map<String, String> ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
+        String usageKey = player.hasPermission(plugin.pluginName + ".admin") ? "bank.transaction.usage-admin" : "bank.transaction.usage";
 
         try {
             if (!plugin.getMainGUI().guiExists("transactions")) {
@@ -84,7 +78,7 @@ public class TransactionsSubCommand implements CommandExecutor {
 
             int page = 1;
             if (args.length >= 2) {
-                page = parsePageOrFail(sender, ph, args[1]);
+                page = parsePageOrFail(sender, ph, args[1], usageKey);
                 if (page == -1) return true;
             }
 
@@ -99,16 +93,16 @@ public class TransactionsSubCommand implements CommandExecutor {
         return true;
     }
 
-    private int parsePageOrFail(CommandSender sender, Map<String, String> ph, String rawPage) {
+    private int parsePageOrFail(CommandSender sender, Map<String, String> ph, String rawPage, String usageKey) {
         try {
             int page = Integer.parseInt(rawPage);
             if (page <= 0) {
-                sendMessage.send(sender, "bank.transaction-usage", ph);
+                sendMessage.send(sender, usageKey, ph);
                 return -1;
             }
             return page;
         } catch (NumberFormatException e) {
-            sendMessage.send(sender, "bank.transaction-usage", ph);
+            sendMessage.send(sender, usageKey, ph);
             return -1;
         }
     }

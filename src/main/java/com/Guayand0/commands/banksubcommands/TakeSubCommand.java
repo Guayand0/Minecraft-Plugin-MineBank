@@ -5,6 +5,7 @@ import com.Guayand0.data.DataStorage;
 import com.Guayand0.data.bank.BankData;
 import com.Guayand0.data.player.PlayerData;
 import com.Guayand0.data.transactions.TransactionService;
+import com.Guayand0.managers.EventManager;
 import com.Guayand0.utils.BalanceSymbolPosition;
 import com.Guayand0.utils.SendMessage;
 import com.Guayand0.zlib.ExceptionManager;
@@ -72,10 +73,11 @@ public class TakeSubCommand implements CommandExecutor {
 
         Player player = (Player) sender;
         ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
+        String usageKey = player.hasPermission(plugin.pluginName + ".admin") ? "bank.take.usage-admin" : "bank.take.usage";
 
         // Si el comando tiene menos de 2 argumentos, muestra el mensaje de uso
         if (args.length < 2) {
-            sendMessage.send(sender, "bank.take-usage", ph); // Mensaje
+            sendMessage.send(sender, usageKey, ph); // Mensaje
             return true;
         }
 
@@ -87,13 +89,13 @@ public class TakeSubCommand implements CommandExecutor {
             if (args[1].equalsIgnoreCase("player")) {
 
                 if (!player.hasPermission(plugin.pluginName + ".admin")) {
-                    sendMessage.send(sender, "bank.take-usage", ph); // Mensaje
+                    sendMessage.send(sender, usageKey, ph); // Mensaje
                     return true;
                 }
 
                 // args[0]=take, args[1]=player, args[2]=target, args[3]=amount
                 if (args.length < 4) {
-                    sendMessage.send(sender, "bank.take-usage", ph); // Mensaje
+                    sendMessage.send(sender, usageKey, ph); // Mensaje
                     return true;
                 }
 
@@ -183,6 +185,7 @@ public class TakeSubCommand implements CommandExecutor {
                 int minBankBalanceToApplyInterest = GV.getInt(plugin, "bank.interest.min-bank-balance-to-apply", -1);
                 double withdrawInterestPercentage = GV.getDouble(plugin, "bank.interest.withdraw-percentage", 0);
                 boolean interestMultiplyByBankLevel = GV.getBoolean(plugin, "bank.interest.multiply-by-bank-level", false);
+                double taxMultiplier = plugin.getEventManager().getMultiplier(EventManager.EventType.TAX);
 
                 double interestPercentage = 0;
                 double interestAmount = 0;
@@ -200,6 +203,7 @@ public class TakeSubCommand implements CommandExecutor {
                     // Aplicar intereses SOLO si supera el mínimo
                     if (minBankBalanceToApplyInterest > -1 && bankBalance > minBankBalanceToApplyInterest) {
                         interestPct = interestMultiplyByBankLevel ? withdrawInterestPercentage * bankLevel : withdrawInterestPercentage;
+                        interestPct = interestPct * taxMultiplier;
                         interestInt = (int) Math.floor(bankBalance * (interestPct / 100.0));
                     }
 
@@ -237,6 +241,7 @@ public class TakeSubCommand implements CommandExecutor {
                     } else {
                         interestPercentage = withdrawInterestPercentage;
                     }
+                    interestPercentage = interestPercentage * taxMultiplier;
 
                     interestAmount = amountTaken * (interestPercentage / 100.0);
                 }

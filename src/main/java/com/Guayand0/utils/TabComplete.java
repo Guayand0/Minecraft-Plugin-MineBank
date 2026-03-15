@@ -42,7 +42,7 @@ public class TabComplete implements TabCompleter {
             if (args.length == 1) {
 
                 if (hasAdminPermission) {
-                    completions.addAll(Arrays.asList("help", "reload", "info", "permissions", "backup"));
+                    completions.addAll(Arrays.asList("help", "reload", "info", "permissions", "backup", "event"));
                 }
 
                 if (hasAdminPermission && hasMigrationPermission) {
@@ -50,6 +50,9 @@ public class TabComplete implements TabCompleter {
                 }
 
             } else if (args.length == 2) {
+                if (hasAdminPermission && args[0].equalsIgnoreCase("event")) {
+                    completions.addAll(Arrays.asList("profit", "tax"));
+                }
                 if (hasAdminPermission && hasMigrationPermission) {
                     if (args[0].equalsIgnoreCase("migrate")) {
                         completions.addAll(Arrays.asList("confirm"));
@@ -68,6 +71,16 @@ public class TabComplete implements TabCompleter {
                     }
                 }
 
+            } else if (args.length == 3) {
+                if (hasAdminPermission && args[0].equalsIgnoreCase("event")) {
+                    completions.addAll(Arrays.asList("x2", "x1.5", "x0.6", "cancel"));
+                }
+            } else if (args.length == 4) {
+                if (hasAdminPermission && args[0].equalsIgnoreCase("event")) {
+                    if (!args[2].equalsIgnoreCase("cancel")) {
+                        completions.addAll(Arrays.asList("30s", "15m", "6h", "1d", "1w"));
+                    }
+                }
             } /*else if (args.length == 3) {
                 if (hasAdminPermission && hasMigrationPermission) {
                     if (args[0].equalsIgnoreCase("migrate") && !args[1].equalsIgnoreCase("confirm")) {
@@ -79,7 +92,7 @@ public class TabComplete implements TabCompleter {
         } else if (command.getName().equalsIgnoreCase("bank")) {
 
             if (args.length == 1) {
-                completions.addAll(Arrays.asList("help", "data", "bal", "balance", "level", "add", "deposit", "take", "withdraw", "levelup", "top", "baltop", "balancetop", "receive", "transactions", "history"));
+                completions.addAll(Arrays.asList("help", "data", "bal", "balance", "level", "add", "deposit", "take", "withdraw", "levelup", "top", "baltop", "balancetop", "receive", "transactions", "history", "events"));
 
                 if (hasAdminPermission) {
                     completions.add("set");

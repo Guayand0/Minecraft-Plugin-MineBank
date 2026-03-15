@@ -66,6 +66,7 @@ public class SetSubCommand implements CommandExecutor {
 
         Player player = (Player) sender;
         ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
+        String usageKey = "bank.set.usage-admin";
 
         if (!player.hasPermission(plugin.pluginName + ".admin")) {
             sendMessage.send(sender, "bank.general-usage", ph); // Mensaje
@@ -73,7 +74,7 @@ public class SetSubCommand implements CommandExecutor {
         }
 
         if (args.length < 4) {
-            sendMessage.send(sender, "bank.set-usage", ph); // Mensaje
+            sendMessage.send(sender, usageKey, ph); // Mensaje
             return true;
         }
 
@@ -157,7 +158,7 @@ public class SetSubCommand implements CommandExecutor {
                 sendMessage.send(sender, "bank.set.set-level-success", ph); // Mensaje
 
             } else {
-                sendMessage.send(sender, "bank.set-usage", ph); // Mensaje
+                sendMessage.send(sender, usageKey, ph); // Mensaje
             }
 
         } catch (Exception e) {
