@@ -2,6 +2,7 @@ package com.Guayand0.utils;
 
 import com.Guayand0.MineBank;
 import com.Guayand0.data.DataStorage;
+import com.Guayand0.data.bank.BankData;
 import com.Guayand0.dbmigration.StorageType;
 import com.Guayand0.zlib.GetValues;
 import org.bukkit.Bukkit;
@@ -12,7 +13,9 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TabComplete implements TabCompleter {
@@ -42,7 +45,7 @@ public class TabComplete implements TabCompleter {
             if (args.length == 1) {
 
                 if (hasAdminPermission) {
-                    completions.addAll(Arrays.asList("help", "reload", "info", "permissions", "backup", "event"));
+                    completions.addAll(Arrays.asList("help", "reload", "info", "permissions", "backup", "event", "bank"));
                 }
 
                 if (hasAdminPermission && hasMigrationPermission) {
@@ -52,6 +55,9 @@ public class TabComplete implements TabCompleter {
             } else if (args.length == 2) {
                 if (hasAdminPermission && args[0].equalsIgnoreCase("event")) {
                     completions.addAll(Arrays.asList("profit", "tax"));
+                }
+                if (hasAdminPermission && args[0].equalsIgnoreCase("bank")) {
+                    completions.addAll(Arrays.asList("create", "add", "modify", "delete", "rename"));
                 }
                 if (hasAdminPermission && hasMigrationPermission) {
                     if (args[0].equalsIgnoreCase("migrate")) {
@@ -75,10 +81,76 @@ public class TabComplete implements TabCompleter {
                 if (hasAdminPermission && args[0].equalsIgnoreCase("event")) {
                     completions.addAll(Arrays.asList("x2", "x1.5", "x0.6", "cancel"));
                 }
+                if (hasAdminPermission && args[0].equalsIgnoreCase("bank")) {
+                    if (Arrays.asList("add", "modify", "delete", "rename").contains(args[1].toLowerCase())) {
+                        try {
+                            completions.addAll(dataStorage.getAllBankNames());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (args[1].equalsIgnoreCase("delete")) {
+                        completions.add("confirm");
+                    }
+                }
             } else if (args.length == 4) {
                 if (hasAdminPermission && args[0].equalsIgnoreCase("event")) {
                     if (!args[2].equalsIgnoreCase("cancel")) {
                         completions.addAll(Arrays.asList("30s", "15m", "6h", "1d", "1w"));
+                    }
+                }
+                if (hasAdminPermission && args[0].equalsIgnoreCase("bank")) {
+                    if (args[1].equalsIgnoreCase("add")) {
+                        completions.addAll(Arrays.asList("level"));
+                    } else if (args[1].equalsIgnoreCase("modify")) {
+                        completions.addAll(Arrays.asList("level", "priority"));
+                    } else if (args[1].equalsIgnoreCase("delete")) {
+                        completions.addAll(Arrays.asList("level"));
+                    } else if (args[1].equalsIgnoreCase("rename")) {
+                    }
+                }
+            } else if (args.length == 5) {
+                if (hasAdminPermission && args[0].equalsIgnoreCase("bank")) {
+                    if (args[1].equalsIgnoreCase("add") && args[3].equalsIgnoreCase("level")) {
+                        String nextLevel = resolveNextBankLevel(args[2]);
+                        if (nextLevel != null) {
+                            completions.add(nextLevel);
+                        }
+                    } else if (args[1].equalsIgnoreCase("modify") && args[3].equalsIgnoreCase("level")) {
+                        completions.addAll(resolveBankLevels(args[2]));
+                    } else if (args[1].equalsIgnoreCase("delete") && args[3].equalsIgnoreCase("level")) {
+                        completions.addAll(resolveBankLevels(args[2]));
+                    }
+                }
+            } else if (args.length == 6) {
+                if (hasAdminPermission && args[0].equalsIgnoreCase("bank")) {
+                    if (args[1].equalsIgnoreCase("add") && args[3].equalsIgnoreCase("level")) {
+                        completions.addAll(Arrays.asList("max_balance"));
+                    } else if (args[1].equalsIgnoreCase("modify") && args[3].equalsIgnoreCase("level")) {
+                        completions.addAll(Arrays.asList("max_balance", "upgrade_cost"));
+                    }
+                }
+            } else if (args.length == 7) {
+                if (hasAdminPermission && args[0].equalsIgnoreCase("bank")) {
+                    if (args[1].equalsIgnoreCase("add") && args[3].equalsIgnoreCase("level") && args[5].equalsIgnoreCase("max_balance")) {
+                        completions.addAll(Arrays.asList("1000", "5000", "10000"));
+                    } else if (args[1].equalsIgnoreCase("modify") && args[3].equalsIgnoreCase("level")) {
+                        String currentValue = resolveBankLevelFieldValue(args[2], args[4], args[5]);
+                        if (currentValue != null) {
+                            completions.add(currentValue);
+                        }
+                    }
+                }
+            } else if (args.length == 8) {
+                if (hasAdminPermission && args[0].equalsIgnoreCase("bank")) {
+                    if (args[1].equalsIgnoreCase("add") && args[3].equalsIgnoreCase("level")) {
+                        completions.addAll(Arrays.asList("upgrade_cost"));
+                    }
+                }
+            } else if (args.length == 9) {
+                if (hasAdminPermission && args[0].equalsIgnoreCase("bank")) {
+                    if (args[1].equalsIgnoreCase("add") && args[3].equalsIgnoreCase("level") && args[7].equalsIgnoreCase("upgrade_cost")) {
+                        completions.addAll(Arrays.asList("0", "1000", "5000"));
                     }
                 }
             } /*else if (args.length == 3) {
@@ -228,6 +300,77 @@ public class TabComplete implements TabCompleter {
 
     }
     
+    private List<String> resolveBankLevels(String bankName) {
+        if (bankName == null || bankName.isEmpty()) return Collections.emptyList();
+        String resolvedName = resolveExistingBankName(bankName);
+        Map<String, BankData> bankDataMap = dataStorage.loadBankData(resolvedName);
+        if (bankDataMap == null || !bankDataMap.containsKey(resolvedName)) {
+            return Collections.emptyList();
+        }
+
+        Map<String, BankData.Level> levels = bankDataMap.get(resolvedName).getLevels();
+        if (levels == null || levels.isEmpty()) return Collections.emptyList();
+
+        List<Integer> sorted = new ArrayList<>();
+        for (String key : levels.keySet()) {
+            try {
+                sorted.add(Integer.parseInt(key));
+            } catch (Exception ignored) {}
+        }
+        Collections.sort(sorted);
+
+        List<String> result = new ArrayList<>();
+        for (Integer level : sorted) {
+            result.add(String.valueOf(level));
+        }
+        return result;
+    }
+
+    private String resolveNextBankLevel(String bankName) {
+        List<String> levels = resolveBankLevels(bankName);
+        int max = 0;
+        for (String level : levels) {
+            try {
+                max = Math.max(max, Integer.parseInt(level));
+            } catch (Exception ignored) {}
+        }
+        return String.valueOf(max + 1);
+    }
+
+    private String resolveExistingBankName(String bankName) {
+        try {
+            for (String name : dataStorage.getAllBankNames()) {
+                if (name.equalsIgnoreCase(bankName)) {
+                    return name;
+                }
+            }
+        } catch (Exception ignored) {}
+        return bankName;
+    }
+
+    private String resolveBankLevelFieldValue(String bankName, String levelRaw, String field) {
+        if (bankName == null || levelRaw == null || field == null) return null;
+        String resolvedName = resolveExistingBankName(bankName);
+        Map<String, BankData> bankDataMap = dataStorage.loadBankData(resolvedName);
+        if (bankDataMap == null || !bankDataMap.containsKey(resolvedName)) {
+            return null;
+        }
+
+        Map<String, BankData.Level> levels = bankDataMap.get(resolvedName).getLevels();
+        if (levels == null) return null;
+
+        BankData.Level level = levels.get(levelRaw);
+        if (level == null) return null;
+
+        if ("max_balance".equalsIgnoreCase(field)) {
+            return String.valueOf(level.getMax_balance());
+        }
+        if ("upgrade_cost".equalsIgnoreCase(field)) {
+            return String.valueOf(level.getUpgrade_cost());
+        }
+        return null;
+    }
+
     private void playerCompleter(boolean offline, List<String> completions) {
         try {
             // Añadir lista de todos los jugadores que hay en banco si está activado desde la config

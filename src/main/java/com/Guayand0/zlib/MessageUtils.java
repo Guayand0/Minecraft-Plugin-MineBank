@@ -11,6 +11,19 @@ import java.util.regex.Pattern;
 
 public class MessageUtils {
 
+    private static final Pattern HEX_COLOR_PATTERN = Pattern.compile("(?i)#([0-9A-F]{6})");
+    private static final Pattern GRADIENT_PATTERN = Pattern.compile("(?i)<#([0-9A-F]{6}):#([0-9A-F]{6})>(.*?)</#>", Pattern.DOTALL);
+    private static final boolean HEX_SUPPORTED = isHexSupported();
+
+    private static boolean isHexSupported() {
+        try {
+            net.md_5.bungee.api.ChatColor.class.getMethod("of", String.class);
+            return true;
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
+    }
+
     /**
      * Translates color codes in the provided message using '&' as the color code symbol.
      *
@@ -18,7 +31,9 @@ public class MessageUtils {
      * @return The colored message.
      */
     public String getColoredText(String message) {
-        return ChatColor.translateAlternateColorCodes('&', message);
+        if (message == null) return null;
+        String withGradients = translateGradients(message);
+        return ChatColor.translateAlternateColorCodes('&', translateHexColors(withGradients));
     }
 
     /**
@@ -29,7 +44,10 @@ public class MessageUtils {
      * @return The message with placeholders replaced and color codes applied.
      */
     public String getPAPIAndColoredText(Player player, String message) {
-        return ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(player, message));
+        if (message == null) return null;
+        String withPapi = PlaceholderAPI.setPlaceholders(player, message);
+        String withGradients = translateGradients(withPapi);
+        return ChatColor.translateAlternateColorCodes('&', translateHexColors(withGradients));
     }
 
     /**
@@ -118,6 +136,74 @@ public class MessageUtils {
     }
 
     public String replaceColorCodeMOTD(String message) {
-        return message.replaceAll("&", "§");
+        if (message == null) return null;
+        return translateHexColors(translateGradients(message)).replaceAll("&", "�");
+    }
+
+    private String translateHexColors(String message) {
+        if (!HEX_SUPPORTED || message == null) return message;
+
+        Matcher matcher = HEX_COLOR_PATTERN.matcher(message);
+        StringBuffer buffer = new StringBuffer();
+
+        while (matcher.find()) {
+            String hex = matcher.group(1);
+            String replacement = net.md_5.bungee.api.ChatColor.of("#" + hex).toString();
+            matcher.appendReplacement(buffer, Matcher.quoteReplacement(replacement));
+        }
+
+        matcher.appendTail(buffer);
+        return buffer.toString();
+    }
+
+    private String translateGradients(String message) {
+        if (!HEX_SUPPORTED || message == null) return message;
+
+        Matcher matcher = GRADIENT_PATTERN.matcher(message);
+        StringBuffer buffer = new StringBuffer();
+
+        while (matcher.find()) {
+            String startHex = matcher.group(1);
+            String endHex = matcher.group(2);
+            String content = matcher.group(3);
+
+            String replacement = applyGradient(content, startHex, endHex);
+            matcher.appendReplacement(buffer, Matcher.quoteReplacement(replacement));
+        }
+
+        matcher.appendTail(buffer);
+        return buffer.toString();
+    }
+
+    private String applyGradient(String text, String startHex, String endHex) {
+        if (text == null || text.isEmpty()) return "";
+
+        int[] start = hexToRgb(startHex);
+        int[] end = hexToRgb(endHex);
+
+        int length = text.length();
+        if (length == 1) {
+            return net.md_5.bungee.api.ChatColor.of("#" + startHex) + text;
+        }
+
+        StringBuilder out = new StringBuilder(length * 14);
+        for (int i = 0; i < length; i++) {
+            double t = (double) i / (double) (length - 1);
+            int r = (int) Math.round(start[0] + (end[0] - start[0]) * t);
+            int g = (int) Math.round(start[1] + (end[1] - start[1]) * t);
+            int b = (int) Math.round(start[2] + (end[2] - start[2]) * t);
+            String hex = String.format("%02X%02X%02X", r, g, b);
+            out.append(net.md_5.bungee.api.ChatColor.of("#" + hex)).append(text.charAt(i));
+        }
+
+        return out.toString();
+    }
+
+    private int[] hexToRgb(String hex) {
+        int r = Integer.parseInt(hex.substring(0, 2), 16);
+        int g = Integer.parseInt(hex.substring(2, 4), 16);
+        int b = Integer.parseInt(hex.substring(4, 6), 16);
+        return new int[]{r, g, b};
     }
 }
+

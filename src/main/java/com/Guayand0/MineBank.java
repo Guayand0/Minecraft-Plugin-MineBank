@@ -47,6 +47,7 @@ public class MineBank extends JavaPlugin {
     public final List<String> pluginHooksList = new ArrayList<>(); // Lista de plugins conectados
     public final Map<String, String> placeholders = new HashMap<>();
     private final Map<UUID, PendingMigration> pendingMigrations = new ConcurrentHashMap<>();
+    private final Map<UUID, String> pendingBankDeletions = new ConcurrentHashMap<>();
 
     public final static int spigotID = 119147;
     public final static int bstatsID = 23185;
@@ -245,6 +246,8 @@ public class MineBank extends JavaPlugin {
         int bankMaxLevel = bankData.getLevels().size();
 
         int playerTop = getPlayerTopPosition(uuid);
+
+        if (bankLevel >= bankMaxLevel) { upgradeCost = 0; }
 
         ph.put("%playerName%", playerName);
         ph.put("%playerBankName%", bankName);
@@ -596,6 +599,10 @@ public class MineBank extends JavaPlugin {
 
     public Map<UUID, PendingMigration> getPendingMigrations() {
         return pendingMigrations;
+    }
+
+    public Map<UUID, String> getPendingBankDeletions() {
+        return pendingBankDeletions;
     }
 
 }

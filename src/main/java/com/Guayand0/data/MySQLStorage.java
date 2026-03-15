@@ -404,6 +404,94 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
         }
     }
 
+    public void updateBankPriorities(List<String> orderedBanks) {
+        if (orderedBanks == null) return;
+        Connection conn = null;
+        Boolean previousAutoCommit = null;
+        try {
+            conn = getConnection();
+            previousAutoCommit = conn.getAutoCommit();
+            if (previousAutoCommit) {
+                conn.setAutoCommit(false);
+            }
+
+            try (PreparedStatement bump = conn.prepareStatement(
+                    "UPDATE bank_data SET priority = priority + ?"
+            )) {
+                bump.setInt(1, 1000000);
+                bump.executeUpdate();
+            }
+
+            try (PreparedStatement update = conn.prepareStatement(
+                    "UPDATE bank_data SET priority = ? WHERE name = ?"
+            )) {
+                int priority = 1;
+                for (String bankName : orderedBanks) {
+                    if (bankName == null || bankName.isEmpty()) continue;
+                    update.setInt(1, priority);
+                    update.setString(2, bankName);
+                    update.addBatch();
+                    priority++;
+                }
+                update.executeBatch();
+            }
+
+            conn.commit();
+        } catch (Exception e) {
+            try {
+                if (conn != null) conn.rollback();
+            } catch (Exception ignored) {}
+            e.printStackTrace();
+        } finally {
+            try {
+                if (conn != null) {
+                    if (previousAutoCommit != null) {
+                        conn.setAutoCommit(previousAutoCommit);
+                    } else {
+                        conn.setAutoCommit(true);
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+    }
+
+    public void deleteBankData(String bankName) {
+        if (bankName == null || bankName.isEmpty()) return;
+        try (PreparedStatement ps = getConnection().prepareStatement(
+                "DELETE FROM bank_data WHERE name = ?"
+        )) {
+            ps.setString(1, bankName);
+            ps.executeUpdate();
+
+            synchronized (this) {
+                bankDataCache.remove(bankName);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean renameBankData(String oldName, String newName) {
+        if (oldName == null || oldName.isEmpty() || newName == null || newName.isEmpty()) return false;
+        try (PreparedStatement ps = getConnection().prepareStatement(
+                "UPDATE bank_data SET name = ? WHERE name = ?"
+        )) {
+            ps.setString(1, newName);
+            ps.setString(2, oldName);
+            int updated = ps.executeUpdate();
+
+            synchronized (this) {
+                bankDataCache.remove(oldName);
+                bankDataCache.remove(newName);
+            }
+
+            return updated > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     @Override
     public Map<String, BankData> loadBankData(String bankName) {
         synchronized (this) {

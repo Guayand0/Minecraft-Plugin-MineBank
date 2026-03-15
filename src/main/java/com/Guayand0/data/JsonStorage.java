@@ -267,6 +267,80 @@ public class JsonStorage implements DataStorage, TransactionStorage {
         }
     }
 
+    public void saveBankPriorities(List<String> orderedBanks) {
+        if (orderedBanks == null) return;
+        try {
+            File banksYml = new File(folder, "data/banks.yml");
+            FileConfiguration config = YamlConfiguration.loadConfiguration(banksYml);
+            ConfigurationSection section = config.getConfigurationSection("bank-priority");
+            if (section == null) {
+                section = config.createSection("bank-priority");
+            }
+
+            for (String key : new ArrayList<>(section.getKeys(false))) {
+                section.set(key, null);
+            }
+
+            int priority = 1;
+            for (String bankName : orderedBanks) {
+                if (bankName == null || bankName.isEmpty()) continue;
+                section.set(String.valueOf(priority), bankName);
+                priority++;
+            }
+
+            config.save(banksYml);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteBankData(String bankName) {
+        try {
+            if (bankName == null || bankName.isEmpty()) return;
+            File folderBank = new File(folder, "data/bank_data");
+            File file = new File(folderBank, bankName + ".json");
+            if (file.exists()) {
+                file.delete();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean renameBankData(String oldName, String newName) {
+        try {
+            if (oldName == null || oldName.isEmpty() || newName == null || newName.isEmpty()) return false;
+            File folderBank = new File(folder, "data/bank_data");
+            File oldFile = new File(folderBank, oldName + ".json");
+            if (!oldFile.exists()) return false;
+
+            File newFile = new File(folderBank, newName + ".json");
+            if (newFile.exists()) return false;
+
+            if (!oldFile.renameTo(newFile)) {
+                return false;
+            }
+
+            File banksYml = new File(folder, "data/banks.yml");
+            FileConfiguration config = YamlConfiguration.loadConfiguration(banksYml);
+            ConfigurationSection section = config.getConfigurationSection("bank-priority");
+            if (section != null) {
+                for (String key : section.getKeys(false)) {
+                    String value = section.getString(key);
+                    if (value != null && value.equalsIgnoreCase(oldName)) {
+                        section.set(key, newName);
+                    }
+                }
+                config.save(banksYml);
+            }
+
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     @Override
     public Map<String, BankData> loadBankData(String bankName) {
         try {
