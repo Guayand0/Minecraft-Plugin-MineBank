@@ -31,8 +31,69 @@ public class EventSubCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        Map<String, String> ph;
+
+        if (!(sender instanceof Player)) {
+            ph = plugin.buildPlayerPlaceholders(null);
+
+            try {
+                if (args.length < 2) {
+                    sendMessage.send(sender, "messages.console-help", ph);
+                    return true;
+                }
+
+                EventManager.EventType type = parseType(args[1]);
+                if (type == null) {
+                    sendMessage.send(sender, "messages.console-help", ph);
+                    return true;
+                }
+
+                String typeLabel = type == EventManager.EventType.PROFIT ? "profit" : "tax";
+                ph.put("%type%", typeLabel);
+
+                if (args.length >= 3 && args[2].equalsIgnoreCase("cancel")) {
+                    if (!plugin.getEventManager().isActive(type)) {
+                        sendMessage.send(sender, "bank.event.not-active", ph);
+                        return true;
+                    }
+                    plugin.getEventManager().cancelEvent(type);
+                    sendMessage.send(sender, "bank.event.cancelled", ph);
+                    return true;
+                }
+
+                if (args.length < 4) {
+                    sendMessage.send(sender, "messages.console-help", ph);
+                    return true;
+                }
+
+                Double multiplier = parseMultiplier(args[2]);
+                if (multiplier == null) {
+                    sendMessage.send(sender, "bank.event.invalid-multiplier", ph);
+                    return true;
+                }
+
+                Long durationMillis = parseDurationMillis(args[3]);
+                if (durationMillis == null) {
+                    sendMessage.send(sender, "bank.event.invalid-duration", ph);
+                    return true;
+                }
+
+                plugin.getEventManager().startEvent(type, multiplier, durationMillis);
+                ph.put("%multiplier%", formatMultiplier(multiplier));
+                ph.put("%duration%", formatDuration(durationMillis));
+                sendMessage.send(sender, "bank.event.started", ph);
+                return true;
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));
+                sendMessage.send(sender, "messages.processing-command-error", ph);
+                return true;
+            }
+        }
+
         Player player = (Player) sender;
-        Map<String, String> ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
+        ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
 
         try {
             if (args.length < 2) {

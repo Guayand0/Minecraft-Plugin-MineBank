@@ -38,10 +38,46 @@ public class DataSubCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
-        Player player = (Player) sender;
-        String usageKey = player.hasPermission(plugin.pluginName + ".admin") ? "bank.data.usage-admin" : "bank.data.usage";
-
         try {
+            if (!(sender instanceof Player)) {
+                Map<String, String> ph = plugin.buildPlayerPlaceholders(null);
+
+                if (args.length < 2 || args.length > 2) {
+                    sendMessage.send(sender, "messages.console-help", ph);
+                    return true;
+                }
+
+                String playerName = args[1];
+                UUID uuid = PU.getUUIDFromName(playerName);
+
+                if (uuid == null) {
+                    sendMessage.send(sender, "bank.unregistered-player", ph); // Mensaje
+                    return true;
+                }
+
+                ph = plugin.buildPlayerPlaceholders(uuid);
+
+                PlayerData playerData = dataStorage.loadPlayerData(uuid);
+                if (playerData == null) {
+                    sendMessage.send(sender, "bank.unregistered-player", ph); // Mensaje
+                    return true;
+                }
+
+                String bankName = playerData.getBank().getName();
+
+                Map<String, BankData> bankDataMap = dataStorage.loadBankData(bankName);
+                if (bankDataMap == null || !bankDataMap.containsKey(bankName)) {
+                    sendMessage.send(sender, "bank.unregistered-bank", ph); // Mensaje
+                    return true;
+                }
+
+                sendMessage.send(sender, "bank.data.bank-data", ph); // Mensaje
+                return true;
+            }
+
+            Player player = (Player) sender;
+            String usageKey = player.hasPermission(plugin.pluginName + ".admin") ? "bank.data.usage-admin" : "bank.data.usage";
+
             if (args.length > 2) {
                 Map<String, String> ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
                 sendMessage.send(sender, usageKey, ph);
@@ -86,7 +122,9 @@ public class DataSubCommand implements CommandExecutor {
         } catch (Exception e) {
             e.printStackTrace();
             if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));
-            Map<String,String> ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
+            Map<String,String> ph = (sender instanceof Player)
+                    ? plugin.buildPlayerPlaceholders(((Player) sender).getUniqueId())
+                    : plugin.buildPlayerPlaceholders(null);
             sendMessage.send(sender, "messages.processing-command-error", ph);  // Mensaje
         }
 

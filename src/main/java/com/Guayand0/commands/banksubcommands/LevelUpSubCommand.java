@@ -44,15 +44,51 @@ public class LevelUpSubCommand implements CommandExecutor {
 
         if (!(sender instanceof Player)) {
             try {
-                sendMessage.sendRaw(sender, "%plugin% &fComing soon!", ph); // Mensaje
-                return true;
+                ph = plugin.buildPlayerPlaceholders(null);
 
-/*                // args[0]=levelup, args[1]=target
+                // args[0]=levelup, args[1]=target
                 if (args.length < 2) {
-                    sendMessage.send(sender, "bank.levelup-usage", ph); // Mensaje
+                    sendMessage.send(sender, "messages.console-help", ph); // Mensaje
                     return true;
                 }
-*/
+
+                String targetName = args[1];
+                ph.put("%targetplayername%", targetName);
+                UUID playerUUID = PU.getUUIDFromName(targetName);
+
+                if (playerUUID == null) {
+                    sendMessage.send(sender, "bank.unregistered-player", ph); // Mensaje
+                    return true;
+                }
+
+                PlayerData playerData = dataStorage.loadPlayerData(playerUUID);
+                if (playerData == null || playerData.getBank() == null) {
+                    sendMessage.send(sender, "bank.unregistered-player", ph); // Mensaje
+                    return true;
+                }
+
+                String bankName = playerData.getBank().getName();
+                int bankLevel = playerData.getBank().getLevel();
+
+                Map<String, BankData> bankDataMap = dataStorage.loadBankData(bankName);
+                if (bankDataMap == null || !bankDataMap.containsKey(bankName)) {
+                    sendMessage.send(sender, "bank.unregistered-bank", ph); // Mensaje
+                    return true;
+                }
+
+                BankData bankData = bankDataMap.get(bankName);
+                int bankMaxLevel = bankData.getLevels().size();
+
+                if (bankLevel >= bankMaxLevel) {
+                    sendMessage.send(sender, "bank.levelup.target-already-max-level", ph); // Mensaje
+                    return true;
+                }
+
+                playerData.getBank().setLevel(bankLevel + 1);
+                dataStorage.savePlayerData(playerUUID, playerData);
+
+                ph.put("%targetBankLevel%", String.valueOf(bankLevel + 1));
+                sendMessage.send(sender, "bank.levelup.target-levelup-success", ph); // Mensaje
             } catch (Exception e) {
                 e.printStackTrace();
                 if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));

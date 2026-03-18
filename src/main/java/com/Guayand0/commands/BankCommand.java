@@ -59,13 +59,17 @@ public class BankCommand implements CommandExecutor {
         if (!(sender instanceof Player)) {
             // Consola
             if (args.length == 0) {
-                sendMessage.send(sender, "messages.console-error", ph); // Mensaje
+                sendMessage.send(sender, "messages.console-help", ph); // Mensaje
                 return true;
             }
 
             switch (args[0].toLowerCase()) {
-                case "help":
-                    return subCommandHelp.onCommand(sender, command, label, args);
+
+                case "data":
+                case "bal":
+                case "balance":
+                case "level":
+                    return subCommandData.onCommand(sender, command, label, args);
 
                 case "add":
                 case "deposit":
@@ -82,7 +86,7 @@ public class BankCommand implements CommandExecutor {
                     return subCommandLevelUp.onCommand(sender, command, label, args);
 
                 default:
-                    sendMessage.send(sender, "messages.console-error", ph); // Mensaje
+                    sendMessage.send(sender, "messages.console-help", ph); // Mensaje
                     return true;
             }
         }

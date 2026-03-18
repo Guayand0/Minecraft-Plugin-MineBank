@@ -22,6 +22,23 @@
 
 messages:
 
+  console-help:
+    - '%plugin% &b<------- &aCOMANDOS DE CONSOLA &b------->'
+    - '&6/minebank help &7- Muestra todos los comandos de consola de MineBank'
+    - '&6/minebank reload &7- Recarga el plugin'
+    - '&6/minebank info &7- Muestra información del plugin'
+    - '&6/minebank permissions &7- Muestra los permisos del plugin'
+    - '&6/minebank event {profit/tax} <multiplicador> <duración> &7- Inicia un evento especial'
+    - '&6/minebank event {profit/tax} cancel &7- Cancela un evento especial'
+    - '&6/minebank backup &7- Hacer copia de seguridad de los datos del plugin'
+    - '&7Alias: &eminebank&7, &emb'
+    - '&6/bank data <jugador> &7- Muestra la información bancaria de un jugador'
+    - '&6/bank add player <jugador> <cantidad> &7- Añade al saldo bancario del jugador una cantidad'
+    - '&6/bank take player <jugador> <cantidad> &7- Recoge una cantidad de dinero del banco del jugador'
+    - '&6/bank set <jugador> balance <cantidad> &7- Establece el saldo bancario al jugador'
+    - '&6/bank set <jugador> level <cantidad> &7- Establece el nivel bancario al jugador'
+    - '&6/bank levelup <jugador> &7- Sube el nivel del banco del jugador'
+
   help:
     - '&b<-----------------&aTODOS LOS COMANDOS MINEBANK&b----------------->'
     - '&6/minebank help &7- Muestra todos los comandos de MineBank'
@@ -69,9 +86,9 @@ messages:
     - '&e/bank top <cantidad> &7- Muestra una cantidad de jugadores del top con más dinero'
     - '&e/bank top player <jugador> &7- Muestra la posición del top y los datos del banco del jugador'
     - '&e/bank receive profit &7- Recibe los beneficios acumulados por estar desconectado'
-    - '&e/bank transactions [página] &7- Abre el historial de transacciones con paginación'
+    - '&e/bank transactions [página] &7- Abre el GUI con historial de transacciones'
     - '&e/bank events &7- Abre el GUI de eventos'
-    - '&e/bank gui <GUI> &7- Abre el inventario del plugin seleccionado'
+    - '&e/bank gui <GUI> &7- Abre el inventario seleccionado'
 
   reload: '%plugin% &aEl plugin ha sido recargado'
 

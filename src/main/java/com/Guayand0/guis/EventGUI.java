@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class EventGUI {
 
-    private static final int LAST_CONTENT_SLOT = 44;
+    private static final int LAST_CONTENT_SLOT = 17;
 
     private final MineBank plugin;
     private final MessageUtils MU = new MessageUtils();

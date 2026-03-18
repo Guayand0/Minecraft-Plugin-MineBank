@@ -54,15 +54,68 @@ public class TakeSubCommand implements CommandExecutor {
 
         if (!(sender instanceof Player)) {
             try {
-                sendMessage.sendRaw(sender, "%plugin% &fComing soon!", ph); // Mensaje
-                return true;
-                
-/*                // args[0]=take, args[1]=player, args[2]=target, args[3]=amount
+                ph = plugin.buildPlayerPlaceholders(null);
+
+                // args[0]=take, args[1]=player, args[2]=target, args[3]=amount
                 if (args.length < 4 || !args[1].equalsIgnoreCase("player")) {
-                    sendMessage.send(sender, "bank.take-usage", ph); // Mensaje
+                    sendMessage.send(sender, "messages.console-help", ph); // Mensaje
                     return true;
                 }
-*/
+
+                String targetName = args[2];
+                UUID uuid = PU.getUUIDFromName(targetName);
+                String amountArg = args[3];
+
+                if (uuid == null) {
+                    ph.put("%targetPlayerName%", targetName);
+                    sendMessage.send(sender, "bank.unregistered-player", ph); // Mensaje
+                    return true;
+                }
+
+                ph = plugin.buildPlayerPlaceholders(uuid);
+
+                PlayerData playerData = dataStorage.loadPlayerData(uuid);
+                if (playerData == null) {
+                    sendMessage.send(sender, "bank.unregistered-player", ph); // Mensaje
+                    return true;
+                }
+
+                String bankName = playerData.getBank().getName();
+                int bankLevel = playerData.getBank().getLevel();
+                int bankBalance = playerData.getBank().getBalance();
+
+                Map<String, BankData> bankDataMap = dataStorage.loadBankData(bankName);
+                if (bankDataMap == null || !bankDataMap.containsKey(bankName)) {
+                    sendMessage.send(sender, "bank.unregistered-bank", ph); // Mensaje
+                    return true;
+                }
+
+                int amountTaken;
+                try {
+                    amountTaken = Integer.parseInt(amountArg);
+                } catch (NumberFormatException e) {
+                    sendMessage.send(sender, "bank.not-positive-integer", ph); // Mensaje
+                    return true;
+                }
+                if (amountTaken <= 0) {
+                    sendMessage.send(sender, "bank.not-positive-integer", ph); // Mensaje
+                    return true;
+                }
+
+                ph.put("%targetPlayerName%", targetName);
+
+                if (bankBalance < amountTaken) {
+                    sendMessage.send(sender, "bank.take.target-not-enough-bank-balance", ph); // Mensaje
+                    return true;
+                }
+
+                int newBalance = bankBalance - amountTaken;
+                playerData.getBank().setBalance(newBalance);
+                dataStorage.savePlayerData(uuid, playerData);
+                transactionService.register(uuid, "withdraw", amountTaken, "plugin", "admin");
+
+                ph.put("%amount%", BSP.format(plugin, String.valueOf(amountTaken)));
+                sendMessage.send(sender, "bank.take.target-withdraw-success", ph); // Mensaje
             } catch (Exception e) {
                 e.printStackTrace();
                 if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));

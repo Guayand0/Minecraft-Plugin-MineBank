@@ -47,15 +47,90 @@ public class SetSubCommand implements CommandExecutor {
 
         if (!(sender instanceof Player)) {
             try {
-                sendMessage.sendRaw(sender, "%plugin% &fComing soon!", ph); // Mensaje
-                return true;
-                
-/*                // args[0]=set, args[1]=target, args[2]=type, args[3]=amount
+                ph = plugin.buildPlayerPlaceholders(null);
+
+                // args[0]=set, args[1]=target, args[2]=type, args[3]=amount
                 if (args.length < 4) {
-                    sendMessage.send(sender, "bank.set-usage", ph); // Mensaje
+                    sendMessage.send(sender, "messages.console-help", ph); // Mensaje
                     return true;
                 }
-*/
+
+                String targetPlayerName = args[1];
+                String type = args[2];
+                String amountString = args[3];
+
+                ph.put("%targetplayername%", targetPlayerName);
+
+                UUID targetUUID = PU.getUUIDFromName(targetPlayerName);
+                if (targetUUID == null) {
+                    sendMessage.send(sender, "bank.unregistered-player", ph); // Mensaje
+                    return true;
+                }
+
+                PlayerData targetData = dataStorage.loadPlayerData(targetUUID);
+                if (targetData == null || targetData.getBank() == null) {
+                    sendMessage.send(sender, "bank.unregistered-player", ph); // Mensaje
+                    return true;
+                }
+
+                String bankName = targetData.getBank().getName();
+                int bankLevel = targetData.getBank().getLevel();
+
+                Map<String, BankData> bankDataMap = dataStorage.loadBankData(bankName);
+                if (bankDataMap == null || !bankDataMap.containsKey(bankName)) {
+                    sendMessage.send(sender, "bank.unregistered-bank", ph); // Mensaje
+                    return true;
+                }
+
+                BankData bankData = bankDataMap.get(bankName);
+                int bankMaxBalance = bankData.getLevels().get(String.valueOf(bankLevel)).getMax_balance();
+                int bankMaxLevel = bankData.getLevels().size();
+                int amount;
+
+                if (type.equalsIgnoreCase("balance")) {
+
+                    amount = resolveAmount(amountString, bankMaxBalance);
+                    if (amount < 0) {
+                        sendMessage.send(sender, "bank.not-positive-integer", ph); // Mensaje
+                        return true;
+                    }
+
+                    if (amount > bankMaxBalance) {
+                        ph.put("%targetbankmaxbalance%", BSP.format(plugin, String.valueOf(bankMaxBalance)));
+                        sendMessage.send(sender, "bank.set.max-balance", ph); // Mensaje
+                        return true;
+                    }
+
+                    targetData.getBank().setBalance(amount);
+                    dataStorage.savePlayerData(targetUUID, targetData);
+                    transactionService.register(targetUUID, "set", amount, "plugin", "admin");
+
+                    ph.put("%amount%", BSP.format(plugin, String.valueOf(amount)));
+                    sendMessage.send(sender, "bank.set.set-balance-success", ph); // Mensaje
+
+                } else if (type.equalsIgnoreCase("level")) {
+
+                    amount = resolveAmount(amountString, bankMaxLevel);
+                    if (amount <= 0) {
+                        sendMessage.send(sender, "bank.not-positive-integer", ph); // Mensaje
+                        return true;
+                    }
+
+                    if (amount > bankMaxLevel) {
+                        ph.put("%targetbankmaxlevel%", String.valueOf(bankMaxLevel));
+                        sendMessage.send(sender, "bank.set.max-level", ph); // Mensaje
+                        return true;
+                    }
+
+                    targetData.getBank().setLevel(amount);
+                    dataStorage.savePlayerData(targetUUID, targetData);
+
+                    ph.put("%amount%", String.valueOf(amount));
+                    sendMessage.send(sender, "bank.set.set-level-success", ph); // Mensaje
+
+                } else {
+                    sendMessage.send(sender, "messages.console-help", ph); // Mensaje
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));
