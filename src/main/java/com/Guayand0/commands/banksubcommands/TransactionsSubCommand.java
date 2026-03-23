@@ -77,12 +77,22 @@ public class TransactionsSubCommand implements CommandExecutor {
             }*/
 
             int page = 1;
+            String filter = null;
+
             if (args.length >= 2) {
-                page = parsePageOrFail(sender, ph, args[1], usageKey);
-                if (page == -1) return true;
+                if (isTypeFilter(args[1])) {
+                    filter = normalizeFilter(args[1]);
+                    if (args.length >= 3) {
+                        page = parsePageOrFail(sender, ph, args[2], usageKey);
+                        if (page == -1) return true;
+                    }
+                } else {
+                    page = parsePageOrFail(sender, ph, args[1], usageKey);
+                    if (page == -1) return true;
+                }
             }
 
-            transactionGUI.open(player, page);
+            transactionGUI.open(player, page, filter);
         } catch (Exception e) {
             e.printStackTrace();
             if (GV.getBoolean(plugin, "exception.save", true)) {
@@ -105,5 +115,16 @@ public class TransactionsSubCommand implements CommandExecutor {
             sendMessage.send(sender, usageKey, ph);
             return -1;
         }
+    }
+
+    private boolean isTypeFilter(String raw) {
+        if (raw == null) return false;
+        String normalized = raw.trim().toLowerCase();
+        return "deposit".equals(normalized) || "withdraw".equals(normalized);
+    }
+
+    private String normalizeFilter(String raw) {
+        if (raw == null) return null;
+        return raw.trim().toLowerCase();
     }
 }

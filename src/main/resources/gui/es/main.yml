@@ -10,8 +10,11 @@ gui:
     # Posición de los items en el inventario
     position-slot:
 
-      # Todos los espacios vacíos del inventario
+      # Todos los espacios vacíos del inventario o espacios en la lista
       default:
+
+        # Una lista de slots para usar el item por defecto
+        list: 1,2,3,4,5,6,7,8,0, 45,46,47,48,49,50,51,52,53
 
         # Item que se muestra en el espacio de inventario
         # Materiales de minecraft: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html

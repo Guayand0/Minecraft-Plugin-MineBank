@@ -13,6 +13,7 @@ public class MessageUtils {
 
     private static final Pattern HEX_COLOR_PATTERN = Pattern.compile("(?i)#([0-9A-F]{6})");
     private static final Pattern GRADIENT_PATTERN = Pattern.compile("(?i)<#([0-9A-F]{6}):#([0-9A-F]{6})>(.*?)</#>", Pattern.DOTALL);
+    private static final Pattern GRADIENT_3_PATTERN = Pattern.compile("(?i)<#([0-9A-F]{6}):#([0-9A-F]{6}):#([0-9A-F]{6})>(.*?)</#>", Pattern.DOTALL);
     private static final boolean HEX_SUPPORTED = isHexSupported();
 
     private static boolean isHexSupported() {
@@ -32,8 +33,9 @@ public class MessageUtils {
      */
     public String getColoredText(String message) {
         if (message == null) return null;
-        String withGradients = translateGradients(message);
-        return ChatColor.translateAlternateColorCodes('&', translateHexColors(withGradients));
+        String text = translateTripleGradients(message);
+        text = translateGradients(text);
+        return ChatColor.translateAlternateColorCodes('&', translateHexColors(text));
     }
 
     /**
@@ -45,9 +47,10 @@ public class MessageUtils {
      */
     public String getPAPIAndColoredText(Player player, String message) {
         if (message == null) return null;
-        String withPapi = PlaceholderAPI.setPlaceholders(player, message);
-        String withGradients = translateGradients(withPapi);
-        return ChatColor.translateAlternateColorCodes('&', translateHexColors(withGradients));
+        String text = PlaceholderAPI.setPlaceholders(player, message);
+        text = translateTripleGradients(text);
+        text = translateGradients(text);
+        return ChatColor.translateAlternateColorCodes('&', translateHexColors(text));
     }
 
     /**
@@ -128,10 +131,11 @@ public class MessageUtils {
      * @return The message with placeholders replaced and color codes applied
      */
     public String getCheckAllPlaceholdersText(boolean isPAPIEnabled, Player player, String message, Map<String, String> placeholders) {
+        String text = replacePlaceholdersText(message, placeholders);
         if (isPAPIEnabled) {
-            return getPAPIAndColoredText(player, replacePlaceholdersText(message, placeholders));
+            return getPAPIAndColoredText(player, text);
         } else {
-            return getColoredText(replacePlaceholdersText(message, placeholders));
+            return getColoredText(text);
         }
     }
 
@@ -175,6 +179,26 @@ public class MessageUtils {
         return buffer.toString();
     }
 
+    private String translateTripleGradients(String message) {
+        if (!HEX_SUPPORTED || message == null) return message;
+
+        Matcher matcher = GRADIENT_3_PATTERN.matcher(message);
+        StringBuffer buffer = new StringBuffer();
+
+        while (matcher.find()) {
+            String startHex = matcher.group(1);
+            String midHex = matcher.group(2);
+            String endHex = matcher.group(3);
+            String content = matcher.group(4);
+
+            String replacement = applyTripleGradient(content, startHex, midHex, endHex);
+            matcher.appendReplacement(buffer, Matcher.quoteReplacement(replacement));
+        }
+
+        matcher.appendTail(buffer);
+        return buffer.toString();
+    }
+
     private String applyGradient(String text, String startHex, String endHex) {
         if (text == null || text.isEmpty()) return "";
 
@@ -195,6 +219,30 @@ public class MessageUtils {
             String hex = String.format("%02X%02X%02X", r, g, b);
             out.append(net.md_5.bungee.api.ChatColor.of("#" + hex)).append(text.charAt(i));
         }
+
+        return out.toString();
+    }
+
+    private String applyTripleGradient(String text, String startHex, String midHex, String endHex) {
+        if (text == null || text.isEmpty()) return "";
+
+        int length = text.length();
+        if (length == 1) {
+            return net.md_5.bungee.api.ChatColor.of("#" + startHex) + text;
+        }
+
+        int split = length / 2;
+
+        String firstHalf = text.substring(0, split);
+        String secondHalf = text.substring(split);
+
+        StringBuilder out = new StringBuilder(length * 14);
+
+        // Primera mitad: start -> mid
+        out.append(applyGradient(firstHalf, startHex, midHex));
+
+        // Segunda mitad: mid -> end
+        out.append(applyGradient(secondHalf, midHex, endHex));
 
         return out.toString();
     }

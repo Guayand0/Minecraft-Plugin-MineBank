@@ -33,6 +33,7 @@ public class TransactionGUI {
     private final BalanceSymbolPosition BSP = new BalanceSymbolPosition();
 
     private final Map<UUID, Integer> currentPages = new ConcurrentHashMap<>();
+    private final Map<UUID, String> currentFilters = new ConcurrentHashMap<>();
 
     public TransactionGUI(MineBank plugin, TransactionService transactionService) {
         this.plugin = plugin;
@@ -40,9 +41,18 @@ public class TransactionGUI {
     }
 
     public void open(Player player, int page) {
+        open(player, page, null);
+    }
+
+    public void open(Player player, int page, String typeFilter) {
 
         int safePage = Math.max(1, page);
         currentPages.put(player.getUniqueId(), safePage);
+        if (typeFilter == null || typeFilter.trim().isEmpty()) {
+            currentFilters.remove(player.getUniqueId());
+        } else {
+            currentFilters.put(player.getUniqueId(), typeFilter.trim().toLowerCase());
+        }
 
         GuiUtils GUIU = new GuiUtils(plugin);
         GUIU.openGUI(player, "transactions");
@@ -52,30 +62,40 @@ public class TransactionGUI {
     public void openNextPage(Player player) {
         int currentPage = getCurrentPage(player);
         int nextPage = currentPage + 1;
-        List<TransactionData> nextPageRows = transactionService.getPlayerTransactions(player.getUniqueId(), nextPage, PAGE_SIZE);
+        String filter = getCurrentFilter(player);
+        List<TransactionData> nextPageRows = filter == null
+                ? transactionService.getPlayerTransactions(player.getUniqueId(), nextPage, PAGE_SIZE)
+                : transactionService.getPlayerTransactionsFiltered(player.getUniqueId(), nextPage, PAGE_SIZE, filter);
 
         if (nextPageRows.isEmpty()) {
             return;
         }
 
-        open(player, nextPage);
+        open(player, nextPage, filter);
     }
 
     public void openPreviousPage(Player player) {
         int currentPage = getCurrentPage(player);
         int previousPage = Math.max(1, currentPage - 1);
-        open(player, previousPage);
+        open(player, previousPage, getCurrentFilter(player));
     }
 
     public int getCurrentPage(Player player) {
         return currentPages.getOrDefault(player.getUniqueId(), 1);
     }
 
+    public String getCurrentFilter(Player player) {
+        return currentFilters.get(player.getUniqueId());
+    }
+
     private void renderTransactions(Player player, int page) {
 
         Inventory top = player.getOpenInventory().getTopInventory();
 
-        List<TransactionData> rows = transactionService.getPlayerTransactions(player.getUniqueId(), page, PAGE_SIZE);
+        String filter = getCurrentFilter(player);
+        List<TransactionData> rows = filter == null
+                ? transactionService.getPlayerTransactions(player.getUniqueId(), page, PAGE_SIZE)
+                : transactionService.getPlayerTransactionsFiltered(player.getUniqueId(), page, PAGE_SIZE, filter);
         if (rows.isEmpty()) {
             return;
         }
@@ -93,7 +113,7 @@ public class TransactionGUI {
     private ItemStack createTransactionItem(TransactionData transaction) {
         boolean isDeposit = "deposit".equalsIgnoreCase(transaction.getType());
         boolean isSet = "set".equalsIgnoreCase(transaction.getType());
-        boolean isAdminTransaction = "admin".equalsIgnoreCase(transaction.getDescription());
+        boolean isAdminTransaction = "admin".equalsIgnoreCase(transaction.getDescription()) || "console".equalsIgnoreCase(transaction.getDescription());
 
         Material material;
         if (isSet) {
@@ -121,6 +141,8 @@ public class TransactionGUI {
         String descriptionText;
         if ("admin".equalsIgnoreCase(transaction.getDescription())) {
             descriptionText = "&6admin";
+        } else if ("console".equalsIgnoreCase(transaction.getDescription())) {
+                descriptionText = "&dconsole";
         } else {
             descriptionText = "&7self";
         }

@@ -22,6 +22,7 @@ import org.bukkit.entity.Player;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class TakeSubCommand implements CommandExecutor {
 
@@ -35,6 +36,7 @@ public class TakeSubCommand implements CommandExecutor {
     private final ExceptionManager EM = new ExceptionManager();
     private final PlayerUtils PU = new PlayerUtils();
     private final BalanceSymbolPosition BSP = new BalanceSymbolPosition();
+    private final Map<UUID, Long> lastTakeTransactionTimes = new ConcurrentHashMap<>();
 
     private final Economy economy;
 
@@ -112,7 +114,7 @@ public class TakeSubCommand implements CommandExecutor {
                 int newBalance = bankBalance - amountTaken;
                 playerData.getBank().setBalance(newBalance);
                 dataStorage.savePlayerData(uuid, playerData);
-                transactionService.register(uuid, "withdraw", amountTaken, "plugin", "admin");
+                transactionService.register(uuid, "withdraw", amountTaken, "plugin", "console");
 
                 ph.put("%amount%", BSP.format(plugin, String.valueOf(amountTaken)));
                 sendMessage.send(sender, "bank.take.target-withdraw-success", ph); // Mensaje
@@ -283,6 +285,20 @@ public class TakeSubCommand implements CommandExecutor {
                     return true;
                 }
 
+                int minTakeAmount = Math.max(0, GV.getInt(plugin, "bank.transactions.take.min-amount", 500));
+                if (minTakeAmount > 0 && amountTaken < minTakeAmount) {
+                    ph.put("%minTransactionAmount%", BSP.format(plugin, String.valueOf(minTakeAmount)));
+                    sendMessage.send(sender, "bank.transaction.min-take-amount", ph);
+                    return true;
+                }
+
+                long cooldownRemainingMs = getTakeTransactionRemainingMillis(uuid);
+                if (cooldownRemainingMs > 0L) {
+                    ph.put("%transactionCooldownRemaining%", String.valueOf(Math.max(1L, (long) Math.ceil(cooldownRemainingMs / 1000.0))));
+                    sendMessage.send(sender, "bank.transaction.cooldown", ph);
+                    return true;
+                }
+
                 if (bankBalance < amountTaken) {
                     sendMessage.send(sender, "bank.take.not-enough-bank-balance", ph); // Mensaje
                     return true;
@@ -318,6 +334,7 @@ public class TakeSubCommand implements CommandExecutor {
                 dataStorage.savePlayerData(player.getUniqueId(), playerData);
                 dataStorage.saveAccruedInterestData(accruedInterestData + interestsAmount);
                 transactionService.register(player.getUniqueId(), "withdraw", amountTaken, "plugin", "self");
+                markTakeTransactionNow(uuid);
 
                 economy.depositPlayer(player, amountTaken);
 
@@ -335,5 +352,21 @@ public class TakeSubCommand implements CommandExecutor {
         }
 
         return true;
+    }
+
+    private long getTakeTransactionRemainingMillis(UUID uuid) {
+        if (uuid == null) return 0L;
+        int cooldownSeconds = Math.max(0, GV.getInt(plugin, "bank.transactions.take.cooldown-seconds", 10));
+        if (cooldownSeconds <= 0) return 0L;
+        Long lastTime = lastTakeTransactionTimes.get(uuid);
+        if (lastTime == null) return 0L;
+        long remaining = (cooldownSeconds * 1000L) - (System.currentTimeMillis() - lastTime);
+        return Math.max(0L, remaining);
+    }
+
+    private void markTakeTransactionNow(UUID uuid) {
+        if (uuid != null) {
+            lastTakeTransactionTimes.put(uuid, System.currentTimeMillis());
+        }
     }
 }

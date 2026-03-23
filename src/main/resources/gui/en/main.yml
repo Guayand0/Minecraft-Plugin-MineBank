@@ -10,8 +10,11 @@ gui:
     # Inventory position slot
     position-slot:
 
-      # All empty inventory slots
+      # All empty inventory slots or listed slots
       default:
+
+        # A list of slots to use the default item
+        list: 1,2,3,4,5,6,7,8,0, 45,46,47,48,49,50,51,52,53
 
         # Item displayed in inventory slot
         # Minecraft Material: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html

@@ -112,6 +112,21 @@ bank:
     # Position of the money symbol: BEFORE, AFTER, NONE
     symbol-position: BEFORE
 
+  # Transactions configuration
+  transactions:
+
+    add:
+      # Minimum amount for /bank add and the web deposit action (set 0 to disable)
+      min-amount: 500
+      # Cooldown in second in deposit transactions (set 0 to disable)
+      cooldown-seconds: 20
+
+    take:
+      # Minimum amount for /bank take and the web withdraw action (set 0 to disable)
+      min-amount: 500
+      # Cooldown in second in withdraw transactions (set 0 to disable)
+      cooldown-seconds: 10
+
   # By having balance in the bank, automatically every player receive a profit of balance
   profit:
 
@@ -155,6 +170,35 @@ gui:
   # Interval in ticks to update Inventory GUI
   # Modifying this requires a server restart for the changes to take effect
   update-time: 40 # (40 ticks = 2 seconds)
+
+# +----------------------------------+ #
+# |                                  | #
+# |           WEB CONFIG             | #
+# |                                  | #
+# +----------------------------------+ #
+web:
+
+  # Enable/Disable the web panel and API
+  enabled: true
+
+  # Public URL used in the clickable WEB message (empty = host:port)
+  url:
+
+  # Public host or IP (supports localhost, IPv4, or domains like myserver.com)
+  host: localhost
+
+  # Web panel port
+  port: 16104
+
+  # Refresh interval for web data (milliseconds)
+  refresh-interval-ms: 2000
+
+  token:
+    # Token expiration (minutes)
+    ttl-minutes: 10
+
+    # Minutes to invalidate the token after the player disconnects (set 0 to disable)
+    invalidate-after-disconnect-minutes: 5
 
 # +----------------------------------+ #
 # |                                  | #

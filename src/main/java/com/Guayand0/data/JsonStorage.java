@@ -137,13 +137,16 @@ public class JsonStorage implements DataStorage, TransactionStorage {
             if (files == null) return result;
 
             for (File file : files) {
-                UUID uuid = UUID.fromString(file.getName().replace(".json", ""));
-
-                try (FileReader reader = new FileReader(file)) {
-                    PlayerData data = gson.fromJson(reader, PlayerData.class);
-                    if (data != null && data.getBank() != null) {
-                        players.put(uuid, data);
+                try {
+                    UUID uuid = UUID.fromString(file.getName().replace(".json", ""));
+                    try (FileReader reader = new FileReader(file)) {
+                        PlayerData data = gson.fromJson(reader, PlayerData.class);
+                        if (data != null && data.getBank() != null) {
+                            players.put(uuid, data);
+                        }
                     }
+                } catch (Exception ignored) {
+                    // Skip invalid or corrupted entries instead of breaking the whole top.
                 }
             }
 
@@ -593,6 +596,106 @@ public class JsonStorage implements DataStorage, TransactionStorage {
         }
 
         return transactions;
+    }
+
+    @Override
+    public List<TransactionData> findByPlayerOrdered(String playerUuid, int limit, int offset, boolean asc) throws Exception {
+        List<TransactionData> transactions = new ArrayList<>();
+        String order = asc ? "ASC" : "DESC";
+
+        try (Connection connection = getTransactionConnection(true);
+             PreparedStatement ps = connection.prepareStatement(
+                     "SELECT id, player_uuid, type, amount, description, context, timestamp " +
+                             "FROM transactions " +
+                             "WHERE player_uuid = ? " +
+                             "ORDER BY timestamp " + order + " " +
+                             "LIMIT ? OFFSET ?"
+             )) {
+            ps.setString(1, playerUuid);
+            ps.setInt(2, limit);
+            ps.setInt(3, offset);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    transactions.add(new TransactionData(
+                            rs.getString("id"),
+                            rs.getString("player_uuid"),
+                            rs.getString("type"),
+                            rs.getInt("amount"),
+                            rs.getString("description"),
+                            rs.getString("context"),
+                            rs.getLong("timestamp")
+                    ));
+                }
+            }
+        }
+
+        return transactions;
+    }
+
+    @Override
+    public List<TransactionData> findByPlayerAndTypeOrdered(String playerUuid, String type, int limit, int offset, boolean asc) throws Exception {
+        List<TransactionData> transactions = new ArrayList<>();
+        String order = asc ? "ASC" : "DESC";
+
+        try (Connection connection = getTransactionConnection(true);
+             PreparedStatement ps = connection.prepareStatement(
+                     "SELECT id, player_uuid, type, amount, description, context, timestamp " +
+                             "FROM transactions " +
+                             "WHERE player_uuid = ? AND type = ? " +
+                             "ORDER BY timestamp " + order + " " +
+                             "LIMIT ? OFFSET ?"
+             )) {
+            ps.setString(1, playerUuid);
+            ps.setString(2, type);
+            ps.setInt(3, limit);
+            ps.setInt(4, offset);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    transactions.add(new TransactionData(
+                            rs.getString("id"),
+                            rs.getString("player_uuid"),
+                            rs.getString("type"),
+                            rs.getInt("amount"),
+                            rs.getString("description"),
+                            rs.getString("context"),
+                            rs.getLong("timestamp")
+                    ));
+                }
+            }
+        }
+
+        return transactions;
+    }
+
+    @Override
+    public int countByPlayer(String playerUuid) throws Exception {
+        if (playerUuid == null) return 0;
+        initialize();
+        try (Connection connection = getTransactionConnection(true);
+             PreparedStatement ps = connection.prepareStatement(
+                     "SELECT COUNT(*) FROM transactions WHERE player_uuid = ?"
+             )) {
+            ps.setString(1, playerUuid);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        }
+    }
+
+    @Override
+    public int countByPlayerAndType(String playerUuid, String type) throws Exception {
+        if (playerUuid == null || type == null) return 0;
+        initialize();
+        try (Connection connection = getTransactionConnection(true);
+             PreparedStatement ps = connection.prepareStatement(
+                     "SELECT COUNT(*) FROM transactions WHERE player_uuid = ? AND type = ?"
+             )) {
+            ps.setString(1, playerUuid);
+            ps.setString(2, type);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        }
     }
 
     private Connection getTransactionConnection(boolean temporary) throws Exception {

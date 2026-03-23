@@ -89,6 +89,7 @@ messages:
     - '&e/bank transactions [página] &7- Abre el GUI con historial de transacciones'
     - '&e/bank events &7- Abre el GUI de eventos'
     - '&e/bank gui <GUI> &7- Abre el inventario seleccionado'
+    - '&e/bank web &7- Abre tu panel web'
 
   reload: '%plugin% &aEl plugin ha sido recargado'
 
@@ -152,6 +153,7 @@ bank:
     - '&e/bank transactions [página] &7- Abre el historial de transacciones con paginación'
     - '&e/bank events &7- Abre el GUI de eventos'
     - '&e/bank gui <GUI> &7- Abre el inventario seleccionado del plugin'
+    - '&e/bank web &7- Abre tu panel web'
 
   # Para migrar de JSON a MYSQL (/minebank migrate JSON-MYSQL)
   # Para usar el nuevo sistema de base de datos asegúrate de cambiarlo en config.yml en la sección "bank.data.type" después de hacer la migración
@@ -244,7 +246,7 @@ bank:
       tax-title: '&cImpuesto x%multiplier%'
       remaining: '&7Tiempo restante: &f%remaining%'
 
-  general-usage: '%chatPlugin% &eUso: /bank {help/data/add/take/levelup/top/receive/transactions/events}'
+  general-usage: '%chatPlugin% &eUso: /bank {help/data/add/take/levelup/top/receive/transactions/events/web}'
 
   unregistered-player: '%chatPlugin% &cEl jugador no esta registrado'
   unregistered-bank: '%chatPlugin% &cEl banco no esta registrado correctamente'
@@ -343,17 +345,24 @@ bank:
     usage-admin:
       - '%chatPlugin% &eUso:'
       - '&e/bank receive profit &7- Recibe los beneficios acumulados por estar desconectado'
-    offline-received-success: '%chatPlugin% &aHas recibido %offlineProfitAmount% en beneficios acumulados por estar desconectado'
+    offline-received-success: '%chatPlugin% &aHas recibido &e%offlineProfitAmount% &aen beneficios acumulados por estar desconectado'
     receive-exceeds: '%chatPlugin% &cNo puedes almacenar más de %playerBankMaxBalance% en tu nivel de banco actual'
     offline-not-profit: '%chatPlugin% &cNo tienes beneficios acumulados'
 
   transaction:
     usage:
       - '%chatPlugin% &eUso:'
-      - '&e/bank transactions [página] &7- Abre el historial de transacciones con paginación'
+      - '&e/bank transactions [página] &7- Abre el historial de transacciones'
+      - '&e/bank transactions deposit [página] &7- Abre el historial de transacciones depositadas'
+      - '&e/bank transactions withdraw [página] &7- Abre el historial de transacciones retiradas'
     usage-admin:
       - '%chatPlugin% &eUso:'
-      - '&e/bank transactions [página] &7- Abre el historial de transacciones con paginación'
+      - '&e/bank transactions [página] &7- Abre el historial de transacciones'
+      - '&e/bank transactions deposit [página] &7- Abre el historial de transacciones depositadas'
+      - '&e/bank transactions withdraw [página] &7- Abre el historial de transacciones retiradas'
+    min-add-amount: '%chatPlugin% &cLa cantidad minima para depositar es %minTransactionAmount%'
+    min-take-amount: '%chatPlugin% &cLa cantidad minima para retirar es %minTransactionAmount%'
+    cooldown: '%chatPlugin% &cDebes esperar %transactionCooldownRemaining% segundos antes de hacer otra transaccion'
 
   set:
     usage-admin:
@@ -364,9 +373,9 @@ bank:
       - '&6/bank set <jugador> level <cantidad> &7- Establece el nivel bancario al jugador'
       - '&6/bank set <jugador> level mid-max &7- Establece la mitad del nivel bancario máximo al jugador'
       - '&6/bank set <jugador> level max &7- Establece el nivel bancario máximo al jugador'
-    set-balance-success: '%chatPlugin% &aSe ha establecido el saldo de %targetPlayerName% en &e%amount%'
+    set-balance-success: '%chatPlugin% &aSe ha establecido el saldo de &e%targetPlayerName% &aen &e%amount%'
     max-balance: '%chatPlugin% &cEl dinero no puede ser mayor que %targetBankMaxBalance%'
-    set-level-success: '%chatPlugin% &aSe ha establecido el nivel de %targetPlayerName% en &e%amount%'
+    set-level-success: '%chatPlugin% &aSe ha establecido el nivel de &e%targetPlayerName% &aen &e%amount%'
     max-level: '%chatPlugin% &cEl nivel de banco no puede ser mayor que %targetBankMaxLevel%'
 
   gui:
@@ -380,6 +389,19 @@ bank:
     amount-withdraw: '%chatPlugin% &aIngresa la cantidad a retirar o escribe "exit" para cancelar:'
     amount-deposit: '%chatPlugin% &aIngresa la cantidad a depositar o escribe "exit" para cancelar:'
     transaction-canceled: '%chatPlugin% &cTransacción cancelada'
+
+  web:
+    usage:
+      - '%chatPlugin% &eUso:'
+      - '&e/bank web &7- Abre tu panel web'
+    usage-admin:
+      - '%chatPlugin% &eUso:'
+      - '&e/bank web &7- Abre tu panel web'
+    disabled: '%chatPlugin% &cLa web esta desactivada'
+    enabled:
+      message: '%chatPlugin% &eHaz click para abrir la &a[WEB]'
+      clickable: '[WEB]'
+      hover: '%webhost%:%webport%'
 
   profit:
     received: '%chatPlugin% &aHas recibido %keepInBankProfit% por mantener tu dinero en el banco! El beneficio es del: %profitPercentage%%'

@@ -37,6 +37,7 @@ public class TabComplete implements TabCompleter {
         // Verifica si el sender tiene el permiso "plugin.admin"
         boolean hasAdminPermission = sender.hasPermission(plugin.pluginName + ".admin");
         boolean offlinePlayersTabCompleter = GV.getBoolean(plugin, "bank.offline-player-tabcompleter", true);
+        boolean webEnabled = GV.getBoolean(plugin, "web.enabled", false);
 
         boolean hasMigrationPermission = sender.hasPermission(plugin.pluginName + ".migration");
 
@@ -166,6 +167,10 @@ public class TabComplete implements TabCompleter {
             if (args.length == 1) {
                 completions.addAll(Arrays.asList("help", "data", "bal", "balance", "level", "add", "deposit", "take", "withdraw", "levelup", "top", "baltop", "balancetop", "receive", "transactions", "history", "events"));
 
+                if (webEnabled) {
+                    completions.add("web");
+                }
+
                 if (hasAdminPermission) {
                     completions.add("set");
                 }
@@ -225,7 +230,7 @@ public class TabComplete implements TabCompleter {
 
                     case "history":
                     case "transactions":
-                        completions.addAll(Arrays.asList("1", "2", "3"));
+                        completions.addAll(Arrays.asList("1", "2", "3", "deposit", "withdraw"));
                         if (hasAdminPermission) {
                             completions.add("player");
                         }
@@ -261,8 +266,8 @@ public class TabComplete implements TabCompleter {
 
                     case "history":
                     case "transactions":
-                        if (hasAdminPermission && args[1].equalsIgnoreCase("player")) {
-                            playerCompleter(offlinePlayersTabCompleter, completions);
+                        if (args[1].equalsIgnoreCase("deposit") || args[1].equalsIgnoreCase("withdraw")) {
+                            completions.addAll(Arrays.asList("1", "2", "3"));
                         }
                         break;
                 }
@@ -290,6 +295,7 @@ public class TabComplete implements TabCompleter {
                             }
                         }
                         break;
+
                 }
             }
         }

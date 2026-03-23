@@ -37,6 +37,7 @@ public class OnPlayerJoin implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        plugin.getWebTokenStore().markConnected(player.getUniqueId());
 
         try {
             PlayerData playerData = dataStorage.loadPlayerData(player.getUniqueId());

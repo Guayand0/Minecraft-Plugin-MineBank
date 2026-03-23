@@ -25,10 +25,15 @@ public class GuiItemPosition {
 
     public void setDefaultItems(Player player, Inventory inventory, String guiId) {
 
-        ItemStack item = buildItem(player, "gui." + guiId + ".position-slot.default");
+        String defaultPath = "gui." + guiId + ".position-slot.default";
+        ItemStack item = buildItem(player, defaultPath);
         if (item == null) return;
 
-        fillEmptySlots(inventory, item);
+        int maxSlots = resolveGuiSize(guiId, inventory);
+
+        if (!fillListedEmptySlots(inventory, item, guiId, defaultPath, maxSlots)) {
+            fillEmptySlots(inventory, item);
+        }
     }
 
     public void setSlottedItems(Player player, Inventory inventory, String path, String slot) {
@@ -109,5 +114,55 @@ public class GuiItemPosition {
                 inventory.setItem(i, item);
             }
         }
+    }
+
+    private int resolveGuiSize(String guiId, Inventory inventory) {
+        FileConfiguration languageInventoryManager = IU.getGuiConfig(plugin, guiId);
+        int rows = languageInventoryManager.getInt("gui." + guiId + ".size", 0);
+        int size = rows * 9;
+        if (size <= 0) {
+            return inventory.getSize();
+        }
+        return size;
+    }
+
+    private boolean fillListedEmptySlots(Inventory inventory, ItemStack item, String guiId, String defaultPath, int maxSlots) {
+        FileConfiguration languageInventoryManager = IU.getGuiConfig(plugin, guiId);
+        ConfigurationSection section = languageInventoryManager.getConfigurationSection(defaultPath);
+        if (section == null) return false;
+
+        String listRaw = section.getString("list");
+        if (listRaw == null || listRaw.trim().isEmpty()) return false;
+
+        String[] parts = listRaw.split(",");
+        boolean anyValid = false;
+
+        for (String part : parts) {
+            String token = part.trim();
+            if (token.isEmpty()) continue;
+
+            int slotNumber;
+            try {
+                slotNumber = Integer.parseInt(token);
+            } catch (NumberFormatException e) {
+                continue;
+            }
+
+            if (slotNumber < 0 || slotNumber >= maxSlots) {
+                continue;
+            }
+            if (slotNumber >= inventory.getSize()) {
+                continue;
+            }
+
+            ItemStack current = inventory.getItem(slotNumber);
+            if (current == null || current.getType() == Material.AIR) {
+                inventory.setItem(slotNumber, item);
+            }
+
+            anyValid = true;
+        }
+
+        return anyValid;
     }
 }

@@ -103,7 +103,7 @@ public class SetSubCommand implements CommandExecutor {
 
                     targetData.getBank().setBalance(amount);
                     dataStorage.savePlayerData(targetUUID, targetData);
-                    transactionService.register(targetUUID, "set", amount, "plugin", "admin");
+                    transactionService.register(targetUUID, "set", amount, "plugin", "console");
 
                     ph.put("%amount%", BSP.format(plugin, String.valueOf(amount)));
                     sendMessage.send(sender, "bank.set.set-balance-success", ph); // Mensaje

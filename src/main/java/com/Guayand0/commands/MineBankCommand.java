@@ -175,5 +175,6 @@ public class MineBankCommand implements CommandExecutor {
         new GuiUtils(plugin).reloadGUI();
         plugin.updateBankProfitTask();
         plugin.updateRegisterBankPermissionTask();
+        plugin.restartWebServer();
     }
 }

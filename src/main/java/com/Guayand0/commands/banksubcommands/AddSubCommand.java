@@ -20,6 +20,7 @@ import org.bukkit.entity.Player;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AddSubCommand implements CommandExecutor {
 
@@ -33,6 +34,7 @@ public class AddSubCommand implements CommandExecutor {
     private final ExceptionManager EM = new ExceptionManager();
     private final PlayerUtils PU = new PlayerUtils();
     private final BalanceSymbolPosition BSP = new BalanceSymbolPosition();
+    private final Map<UUID, Long> lastAddTransactionTimes = new ConcurrentHashMap<>();
 
     private final Economy economy;
 
@@ -114,7 +116,7 @@ public class AddSubCommand implements CommandExecutor {
                 int newBalance = bankBalance + amountDeposited;
                 playerData.getBank().setBalance(newBalance);
                 dataStorage.savePlayerData(uuid, playerData);
-                transactionService.register(uuid, "deposit", amountDeposited, "plugin", "admin");
+                transactionService.register(uuid, "deposit", amountDeposited, "plugin", "console");
 
                 ph.put("%amount%", BSP.format(plugin, String.valueOf(amountDeposited)));
                 sendMessage.send(sender, "bank.add.target-deposit-success", ph); // Mensaje
@@ -262,6 +264,20 @@ public class AddSubCommand implements CommandExecutor {
                     return true;
                 }
 
+                int minAddAmount = Math.max(0, GV.getInt(plugin, "bank.transactions.add.min-amount", 500));
+                if (minAddAmount > 0 && amountDeposited < minAddAmount) {
+                    ph.put("%minTransactionAmount%", BSP.format(plugin, String.valueOf(minAddAmount)));
+                    sendMessage.send(sender, "bank.transaction.min-add-amount", ph);
+                    return true;
+                }
+
+                long cooldownRemainingMs = getAddTransactionRemainingMillis(uuid);
+                if (cooldownRemainingMs > 0L) {
+                    ph.put("%transactionCooldownRemaining%", String.valueOf(Math.max(1L, (long) Math.ceil(cooldownRemainingMs / 1000.0))));
+                    sendMessage.send(sender, "bank.transaction.cooldown", ph);
+                    return true;
+                }
+
                 if (playerEconomyBalance < amountDeposited) {
                     sendMessage.send(sender, "bank.add.not-enough-bank-balance" , ph); // Mensaje
                     return true;
@@ -279,6 +295,7 @@ public class AddSubCommand implements CommandExecutor {
                 playerData.getBank().setBalance(newBalance);
                 dataStorage.savePlayerData(uuid, playerData);
                 transactionService.register(uuid, "deposit", amountDeposited, "plugin", "self");
+                markAddTransactionNow(uuid);
 
                 ph.put("%amount%", BSP.format(plugin, String.valueOf(amountDeposited)));
                 sendMessage.send(sender, "bank.add.deposit-success" , ph); // Mensaje
@@ -291,5 +308,21 @@ public class AddSubCommand implements CommandExecutor {
         }
 
         return true;
+    }
+
+    private long getAddTransactionRemainingMillis(UUID uuid) {
+        if (uuid == null) return 0L;
+        int cooldownSeconds = Math.max(0, GV.getInt(plugin, "bank.transactions.add.cooldown-seconds", 10));
+        if (cooldownSeconds <= 0) return 0L;
+        Long lastTime = lastAddTransactionTimes.get(uuid);
+        if (lastTime == null) return 0L;
+        long remaining = (cooldownSeconds * 1000L) - (System.currentTimeMillis() - lastTime);
+        return Math.max(0L, remaining);
+    }
+
+    private void markAddTransactionNow(UUID uuid) {
+        if (uuid != null) {
+            lastAddTransactionTimes.put(uuid, System.currentTimeMillis());
+        }
     }
 }

@@ -20,6 +20,8 @@ import com.Guayand0.tasks.UpdateItemsGUI;
 import com.Guayand0.utils.*;
 import com.Guayand0.utils.gui.GuiMain;
 import com.Guayand0.zlib.*;
+import com.Guayand0.api.WebServer;
+import com.Guayand0.api.WebTokenStore;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -68,6 +70,8 @@ public class MineBank extends JavaPlugin {
     private TransactionService transactionService;
     private TransactionGUI transactionGUI;
     private EventManager eventManager;
+    private WebServer webServer;
+    private WebTokenStore webTokenStore;
 
     private Economy economy;
 
@@ -107,6 +111,13 @@ public class MineBank extends JavaPlugin {
             eventManager.cancelAllEvents();
         }
 
+        if (webServer != null) {
+            webServer.stop();
+            webServer = null;
+        }
+        if (webTokenStore != null) {
+            webTokenStore.clear();
+        }
         Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + " &fDisabled, (&aVersion: &b" + currentVersion + "&f)"));
     }
 
@@ -154,13 +165,19 @@ public class MineBank extends JavaPlugin {
         setupStorages();
         getDataStorageType();
         setupTransactionStorage();
-        getLastVersion();
+        lastVersion = currentVersion;
+
+        webTokenStore = new WebTokenStore(this);
 
         registrarPluginPlaceholders();
         registrarComandos();
         registrarEventos();
 
-        new Metrics(this, bstatsID); // Bstats
+        startWebServer();
+
+        Metrics metrics = new Metrics(this, bstatsID); // Bstats
+        metrics.addCustomChart(new Metrics.SimplePie("database_system", this::getBStatsDatabaseSystem));
+        metrics.addCustomChart(new Metrics.SimplePie("web_panel", this::getBStatsWebEnabledStatus));
 
         UpdateItemsGUI updater = new UpdateItemsGUI(this);
         updater.start();
@@ -175,10 +192,35 @@ public class MineBank extends JavaPlugin {
         }.runTask(this);
 
         // Ejecutar comprobarActualizaciones() en bucle después de que el servidor haya iniciado completamente
-        Bukkit.getScheduler().runTaskTimer(this, () -> {
-            getLastVersion();
-            comprobarActualizaciones();
-        }, 100L, 576000L); // Cada 8 horas // 576000L
+        checkUpdatesAsync();
+        Bukkit.getScheduler().runTaskTimer(this, this::checkUpdatesAsync, 100L, 576000L); // Cada 8 horas // 576000L
+    }
+
+    private void startWebServer() {
+        try {
+            boolean enabled = GV.getBoolean(this, "web.enabled", false);
+            int port = GV.getInt(this, "web.port", 16104);
+            if (!enabled) return;
+
+            webServer = new WebServer(this, port);
+            webServer.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (GV.getBoolean(this, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + EM.saveInLog(e, this)));
+        }
+    }
+
+    public void restartWebServer() {
+        try {
+            if (webServer != null) {
+                webServer.stop();
+                webServer = null;
+            }
+            startWebServer();
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (GV.getBoolean(this, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + EM.saveInLog(e, this)));
+        }
     }
 
     private void registrarComandos() {
@@ -208,9 +250,11 @@ public class MineBank extends JavaPlugin {
         placeholders.put("%latestversion%", lastVersion);
         placeholders.put("%link%", "https://www.spigotmc.org/resources/" + spigotID);
         placeholders.put("%author%", "Guayand0");
-        placeholders.put("%datastorage%", GV.getString(this, "bank.data.type", "---").toUpperCase());
+        placeholders.put("%datastorage%", GV.getString(this, "bank.data.type").toUpperCase());
         placeholders.put("%moneysymbol%", GV.getString(this, "bank.money.symbol", "$"));
         placeholders.put("%offlinemaxprofittimes%", GV.getString(this, "bank.profit.times-profits-offline"));
+        placeholders.put("%webhost%", GV.getString(this, "web.host", "localhost"));
+        placeholders.put("%webport%", String.valueOf(GV.getInt(this, "web.port", 16104)));
 
         // Lista de plugins conectados
         pluginHooksList.clear();
@@ -332,6 +376,29 @@ public class MineBank extends JavaPlugin {
         //storageManager.register(StorageType.POSTGRESQL, null);
         storageManager.register(StorageType.SQLITE, null);
         //storageManager.register(StorageType.MONGODB, null);
+    }
+
+    private String getBStatsDatabaseSystem() {
+        String type = GV.getString(this, "bank.data.type", "JSON");
+        if (type == null || type.trim().isEmpty()) {
+            return "JSON";
+        }
+
+        switch (type.trim().toUpperCase(Locale.ROOT)) {
+            case "MYSQL":
+                return "MySQL";
+            case "SQLITE":
+                return "SQLite";
+            case "JSON":
+                return "JSON";
+            default:
+                return "OTHER";
+        }
+    }
+
+    private String getBStatsWebEnabledStatus() {
+        boolean enabled = GV.getBoolean(this, "web.enabled", false);
+        return enabled ? "Enabled" : "Disabled";
     }
 
     // Metodo para obtener el tipo de almacenamiento de datos
@@ -516,19 +583,30 @@ public class MineBank extends JavaPlugin {
         scheduleRegisterBankPermissionTask();
     }
 
-    // Metodo para obtener ultima version
-    private void getLastVersion() {
-        try {
-            lastVersion = UC.getLatestSpigotVersion(spigotID, 5000);  // Obtener la última versión desde la clase UpdateChecker
-        } catch (SocketTimeoutException ex) {
-            Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + " &cConnection timed out. The version will be checked later"));
-            lastVersion = currentVersion;
-            updateCheckerWork = false;
-        } catch (Exception ex) {
-            Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + " &cError while checking update"));
-            lastVersion = currentVersion;
-            updateCheckerWork = false;
-        }
+    private void checkUpdatesAsync() {
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+            try {
+                String latest = UC.getLatestSpigotVersion(spigotID, 5000);  // Obtener la última versión desde la clase UpdateChecker
+                Bukkit.getScheduler().runTask(this, () -> {
+                    lastVersion = latest != null ? latest : currentVersion;
+                    updateCheckerWork = true;
+                    registrarPluginPlaceholders();
+                    comprobarActualizaciones();
+                });
+            } catch (SocketTimeoutException ex) {
+                Bukkit.getScheduler().runTask(this, () -> {
+                    Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + " &cConnection timed out. The version will be checked later"));
+                    lastVersion = currentVersion;
+                    updateCheckerWork = false;
+                });
+            } catch (Exception ex) {
+                Bukkit.getScheduler().runTask(this, () -> {
+                    Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + " &cError while checking update"));
+                    lastVersion = currentVersion;
+                    updateCheckerWork = false;
+                });
+            }
+        });
     }
 
     // Metodo para comprobar nuevas actualizaciones
@@ -595,6 +673,10 @@ public class MineBank extends JavaPlugin {
 
     public EventManager getEventManager() {
         return eventManager;
+    }
+
+    public WebTokenStore getWebTokenStore() {
+        return webTokenStore;
     }
 
     public Map<UUID, PendingMigration> getPendingMigrations() {
