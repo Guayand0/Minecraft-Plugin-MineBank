@@ -38,7 +38,7 @@ public class BankPermissionTask extends BukkitRunnable {
 
         // Para cada jugador conectado comprobar si su banco es el correcto
         for (Player player : Bukkit.getOnlinePlayers()) {
-            handlePlayerPermission(player);
+            plugin.getSchedulerCompat().runAtPlayer(player, () -> handlePlayerPermission(player));
         }
     }
 

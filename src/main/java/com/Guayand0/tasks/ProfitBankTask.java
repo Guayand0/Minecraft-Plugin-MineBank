@@ -79,11 +79,12 @@ public class ProfitBankTask extends BukkitRunnable {
             double finalPercent = multiplyByLevel ? profitPercent * bankLevel : profitPercent;
             double eventMultiplier = plugin.getEventManager().getMultiplier(EventManager.EventType.PROFIT);
             finalPercent = finalPercent * eventMultiplier;
+            final double finalPercentComputed = finalPercent;
             int profit = (int) Math.floor(bankBalance * finalPercent / 100.0);
             if (profit <= 0) return;
 
-            boolean online = PU.isPlayerOnline(PU.getNameFromUUID(uuid));
-            Player player = online ? Bukkit.getPlayer(uuid) : null;
+            Player player = Bukkit.getPlayer(uuid);
+            boolean online = player != null && player.isOnline();
 
             // OFFLINE
             if (!online) {
@@ -99,22 +100,29 @@ public class ProfitBankTask extends BukkitRunnable {
             }
 
             // ONLINE
-            if (!player.hasPermission(plugin.pluginName + ".use")) {
-                return;
-            }
+            plugin.getSchedulerCompat().runAtPlayer(player, () -> {
+                try {
+                    if (!player.hasPermission(plugin.pluginName + ".use")) {
+                        return;
+                    }
 
-            if (bankBalance + profit > bankMaxBalance) {
-                sendMessage.send(player, "bank.profit.max-storage", null); // Mensaje
-                return;
-            }
+                    if (bankBalance + profit > bankMaxBalance) {
+                        sendMessage.send(player, "bank.profit.max-storage", null); // Mensaje
+                        return;
+                    }
 
-            bank.setBalance(bankBalance + profit);
-            dataStorage.savePlayerData(uuid, playerData);
+                    bank.setBalance(bankBalance + profit);
+                    dataStorage.savePlayerData(uuid, playerData);
 
-            Map<String, String> ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
-            ph.put("%keepinbankprofit%", BSP.format(plugin, String.valueOf(profit)));
-            ph.put("%profitpercentage%", String.valueOf(finalPercent));
-            sendMessage.send(player, "bank.profit.received", ph); // Mensaje
+                    Map<String, String> ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
+                    ph.put("%keepinbankprofit%", BSP.format(plugin, String.valueOf(profit)));
+                    ph.put("%profitpercentage%", String.valueOf(finalPercentComputed));
+                    sendMessage.send(player, "bank.profit.received", ph); // Mensaje
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));
+                }
+            });
         } catch (Exception e) {
             e.printStackTrace();
             if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));

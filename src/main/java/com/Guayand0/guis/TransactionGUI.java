@@ -117,11 +117,15 @@ public class TransactionGUI {
 
         Material material;
         if (isSet) {
-            material = Material.WHITE_DYE;
+            material = resolveMaterial("WHITE_DYE", "BONE_MEAL");
         } else if (isAdminTransaction) {
-            material = isDeposit ? Material.GREEN_DYE : Material.ORANGE_DYE;
+            material = isDeposit
+                    ? resolveMaterial("GREEN_DYE", "CACTUS_GREEN", "LIME_DYE")
+                    : resolveMaterial("ORANGE_DYE", "RED_DYE", "ROSE_RED");
         } else {
-            material = isDeposit ? Material.LIME_DYE : Material.RED_DYE;
+            material = isDeposit
+                    ? resolveMaterial("LIME_DYE", "GREEN_DYE", "CACTUS_GREEN")
+                    : resolveMaterial("RED_DYE", "ROSE_RED");
         }
 
         ItemStack item = new ItemStack(material, 1);
@@ -154,5 +158,16 @@ public class TransactionGUI {
 
         item.setItemMeta(meta);
         return item;
+    }
+
+    private Material resolveMaterial(String... materialNames) {
+        for (String name : materialNames) {
+            try {
+                return Material.valueOf(name);
+            } catch (IllegalArgumentException ignored) {
+                // Try next fallback name for older/newer Minecraft versions.
+            }
+        }
+        return Material.PAPER;
     }
 }

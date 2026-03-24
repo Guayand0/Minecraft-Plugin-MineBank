@@ -30,8 +30,6 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.net.SocketTimeoutException;
 import java.util.*;
@@ -61,7 +59,7 @@ public class MineBank extends JavaPlugin {
     private final PlayerUtils PU = new PlayerUtils();
     private final BalanceSymbolPosition BSP = new BalanceSymbolPosition();
 
-    private BukkitTask bankProfitTask, bankPermissionTask;
+    private Object bankProfitTask, bankPermissionTask;
     private LanguageManager languageManager;
     private GuiMain guiMain;
     private SendMessage sendMessage;
@@ -72,6 +70,7 @@ public class MineBank extends JavaPlugin {
     private EventManager eventManager;
     private WebServer webServer;
     private WebTokenStore webTokenStore;
+    private SchedulerCompat schedulerCompat;
 
     private Economy economy;
 
@@ -98,12 +97,12 @@ public class MineBank extends JavaPlugin {
     @Override
     public void onDisable() {
         if (bankProfitTask != null) {
-            bankProfitTask.cancel();
+            schedulerCompat.cancelTask(bankProfitTask);
             bankProfitTask = null;
         }
 
         if (bankPermissionTask != null) {
-            bankPermissionTask.cancel();
+            schedulerCompat.cancelTask(bankPermissionTask);
             bankPermissionTask = null;
         }
 
@@ -134,6 +133,7 @@ public class MineBank extends JavaPlugin {
         new FileManager(this);
         guiMain = new GuiMain(this);
         sendMessage = new SendMessage(this);
+        schedulerCompat = new SchedulerCompat(this);
 
         new Update_4XX_501(this); // 4.x.x a 5.0.1
         new Update_501_511(this); // 5.0.1 a 5.1.1
@@ -150,7 +150,7 @@ public class MineBank extends JavaPlugin {
         // Usar variables PlaceholderAPI
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             PlaceholderAPIEnable = true;
-            Bukkit.getScheduler().runTaskLater(this, () -> {
+            schedulerCompat.runGlobalLater(() -> {
                 try {
                     new PAPIVariables(this).register();
                     Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + " &fHooked into &aPlaceholderAPI&f!"));
@@ -183,17 +183,14 @@ public class MineBank extends JavaPlugin {
         updater.start();
 
         // Ejecuta la tarea en el siguiente tick
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                scheduleRegisterBankPermissionTask();
-                scheduleBankProfitTask();
-            }
-        }.runTask(this);
+        schedulerCompat.runGlobal(() -> {
+            scheduleRegisterBankPermissionTask();
+            scheduleBankProfitTask();
+        });
 
         // Ejecutar comprobarActualizaciones() en bucle después de que el servidor haya iniciado completamente
         checkUpdatesAsync();
-        Bukkit.getScheduler().runTaskTimer(this, this::checkUpdatesAsync, 100L, 576000L); // Cada 8 horas // 576000L
+        schedulerCompat.runGlobalTimer(this::checkUpdatesAsync, 100L, 576000L); // Cada 8 horas // 576000L
     }
 
     private void startWebServer() {
@@ -513,7 +510,7 @@ public class MineBank extends JavaPlugin {
 
             // Cancelar si ya existe
             if (bankProfitTask != null) {
-                bankProfitTask.cancel();
+                schedulerCompat.cancelTask(bankProfitTask);
             }
 
             long intervalSeconds = GV.getInt(this, "bank.profit.interval-in-seconds", -1);
@@ -524,7 +521,8 @@ public class MineBank extends JavaPlugin {
             long intervalTicks = intervalSeconds * 20L;
 
             // Programar la tarea para que se ejecute repetidamente con el intervalo configurado
-            bankProfitTask = new ProfitBankTask(this).runTaskTimer(this, intervalTicks, intervalTicks);
+            ProfitBankTask task = new ProfitBankTask(this);
+            bankProfitTask = schedulerCompat.runGlobalTimer(task::run, intervalTicks, intervalTicks);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -542,7 +540,7 @@ public class MineBank extends JavaPlugin {
         PluginManager pluginManager = Bukkit.getPluginManager();
 
         if (bankPermissionTask != null) {
-            bankPermissionTask.cancel();
+            schedulerCompat.cancelTask(bankPermissionTask);
 
             // Eliminar todos los permisos de los bancos antes de volver a registrarlos
             for (Permission permission : pluginManager.getPermissions()) {
@@ -576,7 +574,8 @@ public class MineBank extends JavaPlugin {
         }
 
         // Programar la tarea para que se ejecute repetidamente con el intervalo configurado
-        bankPermissionTask = new BankPermissionTask(this).runTaskTimer(this, 5L, 5L);
+        BankPermissionTask task = new BankPermissionTask(this);
+        bankPermissionTask = schedulerCompat.runGlobalTimer(task::run, 5L, 5L);
     }
 
     public void updateRegisterBankPermissionTask() {
@@ -584,23 +583,23 @@ public class MineBank extends JavaPlugin {
     }
 
     private void checkUpdatesAsync() {
-        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+        schedulerCompat.runAsync(() -> {
             try {
                 String latest = UC.getLatestSpigotVersion(spigotID, 5000);  // Obtener la última versión desde la clase UpdateChecker
-                Bukkit.getScheduler().runTask(this, () -> {
+                schedulerCompat.runGlobal(() -> {
                     lastVersion = latest != null ? latest : currentVersion;
                     updateCheckerWork = true;
                     registrarPluginPlaceholders();
                     comprobarActualizaciones();
                 });
             } catch (SocketTimeoutException ex) {
-                Bukkit.getScheduler().runTask(this, () -> {
+                schedulerCompat.runGlobal(() -> {
                     Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + " &cConnection timed out. The version will be checked later"));
                     lastVersion = currentVersion;
                     updateCheckerWork = false;
                 });
             } catch (Exception ex) {
-                Bukkit.getScheduler().runTask(this, () -> {
+                schedulerCompat.runGlobal(() -> {
                     Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + " &cError while checking update"));
                     lastVersion = currentVersion;
                     updateCheckerWork = false;
@@ -677,6 +676,10 @@ public class MineBank extends JavaPlugin {
 
     public WebTokenStore getWebTokenStore() {
         return webTokenStore;
+    }
+
+    public SchedulerCompat getSchedulerCompat() {
+        return schedulerCompat;
     }
 
     public Map<UUID, PendingMigration> getPendingMigrations() {

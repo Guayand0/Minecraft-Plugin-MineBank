@@ -6,7 +6,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.scheduler.BukkitRunnable;
 
 public class OnPlayerExit implements Listener {
 
@@ -33,11 +32,9 @@ public class OnPlayerExit implements Listener {
             return;
         }
         long delayTicks = delayMinutes * 60L * 20L;
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                plugin.getWebTokenStore().invalidateIfDisconnected(player.getUniqueId(), disconnectedAt);
-            }
-        }.runTaskLater(plugin, delayTicks);
+        plugin.getSchedulerCompat().runGlobalLater(
+                () -> plugin.getWebTokenStore().invalidateIfDisconnected(player.getUniqueId(), disconnectedAt),
+                delayTicks
+        );
     }
 }

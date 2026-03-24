@@ -15,7 +15,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -393,19 +392,16 @@ public class BankSubCommand implements CommandExecutor {
 
         final String bankNameFinal = bankName;
         final Player playerFinal = (Player) sender;
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                String current = plugin.getPendingBankDeletions().get(playerFinal.getUniqueId());
-                if (current != null && current.equalsIgnoreCase(bankNameFinal)) {
-                    plugin.getPendingBankDeletions().remove(playerFinal.getUniqueId());
-                    Player p = Bukkit.getPlayer(playerFinal.getUniqueId());
-                    if (p != null && p.isOnline()) {
-                        sendMessage.send(p, "bank.manage.delete-confirm-expired", ph);
-                    }
+        plugin.getSchedulerCompat().runAtPlayerLater(playerFinal, () -> {
+            String current = plugin.getPendingBankDeletions().get(playerFinal.getUniqueId());
+            if (current != null && current.equalsIgnoreCase(bankNameFinal)) {
+                plugin.getPendingBankDeletions().remove(playerFinal.getUniqueId());
+                Player p = Bukkit.getPlayer(playerFinal.getUniqueId());
+                if (p != null && p.isOnline()) {
+                    sendMessage.send(p, "bank.manage.delete-confirm-expired", ph);
                 }
             }
-        }.runTaskLater(plugin, 200L);
+        }, 200L);
 
         return true;
     }

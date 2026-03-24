@@ -33,33 +33,36 @@ public class UpdateItemsGUI extends BukkitRunnable {
             updateNonEventGui = true;
             nonEventElapsedTicks = 0;
         }
+        final boolean updateNonEventGuiFinal = updateNonEventGui;
 
         for (Player player : Bukkit.getOnlinePlayers()) {
-            if (!GuiUtils.openedPlayersGUI.contains(player.getUniqueId())) continue;
+            plugin.getSchedulerCompat().runAtPlayer(player, () -> {
+                if (!GuiUtils.openedPlayersGUI.contains(player.getUniqueId())) return;
 
-            InventoryView view = player.getOpenInventory();
-            Inventory top = view.getTopInventory();
-            if (!(top.getHolder() instanceof GuiHolder)) continue;
+                InventoryView view = player.getOpenInventory();
+                Inventory top = view.getTopInventory();
+                if (!(top.getHolder() instanceof GuiHolder)) return;
 
-            GuiHolder holder = (GuiHolder) top.getHolder();
-            String guiId = holder.getGuiId();
+                GuiHolder holder = (GuiHolder) top.getHolder();
+                String guiId = holder.getGuiId();
 
-            boolean isEventsGui = "events".equalsIgnoreCase(guiId);
-            if (!isEventsGui && !updateNonEventGui) continue;
-            if (isEventsGui) {
-                new com.Guayand0.guis.EventGUI(plugin).update(player);
-                continue;
-            }
-            if (!updateNonEventGui) continue;
+                boolean isEventsGui = "events".equalsIgnoreCase(guiId);
+                if (!isEventsGui && !updateNonEventGuiFinal) return;
+                if (isEventsGui) {
+                    new com.Guayand0.guis.EventGUI(plugin).update(player);
+                    return;
+                }
+                if (!updateNonEventGuiFinal) return;
 
-            GuiUtils GUIU = new GuiUtils(plugin);
-            GUIU.updateGUI(player, guiId); // Usa directamente el guiId del holder
+                GuiUtils GUIU = new GuiUtils(plugin);
+                GUIU.updateGUI(player, guiId); // Usa directamente el guiId del holder
+            });
         }
     }
 
     // Método para iniciar el task
     public void start() {
         // 20 ticks = 1 segundo (events GUI siempre cada segundo)
-        this.runTaskTimer(plugin, 0L, 20L);
+        plugin.getSchedulerCompat().runGlobalTimer(this::run, 0L, 20L);
     }
 }

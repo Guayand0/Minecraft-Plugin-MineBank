@@ -86,7 +86,7 @@ public class OnInventoryClick implements Listener {
         player.setMetadata("bank_click_cooldown", new FixedMetadataValue(plugin, true));
         processSlotClick(player, guiIdOpened, event.getSlot());
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> player.removeMetadata("bank_click_cooldown", plugin), 5L);
+        plugin.getSchedulerCompat().runAtPlayerLater(player, () -> player.removeMetadata("bank_click_cooldown", plugin), 5L);
     }
 
     private void processSlotClick(Player player, String guiIdOpened, int slot) {
@@ -137,7 +137,7 @@ public class OnInventoryClick implements Listener {
             final boolean bankMsg = runAsBankMessage;
             final long finalDelay = delay;
 
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            Runnable action = () -> {
 
                 Map<String,String> ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
                 String finalCommand = replacePlaceholders(commandToRun, ph);
@@ -145,8 +145,13 @@ public class OnInventoryClick implements Listener {
                 if (processSpecialCommands(player, guiIdOpened, finalCommand)) return;
 
                 executeCommand(player, finalCommand, console, bankMsg, ph);
+            };
 
-            }, finalDelay);
+            if (finalDelay <= 0L) {
+                action.run();
+            } else {
+                plugin.getSchedulerCompat().runAtPlayerLater(player, action, finalDelay);
+            }
         }
     }
 
@@ -213,7 +218,11 @@ public class OnInventoryClick implements Listener {
 
     private void executeCommand(Player player, String command, boolean asConsole, boolean asBankMessage, Map<String,String> ph) {
         if (asConsole) {
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+            if (plugin.getSchedulerCompat().isFolia()) {
+                plugin.getSchedulerCompat().runGlobal(() -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
+            } else {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+            }
         } else if (asBankMessage) {
             sendMessage.sendRaw((CommandSender) player, command, ph);
         } else {

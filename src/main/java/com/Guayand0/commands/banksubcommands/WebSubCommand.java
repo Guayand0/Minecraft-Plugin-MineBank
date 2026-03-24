@@ -8,7 +8,6 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -110,7 +109,7 @@ public class WebSubCommand implements CommandExecutor {
 
                 TextComponent webComp = new TextComponent(TextComponent.fromLegacyText(webColored));
                 webComp.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
-                webComp.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(hoverText)));
+                webComp.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(hoverText)));
                 message.addExtra(webComp);
 
                 for (BaseComponent comp : TextComponent.fromLegacyText(after)) {

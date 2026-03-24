@@ -11,11 +11,10 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.profile.PlayerProfile;
-import org.bukkit.profile.PlayerTextures;
 
 import java.nio.charset.StandardCharsets;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Base64;
 import java.util.UUID;
@@ -57,10 +56,11 @@ public class GuiHeadTexture {
 
     private boolean supportsModernProfiles() {
         try {
-            SkullMeta.class.getMethod("setOwnerProfile", PlayerProfile.class);
+            Class<?> playerProfileClass = Class.forName("org.bukkit.profile.PlayerProfile");
+            SkullMeta.class.getMethod("setOwnerProfile", playerProfileClass);
             Bukkit.class.getMethod("createPlayerProfile", UUID.class);
             return true;
-        } catch (NoSuchMethodException e) {
+        } catch (ClassNotFoundException | NoSuchMethodException e) {
             return false;
         }
     }
@@ -76,9 +76,11 @@ public class GuiHeadTexture {
 
         try {
 
-            PlayerProfile profile = createProfile(url);
+            Object profile = createProfile(url);
+            Class<?> playerProfileClass = Class.forName("org.bukkit.profile.PlayerProfile");
+            Method setOwnerProfile = SkullMeta.class.getMethod("setOwnerProfile", playerProfileClass);
 
-            meta.setOwnerProfile(profile);
+            setOwnerProfile.invoke(meta, profile);
             head.setItemMeta(meta);
 
         } catch (Exception e) {
@@ -86,13 +88,21 @@ public class GuiHeadTexture {
         }
     }
 
-    private PlayerProfile createProfile(String url) throws Exception {
+    private Object createProfile(String url) throws Exception {
 
-        PlayerProfile profile = Bukkit.createPlayerProfile(UUID.randomUUID());
-        PlayerTextures textures = profile.getTextures();
+        Method createPlayerProfile = Bukkit.class.getMethod("createPlayerProfile", UUID.class);
+        Object profile = createPlayerProfile.invoke(null, UUID.randomUUID());
+        Class<?> playerProfileClass = Class.forName("org.bukkit.profile.PlayerProfile");
+        Class<?> playerTexturesClass = Class.forName("org.bukkit.profile.PlayerTextures");
 
-        textures.setSkin(new URL(resolveTextureUrl(url)));
-        profile.setTextures(textures);
+        Method getTextures = playerProfileClass.getMethod("getTextures");
+        Object textures = getTextures.invoke(profile);
+
+        Method setSkin = playerTexturesClass.getMethod("setSkin", URL.class);
+        setSkin.invoke(textures, new URL(resolveTextureUrl(url)));
+
+        Method setTextures = playerProfileClass.getMethod("setTextures", playerTexturesClass);
+        setTextures.invoke(profile, textures);
 
         return profile;
     }

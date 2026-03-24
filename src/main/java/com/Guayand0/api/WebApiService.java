@@ -439,7 +439,7 @@ public class WebApiService {
         if (Bukkit.isPrimaryThread()) {
             return task.call();
         }
-        return Bukkit.getScheduler().callSyncMethod(plugin, task).get(5, TimeUnit.SECONDS);
+        return plugin.getSchedulerCompat().callSync(task, 5, TimeUnit.SECONDS);
     }
 
     private String normalizeFilter(String raw) {

@@ -3,12 +3,10 @@ package com.Guayand0.utils;
 import com.Guayand0.MineBank;
 import com.Guayand0.zlib.*;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.scheduler.BukkitRunnable;
 
 public class CheckForUpdates implements Listener {
 
@@ -38,12 +36,7 @@ public class CheckForUpdates implements Listener {
 
                 // Si el jugador tiene permisos
                 if (playerHavePermission(player)) {
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            sendMessage.send(player, "config.update-checker", null); // Mensaje
-                        }
-                    }.runTask(plugin); // Ejecuta la tarea en el siguiente tick
+                    plugin.getSchedulerCompat().runAtPlayer(player, () -> sendMessage.send(player, "config.update-checker", null)); // Mensaje
                 }
             }
 

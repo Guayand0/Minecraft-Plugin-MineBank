@@ -12,7 +12,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Map;
 
@@ -205,37 +204,34 @@ public class MigrateSubCommand implements CommandExecutor {
                 DataStorage finalToStorage = toStorage;
                 DataStorage finalFromStorage = fromStorage;
 
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        try {
+                plugin.getSchedulerCompat().runAsync(() -> {
+                    try {
 
-                            long start = System.currentTimeMillis();
-                            finalToStorage.clearAllData();
+                        long start = System.currentTimeMillis();
+                        finalToStorage.clearAllData();
 
-                            MigrationResult result = DataMigrator.migrate(finalFromStorage, finalToStorage);
-                            long elapsedMs = System.currentTimeMillis() - start;
+                        MigrationResult result = DataMigrator.migrate(finalFromStorage, finalToStorage);
+                        long elapsedMs = System.currentTimeMillis() - start;
 
-                            Bukkit.getScheduler().runTask(plugin, () -> {
-                                ph.put("%MIGRATEDFROM%", pending.from.name().toUpperCase());
-                                ph.put("%MIGRATEDTO%", pending.to.name().toUpperCase());
-                                ph.put("%MIGRATEDPLAYERS%", String.valueOf(result.getPlayersMigrated()));
-                                ph.put("%MIGRATEDBANKS%", String.valueOf(result.getBanksMigrated()));
-                                ph.put("%MIGRATEDINTERESTS%", String.valueOf(result.getAccruedInterest()));
-                                ph.put("%MIGRATEDTRANSACTIONS%", String.valueOf(result.getTransactionsMigrated()));
-                                ph.put("%MIGRATIONTIME%", elapsedMs + "ms");
+                        plugin.getSchedulerCompat().runGlobal(() -> {
+                            ph.put("%MIGRATEDFROM%", pending.from.name().toUpperCase());
+                            ph.put("%MIGRATEDTO%", pending.to.name().toUpperCase());
+                            ph.put("%MIGRATEDPLAYERS%", String.valueOf(result.getPlayersMigrated()));
+                            ph.put("%MIGRATEDBANKS%", String.valueOf(result.getBanksMigrated()));
+                            ph.put("%MIGRATEDINTERESTS%", String.valueOf(result.getAccruedInterest()));
+                            ph.put("%MIGRATEDTRANSACTIONS%", String.valueOf(result.getTransactionsMigrated()));
+                            ph.put("%MIGRATIONTIME%", elapsedMs + "ms");
 
-                                sendMessage.send(sender, "bank.migrate.success", ph);
-                            });
+                            sendMessage.send(sender, "bank.migrate.success", ph);
+                        });
 
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            ph.put("%MIGRATIONERROR%", e.getMessage());
-                            sendMessage.send(sender, "bank.migrate.failed", ph);
-                            if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));
-                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        ph.put("%MIGRATIONERROR%", e.getMessage());
+                        sendMessage.send(sender, "bank.migrate.failed", ph);
+                        if (GV.getBoolean(plugin, "exception.save", true)) Bukkit.getConsoleSender().sendMessage(MU.getColoredText(plugin.prefix + EM.saveInLog(e, plugin)));
                     }
-                }.runTaskAsynchronously(plugin);
+                });
 
                 return true;
             }
@@ -275,20 +271,17 @@ public class MigrateSubCommand implements CommandExecutor {
             sendMessage.send(sender, "bank.migrate.confirm-needed", ph); // Mensaje
 
             // Programar eliminación automática después de 10 segundos (200 ticks)
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    PendingMigration current = plugin.getPendingMigrations().get(player.getUniqueId());
-                    if (current != null && current == pendingMigration) {
-                        plugin.getPendingMigrations().remove(player.getUniqueId());
-                        // Mensaje al jugador si sigue en línea
-                        Player p = Bukkit.getPlayer(player.getUniqueId());
-                        if (p != null && p.isOnline()) {
-                            sendMessage.send(p, "bank.migrate.confirm-expired", ph); // Mensaje
-                        }
+            plugin.getSchedulerCompat().runAtPlayerLater(player, () -> {
+                PendingMigration current = plugin.getPendingMigrations().get(player.getUniqueId());
+                if (current != null && current == pendingMigration) {
+                    plugin.getPendingMigrations().remove(player.getUniqueId());
+                    // Mensaje al jugador si sigue en línea
+                    Player p = Bukkit.getPlayer(player.getUniqueId());
+                    if (p != null && p.isOnline()) {
+                        sendMessage.send(p, "bank.migrate.confirm-expired", ph); // Mensaje
                     }
                 }
-            }.runTaskLater(plugin, 200L); // 200 ticks = 10 segundos
+            }, 200L); // 200 ticks = 10 segundos
 
         } catch (Exception e) {
             e.printStackTrace();

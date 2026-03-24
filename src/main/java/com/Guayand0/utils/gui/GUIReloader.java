@@ -1,7 +1,6 @@
 package com.Guayand0.utils.gui;
 
 import com.Guayand0.MineBank;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -36,7 +35,7 @@ public class GUIReloader {
 
         player.closeInventory();
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+        plugin.getSchedulerCompat().runAtPlayerLater(player, () -> {
             player.openInventory(newInv);
             GuiUtils.openedPlayersGUI.add(player.getUniqueId());
         }, 1L);
