@@ -119,7 +119,7 @@ public class BankCommand implements CommandExecutor {
                 String version = Bukkit.getVersion();
 
                 // Comprobar si es version reciente
-                boolean isRecentVersion = version.contains("1.13") || version.contains("1.14") || version.contains("1.15") || version.contains("1.16") || version.contains("1.17") || version.contains("1.18") || version.contains("1.19") || version.contains("1.20") || version.contains("1.21");
+                boolean isRecentVersion = version.contains("1.13") || version.contains("1.14") || version.contains("1.15") || version.contains("1.16") || version.contains("1.17") || version.contains("1.18") || version.contains("1.19") || version.contains("1.20") || version.contains("1.21") || version.contains("26.");
                 if (isRecentVersion) {
                     if (!plugin.getMainGUI().guiExists("main")) {
                         sendMessage.send(sender, "bank.gui.not-found", ph);

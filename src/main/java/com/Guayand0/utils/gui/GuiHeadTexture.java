@@ -14,13 +14,17 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.profile.PlayerProfile;
 import org.bukkit.profile.PlayerTextures;
 
+import java.nio.charset.StandardCharsets;
 import java.lang.reflect.Field;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Base64;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GuiHeadTexture {
+
+    private static final Pattern TEXTURE_URL_PATTERN = Pattern.compile("\"url\"\\s*:\\s*\"(http[^\"]+)\"");
 
     private final MineBank plugin;
 
@@ -39,7 +43,7 @@ public class GuiHeadTexture {
         String texture = getTexture(itemData);
         if (texture == null) return;
 
-        if (isRecentVersion()) {
+        if (supportsModernProfiles()) {
             applyModernTexture(item, texture);
         } else {
             applyLegacyTexture(item, texture);
@@ -51,9 +55,14 @@ public class GuiHeadTexture {
         return (texture == null || texture.isEmpty()) ? null : texture;
     }
 
-    private boolean isRecentVersion() {
-        String version = Bukkit.getVersion();
-        return version.contains("1.20.4") || version.contains("1.20.5") || version.contains("1.20.6") || version.contains("1.21");
+    private boolean supportsModernProfiles() {
+        try {
+            SkullMeta.class.getMethod("setOwnerProfile", PlayerProfile.class);
+            Bukkit.class.getMethod("createPlayerProfile", UUID.class);
+            return true;
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
     }
 
     /* =========================
@@ -82,7 +91,8 @@ public class GuiHeadTexture {
         PlayerProfile profile = Bukkit.createPlayerProfile(UUID.randomUUID());
         PlayerTextures textures = profile.getTextures();
 
-        textures.setSkin(new URL(url));
+        textures.setSkin(new URL(resolveTextureUrl(url)));
+        profile.setTextures(textures);
 
         return profile;
     }
@@ -112,14 +122,8 @@ public class GuiHeadTexture {
 
         GameProfile profile = new GameProfile(UUID.randomUUID(), "");
 
-        Set<Property> textures = new HashSet<>();
-        textures.add(new Property("textures", texture));
-
         try {
-
-            Field propertiesField = GameProfile.class.getDeclaredField("properties");
-            propertiesField.setAccessible(true);
-            propertiesField.set(profile, textures);
+            profile.getProperties().put("textures", new Property("textures", texture));
 
         } catch (Exception e) {
             handleError(e, "Error setting GameProfile textures");
@@ -139,6 +143,29 @@ public class GuiHeadTexture {
         } catch (Exception e) {
             handleError(e, "Error applying skull profile");
         }
+    }
+
+    private String resolveTextureUrl(String texture) {
+        if (texture == null) {
+            throw new IllegalArgumentException("Texture can not be null");
+        }
+
+        String trimmedTexture = texture.trim();
+        if (trimmedTexture.startsWith("http://") || trimmedTexture.startsWith("https://")) {
+            return trimmedTexture;
+        }
+
+        try {
+            String decodedTexture = new String(Base64.getDecoder().decode(trimmedTexture), StandardCharsets.UTF_8);
+            Matcher matcher = TEXTURE_URL_PATTERN.matcher(decodedTexture);
+            if (matcher.find()) {
+                return matcher.group(1);
+            }
+        } catch (IllegalArgumentException ignored) {
+            // Not a Base64 texture value, let the caller handle the invalid URL.
+        }
+
+        throw new IllegalArgumentException("Unsupported texture format: " + trimmedTexture);
     }
 
     /* =========================
