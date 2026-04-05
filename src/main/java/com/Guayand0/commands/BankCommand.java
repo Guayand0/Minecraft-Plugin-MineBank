@@ -102,7 +102,7 @@ public class BankCommand implements CommandExecutor {
 
             // Si el banco no está activado no hacer nada
             if (!isPluginEnabled) {
-                sendMessage.send(sender, "config.plugin-disabled", ph); // Mensaje
+                sendMessage.send(sender, "config.bank-disabled", ph); // Mensaje
                 return true;
             }
 

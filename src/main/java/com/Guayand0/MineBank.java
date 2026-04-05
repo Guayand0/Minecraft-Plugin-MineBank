@@ -189,7 +189,6 @@ public class MineBank extends JavaPlugin {
         });
 
         // Ejecutar comprobarActualizaciones() en bucle después de que el servidor haya iniciado completamente
-        checkUpdatesAsync();
         schedulerCompat.runGlobalTimer(this::checkUpdatesAsync, 100L, 576000L); // Cada 8 horas // 576000L
     }
 
@@ -592,15 +591,12 @@ public class MineBank extends JavaPlugin {
                     registrarPluginPlaceholders();
                     comprobarActualizaciones();
                 });
-            } catch (SocketTimeoutException ex) {
-                schedulerCompat.runGlobal(() -> {
-                    Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + " &cConnection timed out. The version will be checked later"));
-                    lastVersion = currentVersion;
-                    updateCheckerWork = false;
-                });
             } catch (Exception ex) {
+                String errorMessage = ex instanceof SocketTimeoutException
+                        ? prefix + " &cConnection timed out. The version will be checked later"
+                        : prefix + " &cError while checking update";
                 schedulerCompat.runGlobal(() -> {
-                    Bukkit.getConsoleSender().sendMessage(MU.getColoredText(prefix + " &cError while checking update"));
+                    Bukkit.getConsoleSender().sendMessage(MU.getColoredText(errorMessage));
                     lastVersion = currentVersion;
                     updateCheckerWork = false;
                 });
@@ -614,7 +610,11 @@ public class MineBank extends JavaPlugin {
             Bukkit.getConsoleSender().sendMessage(MU.getColoredReplacePluginPlaceholdersText("%plugin% &fNew version available!", placeholders));
             Bukkit.getConsoleSender().sendMessage(MU.getColoredReplacePluginPlaceholdersText("&fCurrent version: &c%version%&f, latest version: &a%latestVersion%&f!", placeholders));
             Bukkit.getConsoleSender().sendMessage(MU.getColoredText(""));
-            Bukkit.getConsoleSender().sendMessage(MU.getColoredReplacePluginPlaceholdersText("   &eSpigotMC -> &f%link%", placeholders));
+            Bukkit.getConsoleSender().sendMessage(MU.getColoredReplacePluginPlaceholdersText("   &eSpigotMC    -> &f%link%", placeholders));
+            //Bukkit.getConsoleSender().sendMessage(MU.getColoredReplacePluginPlaceholdersText("   &aModrinth   -> &fhttps://modrinth.com/plugin/minebank", placeholders));
+            Bukkit.getConsoleSender().sendMessage(MU.getColoredReplacePluginPlaceholdersText("   &bVoxel       -> &fhttps://voxel.shop/product/8153", placeholders));
+            Bukkit.getConsoleSender().sendMessage(MU.getColoredReplacePluginPlaceholdersText("   &9BuiltByBit  -> &fhttps://builtbybit.com/resources/100839", placeholders));
+            //Bukkit.getConsoleSender().sendMessage(MU.getColoredReplacePluginPlaceholdersText("   &9CourseForge -> &fhttps://legacy.curseforge.com/minecraft/bukkit-plugins/minebank-custom-gui-custom-banks-web-panel-papi-support", placeholders));
             Bukkit.getConsoleSender().sendMessage(MU.getColoredText(""));
             //Bukkit.getConsoleSender().sendMessage(MU.getColoredReplacePluginPlaceholdersText("%plugin% &bSome updates may require you to change some things manually.", placeholders));
             Bukkit.getConsoleSender().sendMessage(MU.getColoredReplacePluginPlaceholdersText("%plugin% &bRead changelog: &f%link%/updates", placeholders));
