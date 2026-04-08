@@ -18,6 +18,7 @@ import java.util.Date;
 
 public class MySQLStorage implements DataStorage, TransactionStorage {
 
+    private static final int CONNECTION_VALIDATION_TIMEOUT_SECONDS = 2;
     private Connection connection;
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private final PlayerUtils PU = new PlayerUtils();
@@ -60,7 +61,9 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
         this.params = null;
     }
 
-    private void connect() throws SQLException {
+    private synchronized void connect() throws SQLException {
+        closeConnectionQuietly();
+
         if (connectionUri != null && !connectionUri.isEmpty()) {
             String url = "jdbc:" + connectionUri;
             connection = DriverManager.getConnection(url);
@@ -77,11 +80,23 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
         connection = DriverManager.getConnection(url, user, pass);
     }
 
-    private Connection getConnection() throws SQLException {
-        if (connection == null || connection.isClosed()) {
+    private synchronized Connection getConnection() throws SQLException {
+        if (!isConnectionUsable()) {
             connect();
         }
         return connection;
+    }
+
+    private boolean isConnectionUsable() {
+        if (connection == null) {
+            return false;
+        }
+
+        try {
+            return !connection.isClosed() && connection.isValid(CONNECTION_VALIDATION_TIMEOUT_SECONDS);
+        } catch (SQLException ignored) {
+            return false;
+        }
     }
 
     public void prepareTables() {
@@ -95,7 +110,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
         )) {
             ps.executeUpdate();
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
 
         try (PreparedStatement ps = getConnection().prepareStatement(
@@ -106,7 +121,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
         )) {
             ps.executeUpdate();
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
 
         try (PreparedStatement ps = getConnection().prepareStatement(
@@ -117,7 +132,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
         )) {
             ps.executeUpdate();
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
 
         try (PreparedStatement ps = getConnection().prepareStatement(
@@ -134,7 +149,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
         )) {
             ps.executeUpdate();
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
 
     }
@@ -156,7 +171,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
                 invalidateTopCache();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
     }
 
@@ -174,7 +189,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
             }
             ps.executeBatch();
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
     }
 
@@ -200,7 +215,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
         return null;
     }
@@ -229,7 +244,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
                 cachedPlayerUUIDs = new ArrayList<>(uuids);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
         return uuids;
     }
@@ -336,7 +351,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
 
         return result;
@@ -371,7 +386,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
     }
 
@@ -400,7 +415,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
             }
             ps.executeBatch();
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
     }
 
@@ -441,7 +456,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
             try {
                 if (conn != null) conn.rollback();
             } catch (Exception ignored) {}
-            e.printStackTrace();
+            handleStorageException(e);
         } finally {
             try {
                 if (conn != null) {
@@ -467,7 +482,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
                 bankDataCache.remove(bankName);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
     }
 
@@ -487,7 +502,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
 
             return updated > 0;
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
         return false;
     }
@@ -524,7 +539,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
         return null;
     }
@@ -546,7 +561,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
 
         return banks;
@@ -570,7 +585,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
     }
 
@@ -589,7 +604,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
         return 0;
     }
@@ -601,7 +616,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
             initialize();
             save(transaction);
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
     }
 
@@ -628,7 +643,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
                 insert.executeBatch();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
     }
 
@@ -639,7 +654,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
         try {
             initialize();
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
 
         try (PreparedStatement select = getConnection().prepareStatement(
@@ -659,7 +674,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
 
         return transactions;
@@ -848,7 +863,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            handleStorageException(e);
         }
     }
 
@@ -876,7 +891,7 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
                 conn.setAutoCommit(true);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            handleStorageException(e);
         } finally {
             bulkMode = false;
             bulkPreviousAutoCommit = null;
@@ -948,5 +963,52 @@ public class MySQLStorage implements DataStorage, TransactionStorage {
     private synchronized void invalidateTopCache() {
         topCacheExpiresAt = 0L;
         cachedTopRows = Collections.emptyList();
+    }
+
+    private synchronized void invalidateConnection() {
+        closeConnectionQuietly();
+        connection = null;
+    }
+
+    private void closeConnectionQuietly() {
+        if (connection == null) {
+            return;
+        }
+
+        try {
+            connection.close();
+        } catch (SQLException ignored) {
+            // Ignore close failures while replacing a broken connection.
+        }
+    }
+
+    private void handleStorageException(Exception exception) {
+        if (isConnectionException(exception)) {
+            invalidateConnection();
+        }
+        exception.printStackTrace();
+    }
+
+    private boolean isConnectionException(Throwable throwable) {
+        Throwable current = throwable;
+
+        while (current != null) {
+            if (current instanceof SQLNonTransientConnectionException
+                    || current instanceof SQLTransientConnectionException
+                    || current instanceof SQLRecoverableException) {
+                return true;
+            }
+
+            if (current instanceof SQLException) {
+                String sqlState = ((SQLException) current).getSQLState();
+                if (sqlState != null && sqlState.startsWith("08")) {
+                    return true;
+                }
+            }
+
+            current = current.getCause();
+        }
+
+        return false;
     }
 }

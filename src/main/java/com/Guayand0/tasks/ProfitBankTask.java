@@ -36,15 +36,16 @@ public class ProfitBankTask extends BukkitRunnable {
 
     @Override
     public void run() {
+        plugin.getSchedulerCompat().runAsync(() -> {
+            boolean bankEnabled = GV.getBoolean(plugin, "config.bank-allowed", true);
+            if (!bankEnabled) return;
 
-        boolean bankEnabled = GV.getBoolean(plugin, "config.bank-allowed", true);
-        if (!bankEnabled) return;
+            List<UUID> uuids = dataStorage.getAllPlayerUUIDs();
 
-        List<UUID> uuids = dataStorage.getAllPlayerUUIDs();
-
-        for (UUID uuid : uuids) {
-            handlePlayer(uuid);
-        }
+            for (UUID uuid : uuids) {
+                handlePlayer(uuid);
+            }
+        });
     }
 
     private void handlePlayer(UUID uuid) {

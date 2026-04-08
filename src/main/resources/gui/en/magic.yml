@@ -14,7 +14,7 @@ gui:
         amount: 1
         name: '&bEnchant Example 1'
         lore:
-          - '&eThis item only shine'
+          - '&eThis item displays the enchantments'
         enchant:
           - 'UNBREAKING:6'
           - 'MENDING:1'

@@ -1,6 +1,7 @@
 package com.Guayand0.utils.gui;
 
 import com.Guayand0.MineBank;
+import com.Guayand0.utils.CustomItemManager;
 import com.Guayand0.zlib.InventoryUtils;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -18,9 +19,11 @@ public class GuiItemPosition {
 
     private final GuiItemMeta GUIIM = new GuiItemMeta();
     private final InventoryUtils IU = new InventoryUtils();
+    private final CustomItemManager customItemManager;
 
     public GuiItemPosition(MineBank plugin) {
         this.plugin = plugin;
+        this.customItemManager = new CustomItemManager(plugin);
     }
 
     public void setDefaultItems(Player player, Inventory inventory, String guiId) {
@@ -48,7 +51,9 @@ public class GuiItemPosition {
     }
 
     private ItemStack buildItem(Player player, String route) {
-        return createItem(route, plugin.buildPlayerPlaceholders(player.getUniqueId()));
+        Map<String, String> ph = plugin.buildPlayerPlaceholders(player.getUniqueId());
+        enrichGuiPlaceholders(route, ph);
+        return createItem(route, ph);
     }
 
     public ItemStack createItem(String route, Map<String,String> ph) {
@@ -57,6 +62,10 @@ public class GuiItemPosition {
         FileConfiguration languageInventoryManager = IU.getGuiConfig(plugin, guiId);
         ConfigurationSection section = languageInventoryManager.getConfigurationSection(route);
         if (section == null) return null;
+
+        if (section.contains("custom-item")) {
+            return customItemManager.buildGuiItem(section, ph);
+        }
 
         Material material = GUIIM.getMaterial(section);
         if (material == null) return null;
@@ -102,6 +111,17 @@ public class GuiItemPosition {
             return parts[1];
         }
         return "main";
+    }
+
+    private void enrichGuiPlaceholders(String route, Map<String, String> ph) {
+        if (ph == null) return;
+
+        String guiId = extractGuiId(route);
+        ph.put("%guiName%", guiId);
+
+        String[] parts = route != null ? route.split("\\.") : new String[0];
+        String slot = parts.length >= 5 ? parts[4] : "default";
+        ph.put("%slot%", slot);
     }
 
     private void fillEmptySlots(Inventory inventory, ItemStack item) {

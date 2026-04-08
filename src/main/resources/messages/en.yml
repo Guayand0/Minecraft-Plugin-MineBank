@@ -59,6 +59,13 @@ messages:
     - '&6/minebank bank delete <bankname> level <value> &7- Delete a bank level'
     - '&6/minebank bank delete <bankname> &7- Delete a bank (confirm required)'
     - '&6/minebank bank delete confirm &7- Confirm bank deletion'
+    - '&6/minebank item list &7- Show all saved custom item ids'
+    - '&6/minebank item save <customItemID> &7- Save the item in your hand'
+    - '&6/minebank item get <customItemID> [amount] &7- Get a saved custom item'
+    - '&6/minebank item rename <customItemID> <newCustomItemID> &7- Prepare a rename'
+    - '&6/minebank item replace <customItemID> &7- Prepare replacing it with the item in your hand'
+    - '&6/minebank item delete <customItemID> &7- Prepare deleting a custom item'
+    - '&6/minebank item <rename|replace|delete> <confirm|cancel> &7- Confirm or cancel'
     - '&7Aliases: &eminebank&7, &emb'
     - '&e/bank &7- Open main bank GUI (1.13+)'
     - '&e/bank help &7- Show bank help'
@@ -233,6 +240,51 @@ bank:
       - '%chatPlugin% &eThis confirmation expires in 10 seconds'
     delete-confirm-expired: '%chatPlugin% &cThe bank deletion has been automatically cancelled'
     delete-no-pending: '%chatPlugin% &cYou have no pending bank deletions'
+
+  item:
+    usage-admin:
+      - '%chatPlugin% &eUsage:'
+      - '&6/minebank item list &7- Show all saved custom item ids'
+      - '&6/minebank item save <customItemID> &7- Save the item in your hand'
+      - '&6/minebank item get <customItemID> [amount] &7- Get a saved custom item'
+      - '&6/minebank item rename <customItemID> <newCustomItemID> &7- Prepare a rename'
+      - '&6/minebank item replace <customItemID> &7- Prepare replacing it with the item in your hand'
+      - '&6/minebank item delete <customItemID> &7- Prepare deleting a custom item'
+      - '&6/minebank item <rename|replace|delete> <confirm|cancel> &7- Confirm or cancel'
+    list-header: '%chatPlugin% &eSaved custom items: &f%amount%'
+    list-entry: '&6- &e%customItemID%'
+    list-empty: '%chatPlugin% &cThere are no saved custom items'
+    invalid-id: '%chatPlugin% &cInvalid custom item id &e%customItemID%&c. Use letters, numbers, _ or -'
+    invalid-new-id: '%chatPlugin% &cInvalid new custom item id &e%newCustomItemID%&c. Use letters, numbers, _ or -'
+    already-exists: '%chatPlugin% &cCustom item id already exists: &e%customItemID%'
+    target-exists: '%chatPlugin% &cTarget custom item id already exists: &e%newCustomItemID%'
+    hand-empty: '%chatPlugin% &cYou must hold an item in your main hand'
+    saved: '%chatPlugin% &aSaved custom item &e%customItemID%'
+    not-found: '%chatPlugin% &cCustom item not found: &e%customItemID%'
+    load-failed: '%chatPlugin% &cCould not load custom item: &e%customItemID%'
+    received: '%chatPlugin% &aReceived custom item &e%customItemID% &7x%amount%'
+    rename-confirm-needed:
+      - '%chatPlugin% &7Use &a/minebank item rename confirm &7to rename &e%customItemID% &7to &e%newCustomItemID%'
+      - '%chatPlugin% &eUse &c/minebank item rename cancel &eto cancel'
+    replace-confirm-needed:
+      - '%chatPlugin% &7Use &a/minebank item replace confirm &7to replace &e%customItemID%'
+      - '%chatPlugin% &eUse &c/minebank item replace cancel &eto cancel'
+    delete-confirm-needed:
+      - '%chatPlugin% &7Use &a/minebank item delete confirm &7to delete &e%customItemID%'
+      - '%chatPlugin% &eUse &c/minebank item delete cancel &eto cancel'
+    no-pending: '%chatPlugin% &cYou have no pending custom item action'
+    cancelled: '%chatPlugin% &eCancelled pending custom item action'
+    renamed: '%chatPlugin% &aRenamed custom item &e%customItemID% &ato &e%newCustomItemID%'
+    pending-item-invalid: '%chatPlugin% &cThe pending replacement item is no longer valid'
+    replaced: '%chatPlugin% &aReplaced custom item &e%customItemID%'
+    deleted: '%chatPlugin% &aDeleted custom item &e%customItemID%'
+    confirm-expired: '%chatPlugin% &cThe pending custom item action expired'
+    gui:
+      custom-item-not-found-name: '&cCustom item not found'
+      custom-item-not-found-lore:
+        - '&7ID: &f%customItemID%'
+        - '&7GUI: &f%guiName%'
+        - '&7Slot: &f%slot%'
 
   events:
     usage:

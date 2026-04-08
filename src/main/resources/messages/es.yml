@@ -59,6 +59,13 @@ messages:
     - '&6/minebank bank delete <bankname> level <value> &7- Elimina un nivel del banco'
     - '&6/minebank bank delete <bankname> &7- Elimina un banco (requiere confirmación)'
     - '&6/minebank bank delete confirm &7- Confirmar eliminación de banco'
+    - '&6/minebank item list &7- Muestra todos los ids de items guardados'
+    - '&6/minebank item save <customItemID> &7- Guarda el item de tu mano'
+    - '&6/minebank item get <customItemID> [amount] &7- Recibe un item guardado'
+    - '&6/minebank item rename <customItemID> <newCustomItemID> &7- Prepara un renombrado'
+    - '&6/minebank item replace <customItemID> &7- Prepara reemplazarlo por el item de tu mano'
+    - '&6/minebank item delete <customItemID> &7- Prepara borrar un item personalizado'
+    - '&6/minebank item <rename|replace|delete> <confirm|cancel> &7- Confirmar o cancelar'
     - '&7Alias: &eminebank&7, &emb'
     - '&e/bank &7- Abre el inventario principal del banco (1.13+)'
     - '&e/bank help &7- Muestra la ayuda del banco'
@@ -233,6 +240,51 @@ bank:
       - '%chatPlugin% &eEsta confirmación caduca en 10 segundos'
     delete-confirm-expired: '%chatPlugin% &cLa eliminación del banco ha sido cancelada automáticamente'
     delete-no-pending: '%chatPlugin% &cNo tienes eliminaciones de banco pendientes'
+
+  item:
+    usage-admin:
+      - '%chatPlugin% &eUso:'
+      - '&6/minebank item list &7- Muestra todos los ids de items guardados'
+      - '&6/minebank item save <customItemID> &7- Guarda el item de tu mano'
+      - '&6/minebank item get <customItemID> [amount] &7- Recibe un item guardado'
+      - '&6/minebank item rename <customItemID> <newCustomItemID> &7- Prepara un renombrado'
+      - '&6/minebank item replace <customItemID> &7- Prepara reemplazarlo por el item de tu mano'
+      - '&6/minebank item delete <customItemID> &7- Prepara borrar un item personalizado'
+      - '&6/minebank item <rename|replace|delete> <confirm|cancel> &7- Confirmar o cancelar'
+    list-header: '%chatPlugin% &eItems personalizados guardados: &f%amount%'
+    list-entry: '&6- &e%customItemID%'
+    list-empty: '%chatPlugin% &cNo hay items personalizados guardados'
+    invalid-id: '%chatPlugin% &cID de item personalizado inválido &e%customItemID%&c. Usa letras, números, _ o -'
+    invalid-new-id: '%chatPlugin% &cNuevo ID de item personalizado inválido &e%newCustomItemID%&c. Usa letras, números, _ o -'
+    already-exists: '%chatPlugin% &cEse ID de item personalizado ya existe: &e%customItemID%'
+    target-exists: '%chatPlugin% &cEl ID de destino ya existe: &e%newCustomItemID%'
+    hand-empty: '%chatPlugin% &cDebes tener un item en la mano principal'
+    saved: '%chatPlugin% &aItem personalizado guardado: &e%customItemID%'
+    not-found: '%chatPlugin% &cItem personalizado no encontrado: &e%customItemID%'
+    load-failed: '%chatPlugin% &cNo se pudo cargar el item personalizado: &e%customItemID%'
+    received: '%chatPlugin% &aHas recibido el item personalizado &e%customItemID% &7x%amount%'
+    rename-confirm-needed:
+      - '%chatPlugin% &7Usa &a/minebank item rename confirm &7para renombrar &e%customItemID% &7a &e%newCustomItemID%'
+      - '%chatPlugin% &eUsa &c/minebank item rename cancel &epara cancelar'
+    replace-confirm-needed:
+      - '%chatPlugin% &7Usa &a/minebank item replace confirm &7para reemplazar &e%customItemID%'
+      - '%chatPlugin% &eUsa &c/minebank item replace cancel &epara cancelar'
+    delete-confirm-needed:
+      - '%chatPlugin% &7Usa &a/minebank item delete confirm &7para eliminar &e%customItemID%'
+      - '%chatPlugin% &eUsa &c/minebank item delete cancel &epara cancelar'
+    no-pending: '%chatPlugin% &cNo tienes ninguna acción pendiente de item personalizado'
+    cancelled: '%chatPlugin% &eSe canceló la acción pendiente del item personalizado'
+    renamed: '%chatPlugin% &aItem personalizado renombrado de &e%customItemID% &aa &e%newCustomItemID%'
+    pending-item-invalid: '%chatPlugin% &cEl item pendiente para reemplazo ya no es válido'
+    replaced: '%chatPlugin% &aItem personalizado reemplazado: &e%customItemID%'
+    deleted: '%chatPlugin% &aItem personalizado eliminado: &e%customItemID%'
+    confirm-expired: '%chatPlugin% &cLa acción pendiente del item personalizado ha expirado'
+    gui:
+      custom-item-not-found-name: '&cCustom item not found'
+      custom-item-not-found-lore:
+        - '&7ID: &f%customItemID%'
+        - '&7GUI: &f%guiName%'
+        - '&7Slot: &f%slot%'
 
   events:
     usage:

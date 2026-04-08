@@ -1,6 +1,7 @@
 package com.Guayand0.commands;
 
 import com.Guayand0.MineBank;
+import com.Guayand0.commands.minebanksubcommands.ItemSubCommand;
 import com.Guayand0.commands.minebanksubcommands.BackupSubCommand;
 import com.Guayand0.commands.minebanksubcommands.BankSubCommand;
 import com.Guayand0.commands.minebanksubcommands.EventSubCommand;
@@ -35,16 +36,18 @@ public class MineBankCommand implements CommandExecutor {
     private final BackupSubCommand subCommandBackup;
     private final EventSubCommand subCommandEvent;
     private final BankSubCommand subCommandBank;
+    private final ItemSubCommand subCommandItem;
 
     public MineBankCommand(MineBank plugin) {
         this.plugin = plugin;
         this.languageManager = plugin.getLanguageManager();
         this.sendMessage = new SendMessage(plugin);
 
-        subCommandMigrate = new MigrateSubCommand(plugin);
-        subCommandBackup = new BackupSubCommand(plugin);
-        subCommandEvent = new EventSubCommand(plugin);
-        subCommandBank = new BankSubCommand(plugin);
+        this.subCommandMigrate = new MigrateSubCommand(plugin);
+        this.subCommandBackup = new BackupSubCommand(plugin);
+        this.subCommandEvent = new EventSubCommand(plugin);
+        this.subCommandBank = new BankSubCommand(plugin);
+        this.subCommandItem = new ItemSubCommand(plugin);
     }
 
     @Override
@@ -146,6 +149,9 @@ public class MineBankCommand implements CommandExecutor {
 
                     case "bank":
                         return subCommandBank.onCommand(player, command, label, args);
+
+                    case "item":
+                        return subCommandItem.onCommand(player, command, label, args);
 
                     default:
                         sendMessage.send(sender, "messages.command-no-argument", ph); // Mensaje

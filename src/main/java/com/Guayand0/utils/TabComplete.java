@@ -1,6 +1,7 @@
 package com.Guayand0.utils;
 
 import com.Guayand0.MineBank;
+import com.Guayand0.utils.CustomItemManager;
 import com.Guayand0.data.DataStorage;
 import com.Guayand0.data.bank.BankData;
 import com.Guayand0.dbmigration.StorageType;
@@ -23,10 +24,12 @@ public class TabComplete implements TabCompleter {
     private final MineBank plugin;
     private final DataStorage dataStorage;
     private final GetValues GV = new GetValues();
+    private final CustomItemManager customItemManager;
 
     public TabComplete(MineBank plugin) {
         this.plugin = plugin;
         this.dataStorage = plugin.getStorage();
+        this.customItemManager = new CustomItemManager(plugin);
     }
 
     @Override
@@ -46,7 +49,7 @@ public class TabComplete implements TabCompleter {
             if (args.length == 1) {
 
                 if (hasAdminPermission) {
-                    completions.addAll(Arrays.asList("help", "reload", "info", "permissions", "backup", "event", "bank"));
+                    completions.addAll(Arrays.asList("help", "reload", "info", "permissions", "backup", "event", "bank", "item"));
                 }
 
                 if (hasAdminPermission && hasMigrationPermission) {
@@ -59,6 +62,9 @@ public class TabComplete implements TabCompleter {
                 }
                 if (hasAdminPermission && args[0].equalsIgnoreCase("bank")) {
                     completions.addAll(Arrays.asList("create", "add", "modify", "delete", "rename"));
+                }
+                if (hasAdminPermission && args[0].equalsIgnoreCase("item")) {
+                    completions.addAll(Arrays.asList("list", "save", "get", "rename", "replace", "delete"));
                 }
                 if (hasAdminPermission && hasMigrationPermission) {
                     if (args[0].equalsIgnoreCase("migrate")) {
@@ -94,6 +100,14 @@ public class TabComplete implements TabCompleter {
                         completions.add("confirm");
                     }
                 }
+                if (hasAdminPermission && args[0].equalsIgnoreCase("item")) {
+                    if (Arrays.asList("get", "rename", "replace", "delete").contains(args[1].toLowerCase())) {
+                        completions.addAll(resolveCustomItemIds());
+                    }
+                    if (Arrays.asList("rename", "replace", "delete").contains(args[1].toLowerCase())) {
+                        completions.addAll(Arrays.asList("confirm", "cancel"));
+                    }
+                }
             } else if (args.length == 4) {
                 if (hasAdminPermission && args[0].equalsIgnoreCase("event")) {
                     if (!args[2].equalsIgnoreCase("cancel")) {
@@ -108,6 +122,11 @@ public class TabComplete implements TabCompleter {
                     } else if (args[1].equalsIgnoreCase("delete")) {
                         completions.addAll(Arrays.asList("level"));
                     } else if (args[1].equalsIgnoreCase("rename")) {
+                    }
+                }
+                if (hasAdminPermission && args[0].equalsIgnoreCase("item")) {
+                    if (args[1].equalsIgnoreCase("get")) {
+                        completions.addAll(Arrays.asList("1", "2", "16", "64"));
                     }
                 }
             } else if (args.length == 5) {
@@ -235,6 +254,7 @@ public class TabComplete implements TabCompleter {
                             completions.add("player");
                         }
                         break;
+
                 }
 
             } else if (args.length == 3) {
@@ -270,6 +290,7 @@ public class TabComplete implements TabCompleter {
                             completions.addAll(Arrays.asList("1", "2", "3"));
                         }
                         break;
+
                 }
 
             } else if (args.length == 4) {
@@ -389,5 +410,9 @@ public class TabComplete implements TabCompleter {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private List<String> resolveCustomItemIds() {
+        return customItemManager.getCustomItemIds();
     }
 }
